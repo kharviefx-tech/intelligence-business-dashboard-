@@ -123,3 +123,40 @@ end;
 $$;
 revoke all on function public.bi_create_workspace(text,text) from public;
 grant execute on function public.bi_create_workspace(text,text) to authenticated;
+
+-- Security-definer helpers avoid recursive RLS when policies need to inspect memberships.
+create or replace function public.bi_is_member(p_org_id uuid)
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists(select 1 from public.bi_organization_members m where m.organization_id = p_org_id and m.user_id = auth.uid());
+$$;
+create or replace function public.bi_has_role(p_org_id uuid, p_roles text[])
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists(select 1 from public.bi_organization_members m where m.organization_id = p_org_id and m.user_id = auth.uid() and m.role = any(p_roles));
+$$;
+revoke all on function public.bi_is_member(uuid) from public, anon;
+revoke all on function public.bi_has_role(uuid,text[]) from public, anon;
+grant execute on function public.bi_is_member(uuid) to authenticated;
+grant execute on function public.bi_has_role(uuid,text[]) to authenticated;
+
+drop policy if exists bi_org_select_member on public.bi_organizations;
+create policy bi_org_select_member on public.bi_organizations for select to authenticated using (public.bi_is_member(id));
+drop policy if exists bi_org_update_owner on public.bi_organizations;
+create policy bi_org_update_owner on public.bi_organizations for update to authenticated using (public.bi_has_role(id,array['owner'])) with check (public.bi_has_role(id,array['owner']));
+drop policy if exists bi_members_select_self_or_org_owner on public.bi_organization_members;
+create policy bi_members_select_self_or_org_owner on public.bi_organization_members for select to authenticated using (user_id = auth.uid() or public.bi_has_role(organization_id,array['owner']));
+drop policy if exists bi_members_update_owner on public.bi_organization_members;
+create policy bi_members_update_owner on public.bi_organization_members for update to authenticated using (public.bi_has_role(organization_id,array['owner'])) with check (public.bi_has_role(organization_id,array['owner']));
+drop policy if exists bi_members_delete_owner on public.bi_organization_members;
+create policy bi_members_delete_owner on public.bi_organization_members for delete to authenticated using (public.bi_has_role(organization_id,array['owner']) and user_id <> auth.uid());
+drop policy if exists bi_transactions_select_member on public.bi_transactions;
+create policy bi_transactions_select_member on public.bi_transactions for select to authenticated using (public.bi_is_member(organization_id));
+drop policy if exists bi_transactions_insert_member on public.bi_transactions;
+create policy bi_transactions_insert_member on public.bi_transactions for insert to authenticated with check (created_by = auth.uid() and public.bi_has_role(organization_id,array['owner','manager','staff']));
+drop policy if exists bi_transactions_update_member on public.bi_transactions;
+create policy bi_transactions_update_member on public.bi_transactions for update to authenticated using (public.bi_has_role(organization_id,array['owner','manager','staff'])) with check (public.bi_has_role(organization_id,array['owner','manager','staff']));
+drop policy if exists bi_transactions_delete_owner_manager on public.bi_transactions;
+create policy bi_transactions_delete_owner_manager on public.bi_transactions for delete to authenticated using (public.bi_has_role(organization_id,array['owner','manager']));
+drop policy if exists bi_audit_select_org_member on public.bi_audit_logs;
+create policy bi_audit_select_org_member on public.bi_audit_logs for select to authenticated using (organization_id is not null and public.bi_is_member(organization_id));
+drop policy if exists bi_audit_insert_actor on public.bi_audit_logs;
+create policy bi_audit_insert_actor on public.bi_audit_logs for insert to authenticated with check (actor_id = auth.uid() and (organization_id is null or public.bi_is_member(organization_id)));
