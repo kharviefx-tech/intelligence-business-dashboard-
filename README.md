@@ -47,3 +47,8 @@ This project is designed for a Next.js-capable host such as Vercel. GitHub Pages
 - Copy `.env.example` to `.env.local` and fill in the project URL and public anon key from your Supabase project. Do not commit `.env.local`.
 - Apply the SQL migration to a new or intended Supabase project only after reviewing it. The migration does not create a Supabase project or connect this GitHub repository to one.
 - The dashboard and admin routes are still not fully protected by server-side session checks. Do not put real financial data into the product until server-side authorization, tenant policies, tests and a security review are completed.
+
+- Supabase SSR helpers are in `utils/supabase/client.ts` and `utils/supabase/server.ts`; install dependencies after pulling the changes.
+- Middleware checks sessions on `/onboarding` and requires a database profile role of `admin` or `super_admin` for `/admin` and `/monetization`.
+- New profiles default to `user`. Only promote a verified account using a trusted Supabase SQL session; never allow users to promote themselves.
+- `/onboarding` creates a workspace using the database RPC. This requires the migration to be applied and Supabase environment variables to be configured.
