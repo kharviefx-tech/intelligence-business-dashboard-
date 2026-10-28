@@ -164,7 +164,9 @@ create policy "audit_select_org_members" on public.audit_logs for select to auth
 using (organization_id is not null and exists (select 1 from public.organization_members m where m.organization_id = audit_logs.organization_id and m.user_id = (select auth.uid())));
 
 revoke all on public.profiles, public.organizations, public.organization_members, public.transactions, public.audit_logs from anon;
-grant select, update on public.profiles to authenticated;
+revoke update on public.profiles from authenticated;
+grant select on public.profiles to authenticated;
+grant update (display_name) on public.profiles to authenticated;
 grant select on public.organizations to authenticated;
 grant select on public.organization_members to authenticated;
 grant select, insert, update, delete on public.transactions to authenticated;
@@ -175,9 +177,9 @@ grant select on public.audit_logs to authenticated;
 create or replace function public.create_workspace(workspace_name text, workspace_slug text, currency_code text default 'NGN')
 returns uuid
 language plpgsql
-security invoker
+security definer
 set search_path = ''
-as $$
+as $
 declare
   new_org_id uuid;
 begin
