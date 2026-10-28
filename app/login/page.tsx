@@ -54,7 +54,7 @@ export default function LoginPage() {
         const { error: authError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (authError) throw authError;
         setMessage("Signed in. Opening the dashboard…");
-        router.push("/");
+        router.push("/onboarding");
         router.refresh();
       }
     } catch (e) {
