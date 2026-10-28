@@ -36,7 +36,7 @@ export async function middleware(request: NextRequest) {
 
   if (request.nextUrl.pathname.startsWith("/admin") || request.nextUrl.pathname.startsWith("/monetization")) {
     const { data: profile, error } = await supabase
-      .from("profiles")
+      .from("bi_profiles")
       .select("platform_role")
       .eq("id", user.id)
       .maybeSingle();
