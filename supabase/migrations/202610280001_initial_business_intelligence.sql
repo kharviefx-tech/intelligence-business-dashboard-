@@ -1,210 +1,125 @@
--- Business intelligence platform foundation
--- Apply in Supabase SQL Editor or via Supabase migrations.
--- Tenant-owned records are isolated with Row Level Security.
-
+-- Business Intelligence foundation.
+-- Namespaced tables deliberately avoid touching pre-existing tables in the shared Supabase project.
 create extension if not exists pgcrypto;
 
-create table if not exists public.profiles (
+create table if not exists public.bi_profiles (
   id uuid primary key references auth.users(id) on delete cascade,
-  display_name text,
-  platform_role text not null default 'user' check (platform_role in ('user','support','admin','super_admin')),
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-
-create table if not exists public.organizations (
-  id uuid primary key default gen_random_uuid(),
-  name text not null check (char_length(trim(name)) between 2 and 120),
-  slug text not null unique check (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'),
-  base_currency char(3) not null default 'NGN',
-  created_by uuid not null references auth.users(id) on delete restrict,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-
-create table if not exists public.organization_members (
-  organization_id uuid not null references public.organizations(id) on delete cascade,
-  user_id uuid not null references auth.users(id) on delete cascade,
-  role text not null default 'member' check (role in ('owner','admin','analyst','member','viewer')),
-  joined_at timestamptz not null default now(),
-  primary key (organization_id, user_id)
-);
-
-create table if not exists public.transactions (
-  id uuid primary key default gen_random_uuid(),
-  organization_id uuid not null references public.organizations(id) on delete cascade,
-  created_by uuid not null default auth.uid() references auth.users(id) on delete restrict,
-  transaction_date date not null,
-  description text not null check (char_length(trim(description)) between 1 and 500),
-  category text not null default 'Uncategorised' check (char_length(trim(category)) <= 120),
-  transaction_type text not null check (transaction_type in ('income','expense')),
-  amount numeric(18,2) not null check (amount > 0),
-  currency char(3) not null default 'NGN',
-  reference text,
-  notes text,
-  source text not null default 'manual' check (source in ('manual','csv_import','integration')),
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-
-create index if not exists transactions_org_date_idx on public.transactions (organization_id, transaction_date desc);
-create index if not exists organization_members_user_idx on public.organization_members (user_id, organization_id);
-
-create table if not exists public.audit_logs (
-  id bigint generated always as identity primary key,
-  organization_id uuid references public.organizations(id) on delete set null,
-  actor_user_id uuid references auth.users(id) on delete set null,
-  action text not null,
-  resource_type text not null,
-  resource_id text,
-  metadata jsonb not null default '{}'::jsonb,
+  full_name text,
+  platform_role text not null default 'user' check (platform_role in ('user','admin','super_admin')),
   created_at timestamptz not null default now()
 );
-create index if not exists audit_logs_org_created_idx on public.audit_logs (organization_id, created_at desc);
+create table if not exists public.bi_organizations (
+  id uuid primary key default gen_random_uuid(),
+  name text not null check (char_length(name) between 1 and 120),
+  currency text not null default 'NGN' check (currency in ('NGN','USD','GBP','EUR','GHS','KES','ZAR')),
+  plan text not null default 'Free' check (plan in ('Free','Professional','Business','Enterprise')),
+  created_by uuid not null references auth.users(id),
+  created_at timestamptz not null default now()
+);
+create table if not exists public.bi_organization_members (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.bi_organizations(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  role text not null default 'owner' check (role in ('owner','manager','staff','analyst')),
+  created_at timestamptz not null default now(),
+  unique (organization_id,user_id)
+);
+create table if not exists public.bi_transactions (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.bi_organizations(id) on delete cascade,
+  created_by uuid not null references auth.users(id),
+  transaction_date date not null default current_date,
+  description text not null check (char_length(description) between 1 and 240),
+  kind text not null check (kind in ('income','expense')),
+  amount numeric(14,2) not null check (amount >= 0),
+  currency text not null default 'NGN' check (currency in ('NGN','USD','GBP','EUR','GHS','KES','ZAR')),
+  category text not null default 'Uncategorized',
+  status text not null default 'recorded' check (status in ('pending','recorded','cancelled')),
+  counterparty text,
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create table if not exists public.bi_audit_logs (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid references public.bi_organizations(id) on delete set null,
+  actor_id uuid references auth.users(id) on delete set null,
+  action text not null,
+  entity text not null,
+  detail jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+create index if not exists bi_members_user_idx on public.bi_organization_members(user_id);
+create index if not exists bi_transactions_org_date_idx on public.bi_transactions(organization_id,transaction_date desc);
+create index if not exists bi_audit_org_created_idx on public.bi_audit_logs(organization_id,created_at desc);
 
--- Profiles are created by a trusted database trigger. Client-supplied metadata
--- cannot assign platform privileges.
-create or replace function public.handle_new_user()
-returns trigger
-language plpgsql
-security definer
-set search_path = ''
-as $$
+alter table public.bi_profiles enable row level security;
+alter table public.bi_organizations enable row level security;
+alter table public.bi_organization_members enable row level security;
+alter table public.bi_transactions enable row level security;
+alter table public.bi_audit_logs enable row level security;
+
+drop policy if exists bi_profiles_select_self on public.bi_profiles;
+create policy bi_profiles_select_self on public.bi_profiles for select to authenticated using (id = auth.uid());
+drop policy if exists bi_profiles_insert_self on public.bi_profiles;
+create policy bi_profiles_insert_self on public.bi_profiles for insert to authenticated with check (id = auth.uid() and platform_role = 'user');
+
+drop policy if exists bi_org_select_member on public.bi_organizations;
+create policy bi_org_select_member on public.bi_organizations for select to authenticated using (exists (select 1 from public.bi_organization_members m where m.organization_id = id and m.user_id = auth.uid()));
+drop policy if exists bi_org_create_owner on public.bi_organizations;
+create policy bi_org_create_owner on public.bi_organizations for insert to authenticated with check (created_by = auth.uid());
+drop policy if exists bi_org_update_owner on public.bi_organizations;
+create policy bi_org_update_owner on public.bi_organizations for update to authenticated using (exists (select 1 from public.bi_organization_members m where m.organization_id = id and m.user_id = auth.uid() and m.role = 'owner')) with check (exists (select 1 from public.bi_organization_members m where m.organization_id = id and m.user_id = auth.uid() and m.role = 'owner'));
+
+drop policy if exists bi_members_select_self_or_org_owner on public.bi_organization_members;
+create policy bi_members_select_self_or_org_owner on public.bi_organization_members for select to authenticated using (user_id = auth.uid() or exists (select 1 from public.bi_organization_members m where m.organization_id = bi_organization_members.organization_id and m.user_id = auth.uid() and m.role = 'owner'));
+drop policy if exists bi_members_insert_owner on public.bi_organization_members;
+create policy bi_members_insert_owner on public.bi_organization_members for insert to authenticated with check (user_id = auth.uid() and role = 'owner' and exists (select 1 from public.bi_organizations o where o.id = organization_id and o.created_by = auth.uid()));
+drop policy if exists bi_members_update_owner on public.bi_organization_members;
+create policy bi_members_update_owner on public.bi_organization_members for update to authenticated using (exists (select 1 from public.bi_organization_members m where m.organization_id = bi_organization_members.organization_id and m.user_id = auth.uid() and m.role = 'owner')) with check (exists (select 1 from public.bi_organization_members m where m.organization_id = bi_organization_members.organization_id and m.user_id = auth.uid() and m.role = 'owner'));
+drop policy if exists bi_members_delete_owner on public.bi_organization_members;
+create policy bi_members_delete_owner on public.bi_organization_members for delete to authenticated using (exists (select 1 from public.bi_organization_members m where m.organization_id = bi_organization_members.organization_id and m.user_id = auth.uid() and m.role = 'owner' and m.user_id <> bi_organization_members.user_id));
+
+drop policy if exists bi_transactions_select_member on public.bi_transactions;
+create policy bi_transactions_select_member on public.bi_transactions for select to authenticated using (exists (select 1 from public.bi_organization_members m where m.organization_id = bi_transactions.organization_id and m.user_id = auth.uid()));
+drop policy if exists bi_transactions_insert_member on public.bi_transactions;
+create policy bi_transactions_insert_member on public.bi_transactions for insert to authenticated with check (created_by = auth.uid() and exists (select 1 from public.bi_organization_members m where m.organization_id = bi_transactions.organization_id and m.user_id = auth.uid() and m.role in ('owner','manager','staff')));
+drop policy if exists bi_transactions_update_member on public.bi_transactions;
+create policy bi_transactions_update_member on public.bi_transactions for update to authenticated using (exists (select 1 from public.bi_organization_members m where m.organization_id = bi_transactions.organization_id and m.user_id = auth.uid() and m.role in ('owner','manager','staff'))) with check (exists (select 1 from public.bi_organization_members m where m.organization_id = bi_transactions.organization_id and m.user_id = auth.uid() and m.role in ('owner','manager','staff')));
+drop policy if exists bi_transactions_delete_owner_manager on public.bi_transactions;
+create policy bi_transactions_delete_owner_manager on public.bi_transactions for delete to authenticated using (exists (select 1 from public.bi_organization_members m where m.organization_id = bi_transactions.organization_id and m.user_id = auth.uid() and m.role in ('owner','manager')));
+
+drop policy if exists bi_audit_select_org_member on public.bi_audit_logs;
+create policy bi_audit_select_org_member on public.bi_audit_logs for select to authenticated using (organization_id is not null and exists (select 1 from public.bi_organization_members m where m.organization_id = bi_audit_logs.organization_id and m.user_id = auth.uid()));
+drop policy if exists bi_audit_insert_actor on public.bi_audit_logs;
+create policy bi_audit_insert_actor on public.bi_audit_logs for insert to authenticated with check (actor_id = auth.uid() and (organization_id is null or exists (select 1 from public.bi_organization_members m where m.organization_id = bi_audit_logs.organization_id and m.user_id = auth.uid())));
+
+create or replace function public.bi_handle_new_user()
+returns trigger language plpgsql security definer set search_path = public as $$
 begin
-  insert into public.profiles (id, display_name)
-  values (
-    new.id,
-    nullif(trim(coalesce(new.raw_user_meta_data ->> 'display_name', '')), '')
-  )
+  insert into public.bi_profiles(id,full_name,platform_role)
+  values (new.id,nullif(trim(coalesce(new.raw_user_meta_data ->> 'display_name','')),'') ,'user')
   on conflict (id) do nothing;
   return new;
 end;
 $$;
+drop trigger if exists bi_on_auth_user_created on auth.users;
+create trigger bi_on_auth_user_created after insert on auth.users for each row execute procedure public.bi_handle_new_user();
+revoke all on function public.bi_handle_new_user() from public,anon,authenticated;
 
-drop trigger if exists on_auth_user_created_profile on auth.users;
-create trigger on_auth_user_created_profile
-after insert on auth.users
-for each row execute procedure public.handle_new_user();
-
-create or replace function public.set_updated_at()
-returns trigger
-language plpgsql
-set search_path = ''
-as $$
+create or replace function public.bi_create_workspace(p_name text,p_currency text default 'NGN')
+returns uuid language plpgsql security definer set search_path = public as $$
+declare v_org_id uuid;
 begin
-  new.updated_at = now();
-  return new;
+  if auth.uid() is null then raise exception 'Authentication required'; end if;
+  if p_name is null or char_length(trim(p_name)) < 1 or char_length(trim(p_name)) > 120 then raise exception 'Workspace name must be between 1 and 120 characters'; end if;
+  if p_currency not in ('NGN','USD','GBP','EUR','GHS','KES','ZAR') then raise exception 'Unsupported currency'; end if;
+  insert into public.bi_profiles(id,full_name) values (auth.uid(),null) on conflict (id) do nothing;
+  insert into public.bi_organizations(name,currency,created_by) values (trim(p_name),p_currency,auth.uid()) returning id into v_org_id;
+  insert into public.bi_organization_members(organization_id,user_id,role) values (v_org_id,auth.uid(),'owner');
+  insert into public.bi_audit_logs(organization_id,actor_id,action,entity,detail) values (v_org_id,auth.uid(),'workspace.created','organization',jsonb_build_object('name',trim(p_name),'currency',p_currency));
+  return v_org_id;
 end;
 $$;
-
-drop trigger if exists profiles_set_updated_at on public.profiles;
-create trigger profiles_set_updated_at before update on public.profiles
-for each row execute procedure public.set_updated_at();
-drop trigger if exists organizations_set_updated_at on public.organizations;
-create trigger organizations_set_updated_at before update on public.organizations
-for each row execute procedure public.set_updated_at();
-drop trigger if exists transactions_set_updated_at on public.transactions;
-create trigger transactions_set_updated_at before update on public.transactions
-for each row execute procedure public.set_updated_at();
-
-alter table public.profiles enable row level security;
-alter table public.organizations enable row level security;
-alter table public.organization_members enable row level security;
-alter table public.transactions enable row level security;
-alter table public.audit_logs enable row level security;
-
--- Profiles: users may read/update only their own profile. Platform role is
--- intentionally not client-updatable; a trusted operator must grant it.
-drop policy if exists "profile_select_self" on public.profiles;
-create policy "profile_select_self" on public.profiles for select to authenticated using (id = (select auth.uid()));
-drop policy if exists "profile_update_self" on public.profiles;
-create policy "profile_update_self" on public.profiles for update to authenticated using (id = (select auth.uid())) with check (id = (select auth.uid()));
-
--- Organization visibility is membership-based.
-drop policy if exists "organization_select_members" on public.organizations;
-create policy "organization_select_members" on public.organizations for select to authenticated
-using (exists (select 1 from public.organization_members m where m.organization_id = id and m.user_id = (select auth.uid())));
-
-drop policy if exists "membership_select_self_or_org_admin" on public.organization_members;
-create policy "membership_select_self_or_org_admin" on public.organization_members for select to authenticated
-using (
-  user_id = (select auth.uid())
-  or exists (
-    select 1 from public.organization_members own
-    where own.organization_id = organization_members.organization_id
-      and own.user_id = (select auth.uid())
-      and own.role in ('owner','admin')
-  )
-);
-
-drop policy if exists "transactions_select_members" on public.transactions;
-create policy "transactions_select_members" on public.transactions for select to authenticated
-using (exists (select 1 from public.organization_members m where m.organization_id = transactions.organization_id and m.user_id = (select auth.uid())));
-
-drop policy if exists "transactions_insert_editors" on public.transactions;
-create policy "transactions_insert_editors" on public.transactions for insert to authenticated
-with check (
-  created_by = (select auth.uid())
-  and exists (select 1 from public.organization_members m where m.organization_id = transactions.organization_id and m.user_id = (select auth.uid()) and m.role in ('owner','admin','analyst','member'))
-);
-
-drop policy if exists "transactions_update_editors" on public.transactions;
-create policy "transactions_update_editors" on public.transactions for update to authenticated
-using (exists (select 1 from public.organization_members m where m.organization_id = transactions.organization_id and m.user_id = (select auth.uid()) and m.role in ('owner','admin','analyst','member')))
-with check (exists (select 1 from public.organization_members m where m.organization_id = transactions.organization_id and m.user_id = (select auth.uid()) and m.role in ('owner','admin','analyst','member')));
-
-drop policy if exists "transactions_delete_org_admins" on public.transactions;
-create policy "transactions_delete_org_admins" on public.transactions for delete to authenticated
-using (exists (select 1 from public.organization_members m where m.organization_id = transactions.organization_id and m.user_id = (select auth.uid()) and m.role in ('owner','admin')));
-
--- Audit logs are append-only from application clients; only members can read
--- their own organization's events. A trusted server should write authoritative logs.
-drop policy if exists "audit_select_org_members" on public.audit_logs;
-create policy "audit_select_org_members" on public.audit_logs for select to authenticated
-using (organization_id is not null and exists (select 1 from public.organization_members m where m.organization_id = audit_logs.organization_id and m.user_id = (select auth.uid())));
-
-revoke all on public.profiles, public.organizations, public.organization_members, public.transactions, public.audit_logs from anon;
-revoke update on public.profiles from authenticated;
-grant select on public.profiles to authenticated;
-grant update (display_name) on public.profiles to authenticated;
-grant select on public.organizations to authenticated;
-grant select on public.organization_members to authenticated;
-grant select, insert, update, delete on public.transactions to authenticated;
-grant select on public.audit_logs to authenticated;
-
--- Workspace creation must be atomic and must never allow callers to add
--- themselves to an existing organization or assign platform-level privileges.
-create or replace function public.create_workspace(workspace_name text, workspace_slug text, currency_code text default 'NGN')
-returns uuid
-language plpgsql
-security definer
-set search_path = ''
-as $
-declare
-  new_org_id uuid;
-begin
-  if auth.uid() is null then
-    raise exception 'Authentication required';
-  end if;
-  if char_length(trim(workspace_name)) not between 2 and 120 then
-    raise exception 'Workspace name must be between 2 and 120 characters';
-  end if;
-  if workspace_slug !~ '^[a-z0-9]+(-[a-z0-9]+)*$' then
-    raise exception 'Workspace slug format is invalid';
-  end if;
-  if currency_code !~ '^[A-Z]{3}$' then
-    raise exception 'Currency must be a 3-letter uppercase code';
-  end if;
-
-  insert into public.organizations (name, slug, base_currency, created_by)
-  values (trim(workspace_name), workspace_slug, currency_code, auth.uid())
-  returning id into new_org_id;
-
-  insert into public.organization_members (organization_id, user_id, role)
-  values (new_org_id, auth.uid(), 'owner');
-
-  return new_org_id;
-end;
-$$;
-revoke all on function public.create_workspace(text,text,text) from public, anon;
-grant execute on function public.create_workspace(text,text,text) to authenticated;
+revoke all on function public.bi_create_workspace(text,text) from public;
+grant execute on function public.bi_create_workspace(text,text) to authenticated;
