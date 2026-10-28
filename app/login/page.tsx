@@ -3,12 +3,12 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 import { ArrowLeft, Eye, EyeOff, LockKeyhole } from "lucide-react";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
+const supabase = supabaseUrl && supabaseAnonKey ? createBrowserClient(supabaseUrl, supabaseAnonKey) : null;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -44,7 +44,7 @@ export default function LoginPage() {
         if (authError) throw authError;
         if (data.session) {
           setMessage("Account created. Opening your workspace…");
-          router.push("/");
+          router.push("/onboarding");
           router.refresh();
         } else {
           setMessage("Account created. If email confirmation is enabled in Supabase, confirm your email before signing in.");
