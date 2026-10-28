@@ -35,10 +35,9 @@ export default function OnboardingPage() {
     setBusy(true);
     try {
       const supabase = createClient();
-      const { error: rpcError } = await supabase.rpc("create_workspace", {
-        workspace_name: cleaned,
-        workspace_slug: slug,
-        currency_code: currency,
+      const { error: rpcError } = await supabase.rpc("bi_create_workspace", {
+        p_name: cleaned,
+        p_currency: currency,
       });
       if (rpcError) throw rpcError;
       router.push("/");
@@ -66,7 +65,7 @@ export default function OnboardingPage() {
         {error && <div className="auth-error" role="alert">{error}</div>}
         <button className="auth-submit" disabled={busy} type="submit">{busy ? "Creating workspace…" : "Create workspace"}</button>
       </form>
-      <p className="auth-legal">This step requires the database migration to be applied in Supabase. Currency conversion is not implemented yet.</p>
+      <p className="auth-legal">Workspace records are stored in isolated Business Intelligence tables. Currency conversion is not implemented yet.</p>
     </section>
   </main>;
 }
