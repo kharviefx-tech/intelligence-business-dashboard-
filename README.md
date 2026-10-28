@@ -38,3 +38,12 @@ Requirements: Node.js 20 or newer.
 
 ## Deployment
 This project is designed for a Next.js-capable host such as Vercel. GitHub Pages alone cannot host the server-side features planned for the full product. The app is not production-ready until the backend, security controls, tests and deployment configuration are implemented and reviewed.
+
+
+## Backend foundation added
+
+- `/login` provides a Supabase Auth email/password sign-in and sign-up interface. It requires environment configuration before it can authenticate.
+- `supabase/migrations/202610280001_initial_business_intelligence.sql` defines the initial tenant-aware schema: profiles, organizations, memberships, transactions and read-only audit-log access, plus Row Level Security policies and a workspace-creation RPC.
+- Copy `.env.example` to `.env.local` and fill in the project URL and public anon key from your Supabase project. Do not commit `.env.local`.
+- Apply the SQL migration to a new or intended Supabase project only after reviewing it. The migration does not create a Supabase project or connect this GitHub repository to one.
+- The dashboard and admin routes are still not fully protected by server-side session checks. Do not put real financial data into the product until server-side authorization, tenant policies, tests and a security review are completed.
