@@ -160,3 +160,13 @@ drop policy if exists bi_audit_select_org_member on public.bi_audit_logs;
 create policy bi_audit_select_org_member on public.bi_audit_logs for select to authenticated using (organization_id is not null and public.bi_is_member(organization_id));
 drop policy if exists bi_audit_insert_actor on public.bi_audit_logs;
 create policy bi_audit_insert_actor on public.bi_audit_logs for insert to authenticated with check (actor_id = auth.uid() and (organization_id is null or public.bi_is_member(organization_id)));
+
+-- Explicit grants: anonymous visitors receive no direct table access.
+revoke all on public.bi_profiles, public.bi_organizations, public.bi_organization_members, public.bi_transactions, public.bi_audit_logs from anon;
+grant select on public.bi_profiles to authenticated;
+grant select, update on public.bi_organizations to authenticated;
+grant select, insert, update, delete on public.bi_organization_members to authenticated;
+grant select, insert, update, delete on public.bi_transactions to authenticated;
+grant select, insert on public.bi_audit_logs to authenticated;
+revoke all on function public.bi_create_workspace(text,text) from public, anon;
+grant execute on function public.bi_create_workspace(text,text) to authenticated;
