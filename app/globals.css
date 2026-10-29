@@ -211,3 +211,37 @@
 .admin-nav-tag{margin-left:auto;font-size:7px;letter-spacing:.7px;font-weight:800;color:#946b3e;background:#f0e2ce;border:1px solid #ead7bc;border-radius:4px;padding:4px 5px}
 .sidebar .nav-label{margin-top:24px}
 .sidebar .nav-label:first-of-type{margin-top:30px}
+
+
+/* Account Centre refinement: clearer hierarchy, accessible focus and workspace states */
+.profile-page{padding-bottom:40px}
+.profile-topbar{position:relative}
+.profile-back:focus-visible,.profile-top-settings:focus-visible,.profile-upload-button:focus-visible,.profile-photo-button:focus-visible,.profile-savebar button:focus-visible,.profile-field input:focus-visible,.profile-field textarea:focus-visible,.profile-field select:focus-visible{outline:3px solid #19866a55;outline-offset:3px}
+.profile-heading{padding-top:38px}
+.profile-secure-badge{align-self:flex-start;margin-bottom:3px}
+.profile-secure-dot{width:6px;height:6px;border-radius:50%;background:#23986b;box-shadow:0 0 0 3px #d7f0e2}
+.profile-hero-card{position:relative;overflow:hidden}
+.profile-hero-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#19866a}
+.profile-badges span{line-height:1.4}
+.profile-section-card{box-shadow:0 2px 7px #1b433008;transition:box-shadow .18s,border-color .18s}
+.profile-section-card:hover{border-color:#d6e5db;box-shadow:0 5px 18px #1b43300b}
+.profile-field input:read-only{cursor:not-allowed}
+.profile-company-summary{align-items:flex-start}
+.profile-company-summary>svg:last-child{margin-left:auto;flex-shrink:0}
+.profile-company-summary.is-connected{background:#f1f9f4;border-color:#d9ecdf}
+.profile-company-summary.is-unconnected{background:#f8faf8;border-color:#e5ebe6;color:#7c8b81}
+.profile-company-summary.is-unconnected strong{color:#506258}
+.profile-savebar{z-index:10;box-shadow:0 10px 30px #193e2a12}
+.profile-savebar-copy{max-width:590px}
+.profile-savebar button{min-height:44px}
+.profile-savebar button:disabled{filter:saturate(.65)}
+.profile-alert{overflow-wrap:anywhere}
+.profile-footer{border-top:1px solid #e4ebe6;margin-top:20px}
+@media(max-width:700px){
+ .profile-heading{padding-top:26px}
+ .profile-secure-badge{align-self:flex-start}
+ .profile-hero-card:before{width:3px}
+ .profile-section-card:hover{box-shadow:0 2px 7px #1b433008}
+ .profile-footer{margin-top:16px}
+}
+@media(prefers-reduced-motion:reduce){.profile-section-card{transition:none}.profile-page{scroll-behavior:auto}}
