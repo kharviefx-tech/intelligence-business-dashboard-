@@ -104,18 +104,20 @@ export default function Home() {
 
   const organization = organizations.find(o => o.id === organizationId);
   const currency = organization?.currency && allowedCurrencies.includes(organization.currency) ? organization.currency : "NGN";
-  const since = useMemo(() => {
-    const d = new Date();
-    if (period === "30") d.setDate(d.getDate() - 30);
-    else if (period === "90") d.setDate(d.getDate() - 90);
-    else d.setMonth(d.getMonth() - 6);
-    d.setHours(0, 0, 0, 0);
-    return d;
+  const dateRange = useMemo(() => {
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+    const start = new Date();
+    if (period === "30") start.setDate(start.getDate() - 29);
+    else if (period === "90") start.setDate(start.getDate() - 89);
+    else start.setMonth(start.getMonth() - 5, 1);
+    start.setHours(0, 0, 0, 0);
+    return { start, end };
   }, [period]);
   const periodTransactions = useMemo(() => transactions.filter(t => {
     const date = new Date(t.transaction_date + "T00:00:00");
-    return date >= since && t.status !== "cancelled" && t.currency === currency;
-  }), [transactions, since, currency]);
+    return date >= dateRange.start && date <= dateRange.end && t.status !== "cancelled" && t.currency === currency;
+  }), [transactions, dateRange, currency]);
   const totals = useMemo(() => {
     const income = periodTransactions.filter(t => t.kind === "income" && t.status === "recorded").reduce((s,t) => s + Number(t.amount), 0);
     const expenses = periodTransactions.filter(t => t.kind === "expense" && t.status === "recorded").reduce((s,t) => s + Number(t.amount), 0);
