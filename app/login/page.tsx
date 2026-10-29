@@ -12,6 +12,15 @@ const supabase = supabaseUrl && supabaseAnonKey ? createBrowserClient(supabaseUr
 
 export default function LoginPage() {
   const router = useRouter();
+
+  async function routeAfterAuth() {
+    if (!supabase) throw new Error("Authentication is not configured.");
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error("Please sign in again to verify your account.");
+    const { data: membership, error: membershipError } = await supabase.from("bi_organization_members").select("organization_id").eq("user_id", user.id).limit(1).maybeSingle();
+    if (membershipError) throw new Error("Signed in, but we could not load your saved workspace. Please retry.");
+    router.replace(membership?.organization_id ? "/" : "/onboarding");
+  }
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,7 +56,7 @@ export default function LoginPage() {
         if (authError) throw authError;
         if (data.session) {
           setMessage("Account created. Opening your workspace…");
-          router.replace("/onboarding");
+          await routeAfterAuth();
         } else {
           setMessage("Your account request was received. Check your inbox and spam folder for a confirmation email. If it does not arrive, use the resend option below.");
           setCanResend(true);
@@ -64,7 +73,7 @@ export default function LoginPage() {
           throw authError;
         }
         setMessage("Signed in. Opening your workspace…");
-        router.replace("/onboarding");
+        await routeAfterAuth();
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unable to complete authentication. Please try again.");
