@@ -126,7 +126,22 @@ export default function Home() {
   }, [periodTransactions]);
   const trend = useMemo(() => {
     const now = new Date();
-    const count = period === "30" ? 6 : period === "90" ? 3 : 6;
+    if (period === "30") {
+      return Array.from({ length: 5 }, (_, index) => {
+        const end = new Date(now);
+        end.setHours(23, 59, 59, 999);
+        end.setDate(end.getDate() - (4 - index) * 7);
+        const start = new Date(end);
+        start.setDate(start.getDate() - 6);
+        start.setHours(0, 0, 0, 0);
+        const rows = periodTransactions.filter(t => {
+          const d = new Date(t.transaction_date + "T00:00:00");
+          return d >= start && d <= end && t.status === "recorded";
+        });
+        return { month: start.toLocaleDateString("en", { month: "short", day: "numeric" }), revenue: rows.filter(t => t.kind === "income").reduce((s,t) => s + Number(t.amount), 0), expenses: rows.filter(t => t.kind === "expense").reduce((s,t) => s + Number(t.amount), 0) };
+      });
+    }
+    const count = period === "90" ? 3 : 6;
     return Array.from({ length: count }, (_, index) => {
       const d = new Date(now.getFullYear(), now.getMonth() - (count - 1 - index), 1);
       const key = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
