@@ -502,3 +502,8 @@ tbody td:first-child{color:#304a63}
 .sales-schema-notice{border-radius:10px}
 @media(max-width:760px){.sales-section{padding:16px;border-radius:15px}.sales-section-heading h2{font-size:23px}.sales-quick-nav{gap:6px;padding:9px}.sales-quick-nav a{padding:8px 9px;font-size:10px}.sales-chart-panel{padding:14px}.sales-summary-strip strong{font-size:19px}}
 @media(prefers-reduced-motion:reduce){.sales-quick-nav a,.sales-chart-panel{transition:none}}
+
+
+/* Accessible, compact data-import controls */
+.import-label{display:inline-flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap}.import-label.disabled{opacity:.6;cursor:wait}.header-controls{flex-wrap:wrap}.import-label:focus-within{outline:2px solid #1768d2;outline-offset:2px}
+@media(max-width:760px){.header-controls{gap:8px}.import-label{justify-content:center}}
