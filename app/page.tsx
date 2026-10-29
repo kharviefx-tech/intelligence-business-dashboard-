@@ -29,7 +29,8 @@ export default function Home() {
   const [platformRole, setPlatformRole] = useState("user");
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [organizationId, setOrganizationId] = useState("");
-  const [transactions, setTransactions] = useState<Transaction[]>([]);\n  const [geoSchemaReady, setGeoSchemaReady] = useState(false);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [geoSchemaReady, setGeoSchemaReady] = useState(false);
   const [period, setPeriod] = useState("30");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -68,7 +69,10 @@ export default function Home() {
       const preferredId = profileInfo?.preferred_organization_id;
       const currentId = safeOrgs.some(o => o.id === organizationId) ? organizationId : safeOrgs.some(o => o.id === preferredId) ? preferredId : safeOrgs[0].id;
       setOrganizationId(currentId);
-      let rows: Transaction[] = [];\n      const withGeo = await supabase.from("bi_transactions").select("id,organization_id,transaction_date,description,kind,amount,currency,category,status,city,region,country").eq("organization_id", currentId).order("transaction_date", { ascending: false }).limit(1000);\n      if (withGeo.error) { const base = await supabase.from("bi_transactions").select("id,organization_id,transaction_date,description,kind,amount,currency,category,status").eq("organization_id", currentId).order("transaction_date", { ascending: false }).limit(1000); if (base.error) throw base.error; rows = (base.data ?? []).map((t: any) => ({ ...t, city: null, region: null, country: null })) as Transaction[]; setGeoSchemaReady(false); } else { rows = (withGeo.data ?? []) as Transaction[]; setGeoSchemaReady(true); }\n      setTransactions(rows);
+      let rows: Transaction[] = [];
+      const withGeo = await supabase.from("bi_transactions").select("id,organization_id,transaction_date,description,kind,amount,currency,category,status,city,region,country").eq("organization_id", currentId).order("transaction_date", { ascending: false }).limit(1000);
+      if (withGeo.error) { const base = await supabase.from("bi_transactions").select("id,organization_id,transaction_date,description,kind,amount,currency,category,status").eq("organization_id", currentId).order("transaction_date", { ascending: false }).limit(1000); if (base.error) throw base.error; rows = (base.data ?? []).map((t: any) => ({ ...t, city: null, region: null, country: null })) as Transaction[]; setGeoSchemaReady(false); } else { rows = (withGeo.data ?? []) as Transaction[]; setGeoSchemaReady(true); }
+      setTransactions(rows);
       setNotice("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "We could not load your workspace data.");
@@ -110,21 +114,25 @@ export default function Home() {
       return { month: monthName(d), revenue: monthRows.filter(t => t.kind === "income").reduce((s,t) => s + Number(t.amount), 0), expenses: monthRows.filter(t => t.kind === "expense").reduce((s,t) => s + Number(t.amount), 0) };
     });
   }, [periodTransactions, period]);
-  const filtered = useMemo(() => transactions.filter(t => (t.description + " " + t.category + " " + t.status + " " + (t.city ?? "") + " " + (t.region ?? "") + " " + (t.country ?? "")).toLowerCase().includes(query.toLowerCase())), [transactions, query]);\n  const geographic = useMemo(() => { const located = periodTransactions.filter(t => Boolean((t.city ?? "").trim() || (t.region ?? "").trim() || (t.country ?? "").trim())); const groupBy = (keyOf: (t: Transaction) => string) => { const groups = new Map<string, { name: string; country: string; region: string; city: string; revenue: number; expenses: number; count: number }>(); for (const t of located) { const name = keyOf(t); if (!name) continue; const g = groups.get(name) ?? { name, country: "", region: "", city: "", revenue: 0, expenses: 0, count: 0 }; g.count += 1; if (t.status === "recorded") { if (t.kind === "income") g.revenue += Number(t.amount); else g.expenses += Number(t.amount); } g.country ||= t.country?.trim() ?? ""; g.region ||= t.region?.trim() ?? ""; g.city ||= t.city?.trim() ?? ""; groups.set(name, g); } return [...groups.values()].sort((a,b) => (b.revenue+b.expenses) - (a.revenue+a.expenses)); }; const countries = groupBy(t => (t.country ?? "").trim()); const regions = groupBy(t => [(t.region ?? "").trim(), (t.country ?? "").trim()].filter(Boolean).join(", ")); const cities = groupBy(t => [(t.city ?? "").trim(), (t.region ?? "").trim(), (t.country ?? "").trim()].filter(Boolean).join(", ")); const locatedIncome = located.filter(t => t.kind === "income" && t.status === "recorded").reduce((n,t)=>n+Number(t.amount),0); const allIncome = periodTransactions.filter(t => t.kind === "income" && t.status === "recorded").reduce((n,t)=>n+Number(t.amount),0); return { located, countries: countries.filter(g=>g.name).slice(0,6), regions: regions.filter(g=>g.name).slice(0,8), cities: cities.filter(g=>g.name).slice(0,6), countryCount: new Set(located.map(t=>(t.country??"").trim()).filter(Boolean)).size, regionCount: new Set(located.map(t=>(t.region??"").trim()).filter(Boolean)).size, cityCount: new Set(located.map(t=>(t.city??"").trim()).filter(Boolean)).size, coverage: allIncome > 0 ? Math.round(locatedIncome / allIncome * 100) : 0 }; }, [periodTransactions]);
+  const filtered = useMemo(() => transactions.filter(t => (t.description + " " + t.category + " " + t.status + " " + (t.city ?? "") + " " + (t.region ?? "") + " " + (t.country ?? "")).toLowerCase().includes(query.toLowerCase())), [transactions, query]);
+  const geographic = useMemo(() => { const located = periodTransactions.filter(t => Boolean((t.city ?? "").trim() || (t.region ?? "").trim() || (t.country ?? "").trim())); const groupBy = (keyOf: (t: Transaction) => string) => { const groups = new Map<string, { name: string; country: string; region: string; city: string; revenue: number; expenses: number; count: number }>(); for (const t of located) { const name = keyOf(t); if (!name) continue; const g = groups.get(name) ?? { name, country: "", region: "", city: "", revenue: 0, expenses: 0, count: 0 }; g.count += 1; if (t.status === "recorded") { if (t.kind === "income") g.revenue += Number(t.amount); else g.expenses += Number(t.amount); } g.country ||= t.country?.trim() ?? ""; g.region ||= t.region?.trim() ?? ""; g.city ||= t.city?.trim() ?? ""; groups.set(name, g); } return [...groups.values()].sort((a,b) => (b.revenue+b.expenses) - (a.revenue+a.expenses)); }; const countries = groupBy(t => (t.country ?? "").trim()); const regions = groupBy(t => [(t.region ?? "").trim(), (t.country ?? "").trim()].filter(Boolean).join(", ")); const cities = groupBy(t => [(t.city ?? "").trim(), (t.region ?? "").trim(), (t.country ?? "").trim()].filter(Boolean).join(", ")); const locatedIncome = located.filter(t => t.kind === "income" && t.status === "recorded").reduce((n,t)=>n+Number(t.amount),0); const allIncome = periodTransactions.filter(t => t.kind === "income" && t.status === "recorded").reduce((n,t)=>n+Number(t.amount),0); return { located, countries: countries.filter(g=>g.name).slice(0,6), regions: regions.filter(g=>g.name).slice(0,8), cities: cities.filter(g=>g.name).slice(0,6), countryCount: new Set(located.map(t=>(t.country??"").trim()).filter(Boolean)).size, regionCount: new Set(located.map(t=>(t.region??"").trim()).filter(Boolean)).size, cityCount: new Set(located.map(t=>(t.city??"").trim()).filter(Boolean)).size, coverage: allIncome > 0 ? Math.round(locatedIncome / allIncome * 100) : 0 }; }, [periodTransactions]);
 
   async function addTransaction(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(""); setNotice("");
     if (!organizationId) { setError("Create or select a workspace first."); return; }
     const amount = Number(form.amount);
-    if (!Number.isFinite(amount) || amount <= 0) { setError("Enter an amount greater than zero."); return; }\n    if (!geoSchemaReady && (form.city.trim() || form.region.trim() || form.country.trim())) { setError("Geographic fields are not enabled in the connected database yet. Apply the BusinessIQ geographic analytics migration before saving location details."); return; }\n    setSaving(true);
+    if (!Number.isFinite(amount) || amount <= 0) { setError("Enter an amount greater than zero."); return; }
+    if (!geoSchemaReady && (form.city.trim() || form.region.trim() || form.country.trim())) { setError("Geographic fields are not enabled in the connected database yet. Apply the BusinessIQ geographic analytics migration before saving location details."); return; }
+    setSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Your session has expired. Please sign in again.");
       const { error: insertError } = await supabase.from("bi_transactions").insert({
         organization_id: organizationId, created_by: user.id, description: form.description.trim(),
         kind: form.kind, amount, currency, category: form.category.trim() || "Uncategorized",
-        transaction_date: form.transaction_date, status: form.status, ...(geoSchemaReady ? { city: form.city.trim() || null, region: form.region.trim() || null, country: form.country.trim() || null } : {}),\n      });
+        transaction_date: form.transaction_date, status: form.status, ...(geoSchemaReady ? { city: form.city.trim() || null, region: form.region.trim() || null, country: form.country.trim() || null } : {}),
+      });
       if (insertError) throw insertError;
       setForm(initialForm); setShowAdd(false);
       await loadData(true);
