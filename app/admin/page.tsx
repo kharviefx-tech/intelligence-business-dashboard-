@@ -1,27 +1,64 @@
+"use client";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Activity, ArrowLeft, BarChart3, CreditCard, FileText, LockKeyhole, Settings, ShieldCheck, Users, Wallet } from "lucide-react";
+import { ArrowLeft, LockKeyhole, RefreshCw, ShieldCheck, Users } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
-const tools = [
-  { title: "User & access management", detail: "Planned account roles, invitations, suspension and access review.", icon: Users, status: "Backend required" },
-  { title: "Workspace oversight", detail: "Planned company workspace list, status and support context.", icon: Activity, status: "Backend required" },
-  { title: "Security & audit trail", detail: "Planned sign-in events, privileged actions and audit history.", icon: ShieldCheck, status: "Backend required" },
-  { title: "Platform analytics", detail: "Planned active users, retention and product usage reporting.", icon: BarChart3, status: "Backend required" },
-  { title: "Content & resources", detail: "Planned management for learning materials and business templates.", icon: FileText, status: "Backend required" },
-  { title: "Platform settings", detail: "Planned configuration, support controls and feature flags.", icon: Settings, status: "Backend required" },
-];
-
+type Profile = { id: string; full_name: string | null; platform_role: string; monthly_transaction_limit: number; created_at: string };
 export default function AdminPage() {
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState("");
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  async function load() {
+    setLoading(true); setError(""); setNotice("");
+    try {
+      const supabase = createClient();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) throw new Error("Please sign in to continue.");
+      const { data: self, error: selfError } = await supabase.from("bi_profiles").select("platform_role").eq("id", user.id).maybeSingle();
+      if (selfError) throw selfError;
+      if (!self || !["admin","super_admin"].includes(self.platform_role)) { window.location.replace("/"); return; }
+      setIsAdmin(true);
+      const { data, error: listError } = await supabase.from("bi_profiles").select("id,full_name,platform_role,monthly_transaction_limit,created_at").order("created_at", { ascending: true });
+      if (listError) throw listError;
+      const rows = (data ?? []) as Profile[];
+      setProfiles(rows);
+      setDrafts(Object.fromEntries(rows.map(p => [p.id, String(p.monthly_transaction_limit ?? 0)])));
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not load account controls."); }
+    finally { setLoading(false); }
+  }
+  useEffect(() => { void load(); }, []);
+
+  async function saveLimit(profile: Profile) {
+    setError(""); setNotice("");
+    const raw = drafts[profile.id] ?? "0";
+    const value = Number(raw);
+    if (!Number.isInteger(value) || value < 0 || value > 1000000) { setError("Limits must be a whole number from 0 to 1,000,000. Use 0 for unlimited."); return; }
+    setSaving(profile.id);
+    try {
+      const { error: updateError } = await createClient().from("bi_profiles").update({ monthly_transaction_limit: value }).eq("id", profile.id);
+      if (updateError) throw updateError;
+      setProfiles(current => current.map(p => p.id === profile.id ? { ...p, monthly_transaction_limit: value } : p));
+      setNotice("Account limit saved. The database enforces this limit for new transactions.");
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not update the limit."); }
+    finally { setSaving(""); }
+  }
+
   return <main className="tool-page">
     <header className="tool-topbar"><Link href="/" className="tool-brand"><span className="tool-brand-mark">B</span><span>BusinessIQ <small>PLATFORM CONTROL</small></span></Link><Link href="/" className="back-link"><ArrowLeft size={16}/> Back to dashboard</Link></header>
     <div className="tool-content">
-      <div className="tool-eyebrow"><LockKeyhole size={15}/> ADMINISTRATION</div>
-      <h1>Admin control centre</h1>
-      <p className="tool-intro">A dedicated home for operating the platform responsibly as it grows.</p>
-      <div className="tool-warning"><ShieldCheck size={19}/><div><strong>Administrator authentication is not connected yet.</strong><p>This page is a planning interface, not a protected admin console. Do not use it to manage real users or confidential company data. Before launch, enforce server-side role checks and database permissions; hiding a link is not security.</p></div></div>
-      <div className="tool-stat-grid"><article><span>Admin access</span><strong>Not configured</strong><small>Identity provider required</small></article><article><span>Audit logging</span><strong>Not connected</strong><small>Database event records required</small></article><article><span>Live platform metrics</span><strong>Unavailable</strong><small>No production data connected</small></article></div>
-      <h2 className="tool-section-title">Administration tools</h2>
-      <div className="tool-card-grid">{tools.map(({title,detail,icon:Icon,status})=><article className="tool-card" key={title}><div className="tool-card-icon"><Icon size={19}/></div><h3>{title}</h3><p>{detail}</p><span className="tool-status">{status}</span></article>)}</div>
-      <div className="tool-footer-note"><strong>Implementation order:</strong> secure sign-in → server-verified admin role → audit logs → least-privilege access → protected admin actions → monitoring and recovery tests.</div>
+      <div className="tool-eyebrow"><LockKeyhole size={15}/> ADMINISTRATION</div><h1>Admin control centre</h1>
+      <p className="tool-intro">Manage account access limits. Users and staff can edit their own profiles and account security, but only administrators can change usage limits.</p>
+      <div className="tool-warning"><ShieldCheck size={19}/><div><strong>Administrator-only controls</strong><p>Limit changes are checked by Supabase policies and a database trigger, not just by hiding the controls in the interface. A limit of 0 means unlimited.</p></div></div>
+      {error && <div className="auth-error" role="alert">{error}</div>}{notice && <div className="auth-success" role="status">{notice}</div>}
+      <div className="admin-toolbar"><div><h2 className="tool-section-title"><Users size={19}/> User &amp; staff limits</h2><p className="tool-intro">Monthly transaction allowance per account.</p></div><button className="subtle-btn" onClick={()=>void load()} disabled={loading}><RefreshCw size={15}/> Refresh</button></div>
+      {loading ? <div className="tool-card">Loading account records…</div> : isAdmin && <div className="admin-users-list">{profiles.map(p=><article className="admin-user-row" key={p.id}><div className="admin-user-ident"><span className="workspace-avatar">{(p.full_name || "U").slice(0,2).toUpperCase()}</span><div><strong>{p.full_name || "Unnamed account"}</strong><small>{p.platform_role.replaceAll("_"," ")} · {p.id.slice(0,8)}…</small></div></div><label className="admin-limit-field">Monthly transaction limit<input type="number" min="0" max="1000000" step="1" value={drafts[p.id] ?? "0"} onChange={e=>setDrafts(v=>({...v,[p.id]:e.target.value}))}/><small>0 = unlimited</small></label><button className="primary-btn" onClick={()=>void saveLimit(p)} disabled={saving===p.id}>{saving===p.id?"Saving…":"Save limit"}</button></article>)}</div>}
+      <div className="tool-footer-note"><strong>Self-service:</strong> <Link href="/profile">Profile</Link> · <Link href="/settings">Account settings</Link>. Users can view their limit, but cannot change it themselves.</div>
     </div>
   </main>;
 }
