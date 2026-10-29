@@ -184,7 +184,7 @@ export default function ProfilePage() {
           <h1>My profile</h1>
           <p>Make your BusinessIQ account yours. Update your details, add a photo, and connect to your company workspace.</p>
         </div>
-        <span className="profile-secure-badge"><ShieldCheck size={15}/> Private account</span>
+        <span className="profile-secure-badge"><ShieldCheck size={15}/> Private account <span className="profile-secure-dot" aria-hidden="true" /></span>
       </section>
 
       <section className="profile-hero-card">
@@ -198,7 +198,7 @@ export default function ProfilePage() {
         <div className="profile-hero-info">
           <h2>{name.trim() || "Your name"}</h2>
           <p>{jobTitle.trim() || "Add your job title"}{companyName.trim() ? " · " + companyName.trim() : ""}</p>
-          <div className="profile-badges"><span><ShieldCheck size={13}/> {role.replaceAll("_", " ")}</span><span><Building2 size={13}/> {workspace}</span></div>
+          <div className="profile-badges"><span><ShieldCheck size={13}/> Platform access · {role.replaceAll("_", " ")}</span><span><Building2 size={13}/> {organizations.find(o => o.id === preferredOrg) ? `${workspace} · ${organizations.find(o => o.id === preferredOrg)?.role.replaceAll("_", " ")}` : workspace}</span></div>
         </div>
         <button type="button" className="profile-upload-button" onClick={() => fileInput.current?.click()}><Upload size={15}/> {selectedImage ? "Change photo" : "Upload photo"}</button>
       </section>
@@ -221,7 +221,7 @@ export default function ProfilePage() {
             <label className="profile-field profile-field-wide"><span>Connected workspace</span><div className="profile-select-wrap"><select value={preferredOrg} onChange={e=>setPreferredOrg(e.target.value)}><option value="">No preferred workspace</option>{organizations.map(o=><option key={o.id} value={o.id}>{o.name} · {o.role.replaceAll("_"," ")}</option>)}</select><ChevronDown size={16}/></div>{organizations.length ? <small>Only workspaces you are already a member of are available here. Your membership and access permissions are not changed.</small> : <small>You are not currently a member of a company workspace. Ask your company administrator to invite you, or create a workspace from the dashboard.</small>}</label>
             <label className="profile-field"><span>Company name</span><input maxLength={160} value={companyName} onChange={e=>setCompanyName(e.target.value)} placeholder="Your company or organisation"/></label>
             <label className="profile-field"><span>Company website</span><div className="profile-input-icon"><Globe2 size={16}/><input type="text" maxLength={300} value={companyWebsite} onChange={e=>setCompanyWebsite(e.target.value)} placeholder="https://company.com" autoComplete="url"/></div></label>
-            <div className="profile-company-summary"><Building2 size={18}/><div><strong>{organizations.find(o=>o.id===preferredOrg)?.name || companyName.trim() || "No company connected"}</strong><p>{organizations.find(o=>o.id===preferredOrg) ? "Connected using your existing workspace membership." : "Add company details above or choose an existing workspace."}</p></div><Check size={17}/></div>
+            <div className={`profile-company-summary ${preferredOrg ? "is-connected" : "is-unconnected"}`}><Building2 size={18}/><div><strong>{organizations.find(o=>o.id===preferredOrg)?.name || companyName.trim() || "No company connected"}</strong><p>{organizations.find(o=>o.id===preferredOrg) ? `Workspace membership confirmed · ${organizations.find(o=>o.id===preferredOrg)?.role.replaceAll("_", " ")} access. Your permissions are managed separately.` : "Company details are saved to your profile only. Choose an existing workspace to connect it."}</p></div>{preferredOrg ? <Check size={17}/> : <Globe2 size={17}/>}</div>
           </div>
         </section>
 
@@ -236,7 +236,7 @@ export default function ProfilePage() {
 
         {error && <div className="profile-alert profile-alert-error" role="alert"><X size={17}/>{error}</div>}
         {message && <div className="profile-alert profile-alert-success" role="status"><Check size={17}/>{message}</div>}
-        <div className="profile-savebar"><div><strong>Keep your account up to date</strong><span>Your changes apply to your BusinessIQ profile.</span></div><button type="submit" disabled={saving}><Save size={16}/>{saving ? "Saving changes…" : "Save profile changes"}</button></div>
+        <div className="profile-savebar"><div className="profile-savebar-copy"><strong>Keep your account up to date</strong><span>Your changes apply to your BusinessIQ profile. Role and transaction limits stay administrator-managed.</span></div><button type="submit" disabled={saving}><Save size={16}/>{saving ? "Saving changes…" : "Save profile changes"}</button></div>
       </form>
       <footer className="profile-footer"><span>BusinessIQ Account Centre</span><span>Profile details are private to your account and authorised workspace administrators.</span><Link href="/settings">Password &amp; sign-in settings <ArrowLeft size={13}/></Link></footer>
     </div>
