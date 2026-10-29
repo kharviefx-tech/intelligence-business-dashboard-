@@ -130,6 +130,7 @@ export default function LoginPage() {
         {message && <div className="auth-success" role="status">{message}</div>}
         <button className="auth-submit" disabled={busy || resending} type="submit">{busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}</button>
       </form>
+      {mode === "signin" && <p className="auth-switch"><Link href="/reset-password">Forgot your password?</Link></p>}
       {canResend && <button className="auth-resend" type="button" onClick={handleResendConfirmation} disabled={resending || busy}><Mail size={16}/>{resending ? "Requesting email…" : "Resend confirmation email"}</button>}
       <p className="auth-switch">{mode === "signin" ? "New to the platform?" : "Already have an account?"} <button onClick={() => {setMode(mode === "signin" ? "signup" : "signin"); setError(""); setMessage(""); setCanResend(false);}}>{mode === "signin" ? "Create an account" : "Sign in instead"}</button></p>
       <p className="auth-legal">Use a unique password. Never share your password or account recovery codes. Workspace data access is controlled by account permissions.</p>
