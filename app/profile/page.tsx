@@ -229,7 +229,7 @@ export default function ProfilePage() {
           <div className="profile-section-heading"><div className="profile-section-icon"><Clock3 size={18}/></div><div><h2>Preferences &amp; access</h2><p>Set the time zone used for your account and review your access details.</p></div></div>
           <div className="profile-form-grid">
             <label className="profile-field"><span>Time zone</span><div className="profile-select-wrap"><select value={timezone} onChange={e=>setTimezone(e.target.value)}>{timezones.map(t=><option key={t} value={t}>{t.replaceAll("_"," ")}</option>)}</select><ChevronDown size={16}/></div></label>
-            <div className="profile-field"><span>Account role</span><div className="profile-readonly-card"><ShieldCheck size={16}/><span>{role.replaceAll("_"," ")}</span></div><small>Your role is assigned by a platform administrator.</small></div>
+            <div className="profile-field"><span>Platform access role</span><div className="profile-readonly-card"><ShieldCheck size={16}/><span>{role.replaceAll("_"," ")}</span></div><small>This controls access to BusinessIQ administration. Your company workspace role is shown separately above and may be different.</small></div>
             <div className="profile-field profile-field-wide"><span>Monthly transaction allowance</span><div className="profile-readonly-card"><ShieldCheck size={16}/><span>{profile?.monthly_transaction_limit ? profile.monthly_transaction_limit.toLocaleString() + " transactions per month" : "Unlimited transactions"}</span><em>Admin managed</em></div><small>This setting is read-only for users and staff. Only an administrator can change it.</small></div>
           </div>
         </section>
