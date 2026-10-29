@@ -223,6 +223,7 @@ export default function Home() {
     setError(""); setNotice("");
     if (!organizationId) { setError("Create or select a workspace before importing records."); return; }
     setImportBusy(true);
+    let importedBeforeFailure = 0;
     try {
       const parsed = parseCsvText(await file.text());
       if (parsed.length < 2) throw new Error("This CSV has no data rows. Add transactions beneath the header row.");
@@ -238,17 +239,26 @@ export default function Home() {
         const row=parsed[r]; const get=(i:number)=>i<0?"":(row[i]??"").trim();
         const date=get(ix.date), description=get(ix.description), kind=get(ix.kind).toLowerCase();
         const amount=Number(get(ix.amount).replace(/[,\s]/g,"")); const status=(get(ix.status)||"recorded").toLowerCase();
-        if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!description||!["income","expense"].includes(kind)||!Number.isFinite(amount)||amount<=0||!["recorded","pending","cancelled"].includes(status)){issues.push("row "+(r+1));continue;}
+        const parsedDate = /^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(date + "T00:00:00Z") : null;
+        const validDate = Boolean(parsedDate && !Number.isNaN(parsedDate.getTime()) && parsedDate.toISOString().slice(0,10) === date);
+        if(!validDate||!description||!["income","expense"].includes(kind)||!Number.isFinite(amount)||amount<=0||!["recorded","pending","cancelled"].includes(status)){issues.push("row "+(r+1));continue;}
         const item:Record<string,unknown>={organization_id:organizationId,created_by:user.id,transaction_date:date,description:description.slice(0,240),kind,amount,currency,category:(get(ix.category)||"Uncategorized").slice(0,120),status};
         if(salesSchemaReady){item.sub_category=get(ix.sub)||null;item.customer_segment=get(ix.segment)||null;}
         if(geoSchemaReady){item.city=get(ix.city)||null;item.region=get(ix.region)||null;item.country=get(ix.country)||null;}
         valid.push(item);
       }
       if(!valid.length) throw new Error("No valid rows found. Use YYYY-MM-DD dates, income/expense types, positive amounts, and recorded/pending/cancelled status.");
-      for(let start=0;start<valid.length;start+=100){const {error:insertError}=await supabase.from("bi_transactions").insert(valid.slice(start,start+100));if(insertError)throw insertError;}
+      for(let start=0;start<valid.length;start+=100){
+        const {error:insertError}=await supabase.from("bi_transactions").insert(valid.slice(start,start+100));
+        if(insertError) throw new Error("CSV batch failed after "+importedBeforeFailure+" of "+valid.length+" valid rows were saved. Do not re-import the entire file unchanged, or duplicates may be created. Error: "+insertError.message);
+        importedBeforeFailure += Math.min(100, valid.length-start);
+      }
       await loadData(true);
       setNotice("Imported "+valid.length.toLocaleString()+" transaction(s) into "+(organization?.name||"your workspace")+"."+(issues.length?" Skipped "+issues.length+" invalid row(s): "+issues.slice(0,5).join(", ")+(issues.length>5?", …":"")+".":" All rows passed validation."));
-    } catch(e) { setError(e instanceof Error?e.message:"CSV import failed. Check the file and try again."); } finally { setImportBusy(false); }
+    } catch(e) {
+      setError(e instanceof Error ? e.message : "CSV import failed. Check the file and try again.");
+      if(importedBeforeFailure > 0) await loadData(true);
+    } finally { setImportBusy(false); }
   }
 
   function downloadCsvTemplate() {
