@@ -20,11 +20,35 @@ const money = (n: number, currency: string) => {
 };
 const monthName = (date: Date) => date.toLocaleDateString("en", { month: "short" });
 function parseCsvText(text: string): string[][] {
-  const rows: string[][] = []; let row: string[] = []; let cell = ""; let quoted = false;
-  for (let i=0;i<text.length;i++) { const ch=text[i]; if(ch === '"' && quoted && text[i+1] === '"'){cell+='"';i++;} else if(ch === '"') quoted=!quoted; else if(ch === ',' && !quoted){row.push(cell.trim());cell="";} else if((ch === '
-' || ch === '\r') && !quoted){if(ch==='\r' && text[i+1]==='
-')i++;row.push(cell.trim());if(row.some(v=>v!==""))rows.push(row);row=[];cell="";} else cell+=ch; }
-  row.push(cell.trim()); if(row.some(v=>v!==""))rows.push(row); return rows;
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = "";
+  let quoted = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '"' && quoted && text[i + 1] === '"') {
+      cell += '"';
+      i++;
+    } else if (ch === '"') {
+      quoted = !quoted;
+    } else if (ch === ',' && !quoted) {
+      row.push(cell.trim());
+      cell = "";
+    } else if ((ch === '\n' || ch === '\r') && !quoted) {
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+      row.push(cell.trim());
+      if (row.some((value) => value !== "")) rows.push(row);
+      row = [];
+      cell = "";
+    } else {
+      cell += ch;
+    }
+  }
+
+  row.push(cell.trim());
+  if (row.some((value) => value !== "")) rows.push(row);
+  return rows;
 }
 const initialForm = { description: "", kind: "income" as "income" | "expense", amount: "", category: "", sub_category: "", customer_segment: "", city: "", region: "", country: "", transaction_date: new Date().toISOString().slice(0, 10), status: "recorded" as "recorded" | "pending" };
 
