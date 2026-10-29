@@ -130,6 +130,7 @@ export default function ResetPasswordPage() {
       </form>}
 
       {resetSent && !recoveryReady && <p className="settings-help">If an account exists for that address, check your inbox and spam folder for the reset link. You can request another link if needed.</p>}
+      {resetSent && !recoveryReady && !checkingLink && <button className="auth-resend" type="button" onClick={() => { setResetSent(false); setMessage(""); setError(""); }}>Request another reset link</button>}
 
       {checkingLink && <p className="settings-help">Verifying your reset link…</p>}
 
