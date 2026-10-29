@@ -200,3 +200,14 @@
 .top-avatar-link img,.profile-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
 .profile-avatar{overflow:hidden;flex-shrink:0}
 .profile strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:165px}
+
+
+/* Clearly separated, role-aware private admin navigation */
+.admin-nav-label{display:flex;align-items:center;gap:7px;margin-top:24px!important;color:#9a7650!important;letter-spacing:1.05px!important}
+.admin-nav-label svg{color:#a57948}
+.admin-nav-list{padding:8px 7px;background:linear-gradient(145deg,#fbf7f0,#fffaf4);border:1px solid #efe3d3;border-radius:10px;gap:3px!important}
+.admin-nav-list .admin-nav-item{border-radius:7px;color:#72593e;min-height:38px}
+.admin-nav-list .admin-nav-item:hover{background:#f5eadb;color:#624629}
+.admin-nav-tag{margin-left:auto;font-size:7px;letter-spacing:.7px;font-weight:800;color:#946b3e;background:#f0e2ce;border:1px solid #ead7bc;border-radius:4px;padding:4px 5px}
+.sidebar .nav-label{margin-top:24px}
+.sidebar .nav-label:first-of-type{margin-top:30px}
