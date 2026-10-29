@@ -218,7 +218,7 @@ export default function Home() {
   }
 
   function downloadCsvTemplate() {
-    const sample="date,description,type,amount,category,sub_category,customer_segment,status,city,region,country\n2026-10-01,Example sale,income,25000,Product sales,Accessories,Consumer,recorded,Lagos,Lagos State,Nigeria\\n2026-10-02,Example expense,expense,5000,Operations,,Corporate,recorded,Lagos,Lagos State,Nigeria";
+    const sample="date,description,type,amount,category,sub_category,customer_segment,status,city,region,country\n2026-10-01,Example sale,income,25000,Product sales,Accessories,Consumer,recorded,Lagos,Lagos State,Nigeria\n2026-10-02,Example expense,expense,5000,Operations,,Corporate,recorded,Lagos,Lagos State,Nigeria";
     const url=URL.createObjectURL(new Blob([sample],{type:"text/csv;charset=utf-8;"})); const a=document.createElement("a"); a.href=url; a.download="businessiq-import-template.csv"; a.click(); URL.revokeObjectURL(url);
   }
 
