@@ -19,6 +19,12 @@ export default function LoginPage() {
     if (userError || !user) throw new Error("Please sign in again to verify your account.");
     const { data: membership, error: membershipError } = await supabase.from("bi_organization_members").select("organization_id").eq("user_id", user.id).limit(1).maybeSingle();
     if (membershipError) throw new Error("Signed in, but we could not load your saved workspace. Please retry.");
+    const requestedNext = new URLSearchParams(window.location.search).get("next");
+    const safeNext = requestedNext && requestedNext.startsWith("/") && !requestedNext.startsWith("//") && !requestedNext.includes("\\") ? requestedNext : null;
+    if (safeNext && safeNext !== "/onboarding") {
+      router.replace(safeNext);
+      return;
+    }
     router.replace(membership?.organization_id ? "/" : "/onboarding");
   }
   const [mode, setMode] = useState<"signin" | "signup">("signin");
