@@ -2,7 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Activity, ArrowDownRight, ArrowUpRight, ChevronDown, CircleHelp, Download, FileText, LayoutDashboard, LoaderCircle, LogOut, Menu, Plus, Search, Settings, ShieldCheck, ShoppingCart, Users, Wallet, X, RefreshCw, AlertCircle, Globe2, MapPin, MapPinned } from "lucide-react";
+import { Activity, ArrowDownRight, ArrowUpRight, ChevronDown, CircleHelp, Download, Upload, FileText, LayoutDashboard, LoaderCircle, LogOut, Menu, Plus, Search, Settings, ShieldCheck, ShoppingCart, Users, Wallet, X, RefreshCw, AlertCircle, Globe2, MapPin, MapPinned } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell, Pie, PieChart } from "recharts";
 import { useRouter } from "next/navigation";
 import { createClient } from "../utils/supabase/client";
@@ -19,6 +19,11 @@ const money = (n: number, currency: string) => {
   catch { return new Intl.NumberFormat("en-NG", { maximumFractionDigits: 0 }).format(n) + " " + currency; }
 };
 const monthName = (date: Date) => date.toLocaleDateString("en", { month: "short" });
+function parseCsvText(text: string): string[][] {
+  const rows: string[][] = []; let row: string[] = []; let cell = ""; let quoted = false;
+  for (let i=0;i<text.length;i++) { const ch=text[i]; if(ch === '"' && quoted && text[i+1] === '"'){cell+='"';i++;} else if(ch === '"') quoted=!quoted; else if(ch === ',' && !quoted){row.push(cell.trim());cell="";} else if((ch === '\n' || ch === '\r') && !quoted){if(ch==='\r' && text[i+1]==='\n')i++;row.push(cell.trim());if(row.some(v=>v!==""))rows.push(row);row=[];cell="";} else cell+=ch; }
+  row.push(cell.trim()); if(row.some(v=>v!==""))rows.push(row); return rows;
+}
 const initialForm = { description: "", kind: "income" as "income" | "expense", amount: "", category: "", sub_category: "", customer_segment: "", city: "", region: "", country: "", transaction_date: new Date().toISOString().slice(0, 10), status: "recorded" as "recorded" | "pending" };
 
 export default function Home() {
@@ -41,6 +46,7 @@ export default function Home() {
   const [mobileNav, setMobileNav] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [importBusy, setImportBusy] = useState(false);
   const [form, setForm] = useState(initialForm);
 
   const loadData = useCallback(async (quiet = false) => {
@@ -179,6 +185,43 @@ export default function Home() {
     } finally { setSaving(false); }
   }
 
+  async function importCsvFile(file: File) {
+    setError(""); setNotice("");
+    if (!organizationId) { setError("Create or select a workspace before importing records."); return; }
+    setImportBusy(true);
+    try {
+      const parsed = parseCsvText(await file.text());
+      if (parsed.length < 2) throw new Error("This CSV has no data rows. Add transactions beneath the header row.");
+      const headers = parsed[0].map(h => h.toLowerCase().replace(/[\\s_-]+/g, "").replace(/[^a-z]/g, ""));
+      const index = (...names: string[]) => headers.findIndex(h => names.includes(h));
+      const ix = { date:index("date","transactiondate"), description:index("description","transaction","name"), kind:index("type","kind","transactiontype"), amount:index("amount","value","total"), category:index("category"), sub:index("subcategory","product","service"), segment:index("customersegment","segment"), status:index("status"), city:index("city"), region:index("region","state","stateprovince"), country:index("country") };
+      const missing = ([["date",ix.date],["description",ix.description],["type",ix.kind],["amount",ix.amount]] as [string,number][]).filter(([,i])=>i<0).map(([n])=>n);
+      if (missing.length) throw new Error("Missing required CSV columns: " + missing.join(", ") + ". Download the BusinessIQ CSV template.");
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Your session expired. Sign in again before importing.");
+      const valid: Record<string, unknown>[] = []; const issues: string[] = [];
+      for (let r=1;r<parsed.length;r++) {
+        const row=parsed[r]; const get=(i:number)=>i<0?"":(row[i]??"").trim();
+        const date=get(ix.date), description=get(ix.description), kind=get(ix.kind).toLowerCase();
+        const amount=Number(get(ix.amount).replace(/[,\\s]/g,"")); const status=(get(ix.status)||"recorded").toLowerCase();
+        if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)||!description||!["income","expense"].includes(kind)||!Number.isFinite(amount)||amount<=0||!["recorded","pending","cancelled"].includes(status)){issues.push("row "+(r+1));continue;}
+        const item:Record<string,unknown>={organization_id:organizationId,created_by:user.id,transaction_date:date,description:description.slice(0,240),kind,amount,currency,category:(get(ix.category)||"Uncategorized").slice(0,120),status};
+        if(salesSchemaReady){item.sub_category=get(ix.sub)||null;item.customer_segment=get(ix.segment)||null;}
+        if(geoSchemaReady){item.city=get(ix.city)||null;item.region=get(ix.region)||null;item.country=get(ix.country)||null;}
+        valid.push(item);
+      }
+      if(!valid.length) throw new Error("No valid rows found. Use YYYY-MM-DD dates, income/expense types, positive amounts, and recorded/pending/cancelled status.");
+      for(let start=0;start<valid.length;start+=100){const {error:insertError}=await supabase.from("bi_transactions").insert(valid.slice(start,start+100));if(insertError)throw insertError;}
+      await loadData(true);
+      setNotice("Imported "+valid.length.toLocaleString()+" transaction(s) into "+(organization?.name||"your workspace")+"."+(issues.length?" Skipped "+issues.length+" invalid row(s): "+issues.slice(0,5).join(", ")+(issues.length>5?", …":"")+".":" All rows passed validation."));
+    } catch(e) { setError(e instanceof Error?e.message:"CSV import failed. Check the file and try again."); } finally { setImportBusy(false); }
+  }
+
+  function downloadCsvTemplate() {
+    const sample="date,description,type,amount,category,sub_category,customer_segment,status,city,region,country\\n2026-10-01,Example sale,income,25000,Product sales,Accessories,Consumer,recorded,Lagos,Lagos State,Nigeria\\n2026-10-02,Example expense,expense,5000,Operations,,Corporate,recorded,Lagos,Lagos State,Nigeria";
+    const url=URL.createObjectURL(new Blob([sample],{type:"text/csv;charset=utf-8;"})); const a=document.createElement("a"); a.href=url; a.download="businessiq-import-template.csv"; a.click(); URL.revokeObjectURL(url);
+  }
+
   function exportCsv() {
     const rows = [["Date", "Description", "Category", "Sub-category", "Customer segment", "Type", "Status", "Currency", "Amount", "City", "Region/State", "Country"], ...filtered.map(t => [t.transaction_date, t.description, t.category, t.sub_category ?? "", t.customer_segment ?? "", t.kind, t.status, t.currency, String(t.amount), t.city ?? "", t.region ?? "", t.country ?? ""])];
     const csv = rows.map(row => row.map(cell => '"' + String(cell).replaceAll('"', '""') + '"').join(",")).join("\n");
@@ -202,7 +245,7 @@ export default function Home() {
     <section className="main-area">
       <header className="topbar"><button className="icon-btn menu-toggle" onClick={() => setMobileNav(true)} aria-label="Open menu"><Menu size={21}/></button><div className="crumb">Workspace <span>/</span> <strong>Overview</strong></div><div className="top-actions"><div className="searchbox"><Search size={16}/><input aria-label="Search transactions" placeholder="Search records..." value={query} onChange={e => setQuery(e.target.value)}/></div><button className="icon-btn" aria-label="Refresh analysis" onClick={() => void loadData(true)} disabled={refreshing}>{refreshing ? <LoaderCircle className="spin" size={18}/> : <RefreshCw size={18}/>}</button><Link className="top-avatar top-avatar-link" href="/profile" aria-label="Open your profile">{userAvatar ? <img src={userAvatar} alt="" /> : (userName || userEmail.split("@")[0] || "BI").split(/\\s+/).slice(0,2).map(v=>v[0]).join("").toUpperCase()}</Link></div></header>
       <div className="content" id="overview">
-        <div className="welcome-row"><div><div className="eyebrow"><span className="status-dot"/> LIVE WORKSPACE ANALYTICS</div><h1>Business overview <span>✦</span></h1><p className="subheading">A clear view of income, spending and operating performance from your records.</p></div><div className="header-controls"><label className="period-select"><span className="sr-only">Reporting period</span><select value={period} onChange={e => setPeriod(e.target.value)}><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="180">Last 6 months</option></select><ChevronDown size={15}/></label><button className="primary-btn" onClick={() => setShowAdd(v => !v)}><Plus size={16}/> Add transaction</button><button className="subtle-btn" onClick={exportCsv}><Download size={15}/> Export</button></div></div>
+        <div className="welcome-row"><div><div className="eyebrow"><span className="status-dot"/> LIVE WORKSPACE ANALYTICS</div><h1>Business overview <span>✦</span></h1><p className="subheading">A clear view of income, spending and operating performance from your records.</p></div><div className="header-controls"><label className="period-select"><span className="sr-only">Reporting period</span><select value={period} onChange={e => setPeriod(e.target.value)}><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="180">Last 6 months</option></select><ChevronDown size={15}/></label><button className="subtle-btn" onClick={downloadCsvTemplate}><Download size={15}/> CSV template</button><label className={"subtle-btn import-label" + (importBusy?" disabled":"")}><Upload size={15}/>{importBusy?"Importing…":"Import CSV"}<input type="file" accept=".csv,text/csv" disabled={importBusy} hidden onChange={e=>{const file=e.target.files?.[0];if(file)void importCsvFile(file);e.currentTarget.value="";}}/></label><button className="primary-btn" onClick={() => setShowAdd(v => !v)}><Plus size={16}/> Add transaction</button><button className="subtle-btn" onClick={exportCsv}><Download size={15}/> Export</button></div></div>
         {error && <div className="data-alert error-alert" role="alert"><AlertCircle size={17}/><span>{error}</span><button onClick={() => setError("")} aria-label="Dismiss error"><X size={15}/></button></div>}
         {notice && <div className="data-alert success-alert" role="status"><ShieldCheck size={17}/><span>{notice}</span><button onClick={() => setNotice("")} aria-label="Dismiss notice"><X size={15}/></button></div>}
         {loading ? <div className="loading-panel"><LoaderCircle className="spin" size={25}/><strong>Loading your workspace</strong><span>Fetching authorised records and calculating metrics…</span></div> : <>
