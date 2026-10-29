@@ -293,20 +293,29 @@ export default function Home() {
   }
 
   function downloadCsvTemplate() {
-    const sample="date,description,type,amount,category,sub_category,customer_segment,status,city,region,country
-2026-10-01,Example sale,income,25000,Product sales,Accessories,Consumer,recorded,Lagos,Lagos State,Nigeria
-2026-10-02,Example expense,expense,5000,Operations,,Corporate,recorded,Lagos,Lagos State,Nigeria";
-    const url=URL.createObjectURL(new Blob([sample],{type:"text/csv;charset=utf-8;"})); const a=document.createElement("a"); a.href=url; a.download="businessiq-import-template.csv"; a.click(); URL.revokeObjectURL(url);
+    const sample = [
+      "date,description,type,amount,category,sub_category,customer_segment,status,city,region,country",
+      "2026-10-01,Example sale,income,25000,Product sales,Accessories,Consumer,recorded,Lagos,Lagos State,Nigeria",
+      "2026-10-02,Example expense,expense,5000,Operations,,Corporate,recorded,Lagos,Lagos State,Nigeria",
+    ].join("\n");
+    const url = URL.createObjectURL(new Blob([sample], { type: "text/csv;charset=utf-8;" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "businessiq-import-template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   function exportCsv() {
     const rows = [["Date", "Description", "Category", "Sub-category", "Customer segment", "Type", "Status", "Currency", "Amount", "City", "Region/State", "Country"], ...filtered.map(t => [t.transaction_date, t.description, t.category, t.sub_category ?? "", t.customer_segment ?? "", t.kind, t.status, t.currency, String(t.amount), t.city ?? "", t.region ?? "", t.country ?? ""])];
-    const csv = rows.map(row => row.map(cell => '"' + String(cell).replaceAll('"', '""') + '"').join(",")).join("
-");
+    const csv = rows.map(row => row.map(cell => '"' + String(cell).replaceAll('"', '""') + '"').join(",")).join("\n");
     const url = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }));
-    const link = document.createElement("a"); link.href = url; link.download = "businessiq-transactions.csv"; link.click(); URL.revokeObjectURL(url);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "businessiq-transactions.csv";
+    link.click();
+    URL.revokeObjectURL(url);
   }
-
   async function signOut() { await supabase.auth.signOut(); router.replace("/login"); router.refresh(); }
 
   return <main className="app-shell">
