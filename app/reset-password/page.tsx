@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, LockKeyhole, Mail } from "lucide-react";
@@ -16,6 +16,34 @@ export default function ResetPasswordPage() {
   const [resetSent, setResetSent] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [checkingLink, setCheckingLink] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    async function prepareRecoverySession() {
+      try {
+        const supabase = createClient();
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get("code");
+        if (code) {
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          if (exchangeError) throw exchangeError;
+          url.searchParams.delete("code");
+          window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+        }
+        const { data: { session } } = await supabase.auth.getSession();
+        if (active && !session && (code || window.location.hash.includes("type=recovery"))) {
+          setError("This password-reset link may have expired. Request a new one and open the newest email.");
+        }
+      } catch {
+        if (active) setError("We could not verify this reset link. Request a new password-reset email and open the newest link.");
+      } finally {
+        if (active) setCheckingLink(false);
+      }
+    }
+    void prepareRecoverySession();
+    return () => { active = false; };
+  }, []);
 
   async function requestReset(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -80,10 +108,11 @@ export default function ResetPasswordPage() {
         <button className="auth-submit" disabled={requesting} type="submit">{requesting ? "Sending request…" : "Send reset link"}</button>
       </form>}
       <form onSubmit={savePassword} style={{ marginTop: 20 }}>
+        {checkingLink && <p className="settings-help">Verifying your reset link…</p>}
         <p className="settings-help">Already opened the reset link from your email? Enter your new password below.</p>
         <label className="auth-field">New password<input required type="password" minLength={8} autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters"/></label>
         <label className="auth-field">Confirm new password<input required type="password" minLength={8} autoComplete="new-password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Repeat your new password"/></label>
-        <button className="auth-submit" disabled={saving} type="submit">{saving ? "Updating password…" : "Update password"}</button>
+        <button className="auth-submit" disabled={saving || checkingLink} type="submit">{saving ? "Updating password…" : "Update password"}</button>
       </form>
       {error && <div className="auth-error" role="alert">{error}</div>}
       {message && <div className="auth-success" role="status">{message}</div>}
