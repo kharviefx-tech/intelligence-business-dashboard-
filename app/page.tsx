@@ -87,7 +87,7 @@ export default function Home() {
             .order("id", { ascending: false })
             .range(from, from + pageSize - 1);
           if (result.error) return { data: null, error: result.error };
-          const batch = (result.data ?? []) as Record<string, unknown>[];
+          const batch = (result.data ?? []) as unknown as Record<string, unknown>[];
           all.push(...batch);
           if (batch.length < pageSize) break;
         }
