@@ -192,7 +192,7 @@ export default function Home() {
     try {
       const parsed = parseCsvText(await file.text());
       if (parsed.length < 2) throw new Error("This CSV has no data rows. Add transactions beneath the header row.");
-      const headers = parsed[0].map(h => h.toLowerCase().replace(/[\\s_-]+/g, "").replace(/[^a-z]/g, ""));
+      const headers = parsed[0].map(h => h.toLowerCase().replace(/[\s_-]+/g, "").replace(/[^a-z]/g, ""));
       const index = (...names: string[]) => headers.findIndex(h => names.includes(h));
       const ix = { date:index("date","transactiondate"), description:index("description","transaction","name"), kind:index("type","kind","transactiontype"), amount:index("amount","value","total"), category:index("category"), sub:index("subcategory","product","service"), segment:index("customersegment","segment"), status:index("status"), city:index("city"), region:index("region","state","stateprovince"), country:index("country") };
       const missing = ([["date",ix.date],["description",ix.description],["type",ix.kind],["amount",ix.amount]] as [string,number][]).filter(([,i])=>i<0).map(([n])=>n);
@@ -203,8 +203,8 @@ export default function Home() {
       for (let r=1;r<parsed.length;r++) {
         const row=parsed[r]; const get=(i:number)=>i<0?"":(row[i]??"").trim();
         const date=get(ix.date), description=get(ix.description), kind=get(ix.kind).toLowerCase();
-        const amount=Number(get(ix.amount).replace(/[,\\s]/g,"")); const status=(get(ix.status)||"recorded").toLowerCase();
-        if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)||!description||!["income","expense"].includes(kind)||!Number.isFinite(amount)||amount<=0||!["recorded","pending","cancelled"].includes(status)){issues.push("row "+(r+1));continue;}
+        const amount=Number(get(ix.amount).replace(/[,\s]/g,"")); const status=(get(ix.status)||"recorded").toLowerCase();
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!description||!["income","expense"].includes(kind)||!Number.isFinite(amount)||amount<=0||!["recorded","pending","cancelled"].includes(status)){issues.push("row "+(r+1));continue;}
         const item:Record<string,unknown>={organization_id:organizationId,created_by:user.id,transaction_date:date,description:description.slice(0,240),kind,amount,currency,category:(get(ix.category)||"Uncategorized").slice(0,120),status};
         if(salesSchemaReady){item.sub_category=get(ix.sub)||null;item.customer_segment=get(ix.segment)||null;}
         if(geoSchemaReady){item.city=get(ix.city)||null;item.region=get(ix.region)||null;item.country=get(ix.country)||null;}
@@ -218,7 +218,7 @@ export default function Home() {
   }
 
   function downloadCsvTemplate() {
-    const sample="date,description,type,amount,category,sub_category,customer_segment,status,city,region,country\\n2026-10-01,Example sale,income,25000,Product sales,Accessories,Consumer,recorded,Lagos,Lagos State,Nigeria\\n2026-10-02,Example expense,expense,5000,Operations,,Corporate,recorded,Lagos,Lagos State,Nigeria";
+    const sample="date,description,type,amount,category,sub_category,customer_segment,status,city,region,country\n2026-10-01,Example sale,income,25000,Product sales,Accessories,Consumer,recorded,Lagos,Lagos State,Nigeria\\n2026-10-02,Example expense,expense,5000,Operations,,Corporate,recorded,Lagos,Lagos State,Nigeria";
     const url=URL.createObjectURL(new Blob([sample],{type:"text/csv;charset=utf-8;"})); const a=document.createElement("a"); a.href=url; a.download="businessiq-import-template.csv"; a.click(); URL.revokeObjectURL(url);
   }
 
