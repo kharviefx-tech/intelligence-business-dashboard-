@@ -1,51 +1,184 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Activity, ArrowDownRight, ArrowUpRight, Bell, ChevronDown, CircleHelp, Download, FileText, LayoutDashboard, Menu, Search, Settings, ShieldCheck, ShoppingCart, Users, Wallet, X } from "lucide-react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { Activity, ArrowDownRight, ArrowUpRight, Bell, ChevronDown, CircleHelp, Download, FileText, LayoutDashboard, LoaderCircle, LogOut, Menu, Plus, Search, Settings, ShieldCheck, ShoppingCart, Users, Wallet, X, RefreshCw, AlertCircle } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useRouter } from "next/navigation";
+import { createClient } from "../utils/supabase/client";
 
-const trend = [
-  { month: "May", revenue: 18500, expenses: 11200 }, { month: "Jun", revenue: 22400, expenses: 13900 },
-  { month: "Jul", revenue: 20800, expenses: 12800 }, { month: "Aug", revenue: 27100, expenses: 16400 },
-  { month: "Sep", revenue: 24800, expenses: 15200 }, { month: "Oct", revenue: 31200, expenses: 18100 },
-];
-const transactions = [
-  { name: "Retail sales", category: "Sales income", date: "Oct 26, 2026", amount: 2450, type: "in" },
-  { name: "Workspace subscription", category: "Software", date: "Oct 25, 2026", amount: -89, type: "out" },
-  { name: "Customer invoice #1048", category: "Accounts receivable", date: "Oct 24, 2026", amount: 1250, type: "in" },
-  { name: "Delivery and logistics", category: "Operations", date: "Oct 23, 2026", amount: -175, type: "out" },
-];
-const money = (n: number) => new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(n);
+type Organization = { id: string; name: string; currency: string; plan: string };
+type Transaction = {
+  id: string; organization_id: string; transaction_date: string; description: string;
+  kind: "income" | "expense"; amount: number; currency: string; category: string; status: "pending" | "recorded" | "cancelled";
+};
+const supabase = createClient();
+const allowedCurrencies = ["NGN", "USD", "GBP", "EUR", "GHS", "KES", "ZAR"];
+const money = (n: number, currency: string) => {
+  try { return new Intl.NumberFormat("en-NG", { style: "currency", currency, maximumFractionDigits: 0 }).format(n); }
+  catch { return new Intl.NumberFormat("en-NG", { maximumFractionDigits: 0 }).format(n) + " " + currency; }
+};
+const monthName = (date: Date) => date.toLocaleDateString("en", { month: "short" });
+const initialForm = { description: "", kind: "income" as "income" | "expense", amount: "", category: "", transaction_date: new Date().toISOString().slice(0, 10), status: "recorded" as "recorded" | "pending" };
 
 export default function Home() {
-  const [period, setPeriod] = useState("Last 6 months");
-  const [mobileNav, setMobileNav] = useState(false);
+  const router = useRouter();
+  const [userEmail, setUserEmail] = useState("");
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [organizationId, setOrganizationId] = useState("");
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [period, setPeriod] = useState("30");
   const [query, setQuery] = useState("");
-  const filtered = useMemo(() => transactions.filter(t => (t.name + " " + t.category).toLowerCase().includes(query.toLowerCase())), [query]);
-  const exportCsv = () => {
-    const rows = [["Transaction", "Category", "Date", "Amount (NGN)"], ...filtered.map(t => [t.name, t.category, t.date, String(t.amount)])];
-    const csv = rows.map(row => row.map(cell => '"' + cell.replaceAll('"', '""') + '"').join(",")).join("\n");
-    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
-    const link = document.createElement("a"); link.href = url; link.download = "business-transactions-demo.csv"; link.click(); URL.revokeObjectURL(url);
-  };
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [mobileNav, setMobileNav] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState(initialForm);
+
+  const loadData = useCallback(async (quiet = false) => {
+    if (quiet) setRefreshing(true); else setLoading(true);
+    setError("");
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        router.replace("/login?next=/");
+        return;
+      }
+      setUserEmail(user.email ?? "");
+      const { data: orgs, error: orgError } = await supabase.from("bi_organizations").select("id,name,currency,plan").order("created_at", { ascending: true });
+      if (orgError) throw orgError;
+      const safeOrgs = (orgs ?? []) as Organization[];
+      setOrganizations(safeOrgs);
+      if (!safeOrgs.length) {
+        setTransactions([]);
+        setOrganizationId("");
+        setNotice("Create your first workspace to start analysing real business activity.");
+        return;
+      }
+      const currentId = safeOrgs.some(o => o.id === organizationId) ? organizationId : safeOrgs[0].id;
+      setOrganizationId(currentId);
+      const { data: rows, error: txError } = await supabase.from("bi_transactions")
+        .select("id,organization_id,transaction_date,description,kind,amount,currency,category,status")
+        .eq("organization_id", currentId).order("transaction_date", { ascending: false }).limit(1000);
+      if (txError) throw txError;
+      setTransactions((rows ?? []) as Transaction[]);
+      setNotice("");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "We could not load your workspace data.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [organizationId, router]);
+
+  useEffect(() => { void loadData(); }, [loadData]);
+
+  const organization = organizations.find(o => o.id === organizationId);
+  const currency = organization?.currency && allowedCurrencies.includes(organization.currency) ? organization.currency : "NGN";
+  const since = useMemo(() => {
+    const d = new Date();
+    if (period === "30") d.setDate(d.getDate() - 30);
+    else if (period === "90") d.setDate(d.getDate() - 90);
+    else d.setMonth(d.getMonth() - 6);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, [period]);
+  const periodTransactions = useMemo(() => transactions.filter(t => {
+    const date = new Date(t.transaction_date + "T00:00:00");
+    return date >= since && t.status !== "cancelled" && t.currency === currency;
+  }), [transactions, since, currency]);
+  const totals = useMemo(() => {
+    const income = periodTransactions.filter(t => t.kind === "income" && t.status === "recorded").reduce((s,t) => s + Number(t.amount), 0);
+    const expenses = periodTransactions.filter(t => t.kind === "expense" && t.status === "recorded").reduce((s,t) => s + Number(t.amount), 0);
+    const pending = periodTransactions.filter(t => t.status === "pending").reduce((s,t) => s + Number(t.amount), 0);
+    return { income, expenses, profit: income - expenses, pending, count: periodTransactions.length, margin: income > 0 ? ((income - expenses) / income) * 100 : 0 };
+  }, [periodTransactions]);
+  const trend = useMemo(() => {
+    const now = new Date();
+    const count = period === "30" ? 6 : period === "90" ? 3 : 6;
+    return Array.from({ length: count }, (_, index) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (count - 1 - index), 1);
+      const key = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+      const monthRows = periodTransactions.filter(t => t.transaction_date.startsWith(key) && t.status === "recorded");
+      return { month: monthName(d), revenue: monthRows.filter(t => t.kind === "income").reduce((s,t) => s + Number(t.amount), 0), expenses: monthRows.filter(t => t.kind === "expense").reduce((s,t) => s + Number(t.amount), 0) };
+    });
+  }, [periodTransactions, period]);
+  const filtered = useMemo(() => transactions.filter(t => (t.description + " " + t.category + " " + t.status).toLowerCase().includes(query.toLowerCase())), [transactions]);
+
+  async function addTransaction(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(""); setNotice("");
+    if (!organizationId) { setError("Create or select a workspace first."); return; }
+    const amount = Number(form.amount);
+    if (!Number.isFinite(amount) || amount <= 0) { setError("Enter an amount greater than zero."); return; }
+    setSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Your session has expired. Please sign in again.");
+      const { error: insertError } = await supabase.from("bi_transactions").insert({
+        organization_id: organizationId, created_by: user.id, description: form.description.trim(),
+        kind: form.kind, amount, currency, category: form.category.trim() || "Uncategorized",
+        transaction_date: form.transaction_date, status: form.status,
+      });
+      if (insertError) throw insertError;
+      setForm(initialForm); setShowAdd(false);
+      await loadData(true);
+      setNotice("Transaction saved. Your analysis has been recalculated from workspace records.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not save this transaction.");
+    } finally { setSaving(false); }
+  }
+
+  function exportCsv() {
+    const rows = [["Date", "Description", "Category", "Type", "Status", "Currency", "Amount"], ...filtered.map(t => [t.transaction_date, t.description, t.category, t.kind, t.status, t.currency, String(t.amount)])];
+    const csv = rows.map(row => row.map(cell => '"' + String(cell).replaceAll('"', '""') + '"').join(",")).join("\n");
+    const url = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }));
+    const link = document.createElement("a"); link.href = url; link.download = "businessiq-transactions.csv"; link.click(); URL.revokeObjectURL(url);
+  }
+
+  async function signOut() { await supabase.auth.signOut(); router.replace("/login"); router.refresh(); }
+
   return <main className="app-shell">
     <aside className={mobileNav ? "sidebar sidebar-open" : "sidebar"}>
       <div className="brand"><div className="brand-mark">B</div><div><strong>BusinessIQ</strong><span>BUSINESS INTELLIGENCE</span></div><button className="icon-btn close-nav" onClick={() => setMobileNav(false)} aria-label="Close menu"><X size={18}/></button></div>
-      <div className="workspace-label">WORKSPACE</div><button className="workspace-switch"><span className="workspace-avatar">AC</span><span className="workspace-text"><strong>Acme Commerce</strong><small>Demo workspace</small></span><ChevronDown size={16}/></button>
-      <div className="nav-label">OVERVIEW</div><nav className="nav-list"><a className="nav-item active" href="#overview"><LayoutDashboard size={18}/>Dashboard</a><a className="nav-item" href="#transactions"><Wallet size={18}/>Transactions</a><a className="nav-item" href="#performance"><Activity size={18}/>Performance</a><a className="nav-item" href="#customers"><Users size={18}/>Customers <span className="soon">SOON</span></a><a className="nav-item" href="#reports"><FileText size={18}/>Reports</a><a className="nav-item" href="/monetization"><Wallet size={18}/>Monetization</a><a className="nav-item" href="/admin"><Settings size={18}/>Admin tools</a></nav>
-      <div className="nav-label">PREFERENCES</div><nav className="nav-list"><a className="nav-item" href="#settings"><Settings size={18}/>Settings</a><a className="nav-item" href="#help"><CircleHelp size={18}/>Help centre</a></nav>
-      <div className="sidebar-bottom"><div className="secure-icon"><ShieldCheck size={18}/></div><strong>Your business, in focus.</strong><p>Bring your numbers together and make clearer decisions.</p><a href="#empowerment">Explore business resources ↗</a><div className="profile"><div className="profile-avatar">FO</div><div><strong>Founder account</strong><small>Demo access</small></div><ChevronDown size={16}/></div></div>
+      <div className="workspace-label">WORKSPACE</div>
+      <label className="workspace-switch"><span className="workspace-avatar">{organization?.name?.slice(0,2).toUpperCase() || "BI"}</span><span className="workspace-text"><strong>{organization?.name || "No workspace yet"}</strong><small>{organization ? organization.plan + " plan" : "Set up to begin"}</small></span>{organizations.length > 1 && <select aria-label="Select workspace" value={organizationId} onChange={e => setOrganizationId(e.target.value)}>{organizations.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}</select>}</label>
+      <div className="nav-label">ANALYTICS</div><nav className="nav-list"><a className="nav-item active" href="#overview"><LayoutDashboard size={18}/>Overview</a><a className="nav-item" href="#transactions"><Wallet size={18}/>Transactions</a><a className="nav-item" href="#performance"><Activity size={18}/>Performance</a><a className="nav-item" href="#reports"><FileText size={18}/>Reports &amp; exports</a></nav>
+      <div className="nav-label">PLATFORM</div><nav className="nav-list"><a className="nav-item" href="/admin"><ShieldCheck size={18}/>Admin centre</a><a className="nav-item" href="/monetization"><ShoppingCart size={18}/>Monetization</a><a className="nav-item" href="#settings"><Settings size={18}/>Settings</a><a className="nav-item" href="#help"><CircleHelp size={18}/>Help centre</a></nav>
+      <div className="sidebar-bottom"><div className="secure-icon"><ShieldCheck size={18}/></div><strong>Grounded in your records.</strong><p>Metrics update from transactions you record in this workspace.</p><button className="sidebar-signout" onClick={signOut}><LogOut size={14}/> Sign out</button><div className="profile"><div className="profile-avatar">{(userEmail.split("@")[0] || "BI").slice(0,2).toUpperCase()}</div><div><strong>{userEmail || "Signed-in account"}</strong><small>Authenticated workspace</small></div></div></div>
     </aside>
     {mobileNav && <button className="mobile-overlay" onClick={() => setMobileNav(false)} aria-label="Close navigation"/>}
-    <section className="main-area"><header className="topbar"><button className="icon-btn menu-toggle" onClick={() => setMobileNav(true)} aria-label="Open menu"><Menu size={21}/></button><div className="crumb">Workspace <span>/</span> <strong>Dashboard</strong></div><div className="top-actions"><a className="subtle-btn" href="/login">Sign in</a><div className="searchbox"><Search size={16}/><input aria-label="Search transactions" placeholder="Search transactions..." value={query} onChange={e => setQuery(e.target.value)}/><kbd>⌘ K</kbd></div><button className="icon-btn notification" aria-label="Notifications"><Bell size={18}/><i/></button><div className="top-avatar">FO</div></div></header>
-      <div className="content" id="overview"><div className="welcome-row"><div><div className="eyebrow"><span className="status-dot"/> YOUR BUSINESS SNAPSHOT</div><h1>Good morning, Founder <span>✦</span></h1><p className="subheading">Here’s a view of how your business is performing.</p></div><div className="header-controls"><label className="period-select"><span className="sr-only">Reporting period</span><select value={period} onChange={e => setPeriod(e.target.value)}><option>Last 6 months</option><option>Last 30 days</option><option>This year</option></select><ChevronDown size={15}/></label><button className="primary-btn" onClick={exportCsv}><Download size={16}/> Export CSV</button></div></div>
-      <div className="demo-notice"><span className="notice-symbol">i</span><div><strong>Preview workspace</strong><span>These are illustrative demo figures, not real company records. Connect a secure data source to analyse your actual business.</span></div><span className="demo-pill">DEMO DATA</span></div>
-      <div className="metrics-grid"><article className="metric-card"><div className="metric-top"><span>Total revenue</span><span className="metric-icon green"><Wallet size={18}/></span></div><strong className="metric-value">₦2,480,000</strong><div className="metric-foot positive"><ArrowUpRight size={15}/><b>12.8%</b><span>vs previous period</span></div></article><article className="metric-card"><div className="metric-top"><span>Total expenses</span><span className="metric-icon orange"><ShoppingCart size={18}/></span></div><strong className="metric-value">₦1,145,000</strong><div className="metric-foot positive"><ArrowDownRight size={15}/><b>4.2%</b><span>vs previous period</span></div></article><article className="metric-card"><div className="metric-top"><span>Net profit</span><span className="metric-icon blue"><Activity size={18}/></span></div><strong className="metric-value">₦1,335,000</strong><div className="metric-foot positive"><ArrowUpRight size={15}/><b>18.4%</b><span>vs previous period</span></div></article><article className="metric-card"><div className="metric-top"><span>Outstanding invoices</span><span className="metric-icon purple"><FileText size={18}/></span></div><strong className="metric-value">₦325,000</strong><div className="metric-foot muted"><span>3 invoices awaiting payment</span></div></article></div>
-      <div className="dashboard-grid"><article className="panel chart-panel" id="performance"><div className="panel-heading"><div><h2>Revenue &amp; expenses</h2><p>Understand the movement of money over time</p></div><button className="subtle-btn" onClick={exportCsv}>Export data <Download size={14}/></button></div><div className="chart-legend"><span><i className="legend-revenue"/>Revenue</span><span><i className="legend-expenses"/>Expenses</span></div><div className="chart-wrap"><ResponsiveContainer width="100%" height="100%"><AreaChart data={trend} margin={{ top: 12, right: 5, left: -18, bottom: 0 }}><defs><linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#19866a" stopOpacity={0.18}/><stop offset="100%" stopColor="#19866a" stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e9eeeb"/><XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#829089", fontSize: 12 }}/><YAxis axisLine={false} tickLine={false} tick={{ fill: "#829089", fontSize: 11 }} tickFormatter={v => "₦" + v/1000 + "k"}/><Tooltip formatter={(v) => money(Number(v))} contentStyle={{ borderRadius: 12, border: "1px solid #e5ebe7", fontSize: 12 }}/><Area type="monotone" dataKey="revenue" name="Revenue" stroke="#19866a" strokeWidth={2.5} fill="url(#revenueFill)"/><Area type="monotone" dataKey="expenses" name="Expenses" stroke="#e6a24a" strokeWidth={2.5} fill="transparent"/></AreaChart></ResponsiveContainer></div><div className="chart-caption">Illustrative trend · Values shown in Nigerian naira</div></article>
-      <article className="panel health-panel"><div className="panel-heading"><div><h2>Business health</h2><p>A quick look at key indicators</p></div><span className="health-status">DEMO</span></div><div className="health-score"><div className="score-ring"><div><strong>78</strong><small>/ 100</small></div></div><div><strong>Room to grow</strong><p>Illustrative score based on sample metrics.</p></div></div><div className="health-list"><div><span className="health-dot good"/><div><strong>Profit margin</strong><small>Sample performance indicator</small></div><b>53.8%</b></div><div><span className="health-dot warn"/><div><strong>Cash flow coverage</strong><small>Sample performance indicator</small></div><b>2.4 mo</b></div><div><span className="health-dot good"/><div><strong>Expense control</strong><small>Sample performance indicator</small></div><b>Stable</b></div></div><div className="health-disclaimer">Not financial advice. Metrics are demo-only and should not be used to make business decisions.</div></article></div>
-      <article className="panel transactions-panel" id="transactions"><div className="panel-heading"><div><h2>Recent transactions</h2><p>Review the latest activity in this demo workspace</p></div><button className="subtle-btn" onClick={exportCsv}>Download CSV <Download size={14}/></button></div><div className="table-scroll"><table><thead><tr><th>TRANSACTION</th><th>CATEGORY</th><th>DATE</th><th className="align-right">AMOUNT</th><th>STATUS</th></tr></thead><tbody>{filtered.map((t, i) => <tr key={t.name}><td><div className="transaction-name"><span className={t.type === "in" ? "transaction-icon income" : "transaction-icon expense"}>{t.type === "in" ? <ArrowDownRight size={16}/> : <ArrowUpRight size={16}/>}</span><strong>{t.name}</strong></div></td><td>{t.category}</td><td>{t.date}</td><td className={"align-right amount " + (t.amount > 0 ? "amount-in" : "")}>{t.amount > 0 ? "+" : "−"}{money(Math.abs(t.amount))}</td><td><span className={i % 2 === 0 ? "status-badge recorded" : "status-badge pending"}>{i % 2 === 0 ? "Recorded (demo)" : "Sample"}</span></td></tr>)}</tbody></table>{filtered.length === 0 && <div className="empty-state">No demo transactions match “{query}”.</div>}</div><div className="table-footer">Showing {filtered.length} sample transactions <span>Demo data only</span></div></article>
-      <section className="empowerment" id="empowerment"><div className="empowerment-icon"><Users size={22}/></div><div><span className="eyebrow">BUILT FOR GROWING BUSINESSES</span><h2>Better information. More confident decisions.</h2><p>Our long-term goal is to make practical business intelligence more accessible to small and growing businesses, with useful learning resources and simple tools alongside the analytics workspace.</p></div><a href="#resources">Explore resources <ArrowUpRight size={16}/></a></section>
-      <footer className="footer"><span>BusinessIQ · Product preview</span><span>Demo interface · No real business data connected</span><a href="#help">Help &amp; feedback</a></footer>
-      </div></section>
+    <section className="main-area">
+      <header className="topbar"><button className="icon-btn menu-toggle" onClick={() => setMobileNav(true)} aria-label="Open menu"><Menu size={21}/></button><div className="crumb">Workspace <span>/</span> <strong>Overview</strong></div><div className="top-actions"><div className="searchbox"><Search size={16}/><input aria-label="Search transactions" placeholder="Search records..." value={query} onChange={e => setQuery(e.target.value)}/></div><button className="icon-btn" aria-label="Refresh analysis" onClick={() => void loadData(true)} disabled={refreshing}>{refreshing ? <LoaderCircle className="spin" size={18}/> : <RefreshCw size={18}/>}</button><div className="top-avatar">{(userEmail.split("@")[0] || "BI").slice(0,2).toUpperCase()}</div></div></header>
+      <div className="content" id="overview">
+        <div className="welcome-row"><div><div className="eyebrow"><span className="status-dot"/> LIVE WORKSPACE ANALYTICS</div><h1>Business overview <span>✦</span></h1><p className="subheading">A clear view of income, spending and operating performance from your records.</p></div><div className="header-controls"><label className="period-select"><span className="sr-only">Reporting period</span><select value={period} onChange={e => setPeriod(e.target.value)}><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="180">Last 6 months</option></select><ChevronDown size={15}/></label><button className="primary-btn" onClick={() => setShowAdd(v => !v)}><Plus size={16}/> Add transaction</button><button className="subtle-btn" onClick={exportCsv}><Download size={15}/> Export</button></div></div>
+        {error && <div className="data-alert error-alert" role="alert"><AlertCircle size={17}/><span>{error}</span><button onClick={() => setError("")} aria-label="Dismiss error"><X size={15}/></button></div>}
+        {notice && <div className="data-alert success-alert" role="status"><ShieldCheck size={17}/><span>{notice}</span><button onClick={() => setNotice("")} aria-label="Dismiss notice"><X size={15}/></button></div>}
+        {loading ? <div className="loading-panel"><LoaderCircle className="spin" size={25}/><strong>Loading your workspace</strong><span>Fetching authorised records and calculating metrics…</span></div> : <>
+          {!organizations.length && <div className="empty-workspace"><div className="empty-workspace-icon"><LayoutDashboard size={24}/></div><h2>Your analysis starts with a workspace</h2><p>Set up your business workspace to securely organise transactions, calculate performance and build reports from your own records.</p><Link className="primary-btn" href="/onboarding">Create workspace <ArrowUpRight size={16}/></Link></div>}
+          {!!organizations.length && <>
+            <div className="data-source-strip"><span className="live-pulse"/><div><strong>Connected to Supabase</strong><small>{organization?.name} · {transactions.length.toLocaleString()} records loaded · {currency}</small></div><span className="data-label">LIVE DATA</span></div>
+            <div className="metrics-grid">
+              <article className="metric-card"><div className="metric-top"><span>Recorded income</span><span className="metric-icon green"><ArrowDownRight size={18}/></span></div><strong className="metric-value">{money(totals.income,currency)}</strong><div className="metric-foot muted"><span>{periodTransactions.filter(t=>t.kind==="income"&&t.status==="recorded").length} recorded entries in period</span></div></article>
+              <article className="metric-card"><div className="metric-top"><span>Recorded expenses</span><span className="metric-icon orange"><ShoppingCart size={18}/></span></div><strong className="metric-value">{money(totals.expenses,currency)}</strong><div className="metric-foot muted"><span>{periodTransactions.filter(t=>t.kind==="expense"&&t.status==="recorded").length} recorded entries in period</span></div></article>
+              <article className="metric-card"><div className="metric-top"><span>Net operating result</span><span className="metric-icon blue"><Activity size={18}/></span></div><strong className="metric-value">{money(totals.profit,currency)}</strong><div className={"metric-foot " + (totals.profit>=0?"positive":"negative")}><b>{totals.income ? totals.margin.toFixed(1)+"% margin" : "No income recorded"}</b><span>income less recorded expenses</span></div></article>
+              <article className="metric-card"><div className="metric-top"><span>Pending transactions</span><span className="metric-icon purple"><FileText size={18}/></span></div><strong className="metric-value">{money(totals.pending,currency)}</strong><div className="metric-foot muted"><span>{periodTransactions.filter(t=>t.status==="pending").length} entries need review</span></div></article>
+            </div>
+            <div className="dashboard-grid"><article className="panel chart-panel" id="performance"><div className="panel-heading"><div><h2>Income &amp; expenses trend</h2><p>Monthly totals calculated from recorded transactions</p></div><span className="live-chart-badge">FROM YOUR DATA</span></div><div className="chart-legend"><span><i className="legend-revenue"/>Income</span><span><i className="legend-expenses"/>Expenses</span></div><div className="chart-wrap">{trend.some(t=>t.revenue||t.expenses) ? <ResponsiveContainer width="100%" height="100%"><AreaChart data={trend} margin={{top:12,right:5,left:-18,bottom:0}}><defs><linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#19866a" stopOpacity={.18}/><stop offset="100%" stopColor="#19866a" stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e9eeeb"/><XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill:"#829089",fontSize:12}}/><YAxis axisLine={false} tickLine={false} tick={{fill:"#829089",fontSize:11}} tickFormatter={v=>v>=1000000?(currency==="NGN"?"₦":"")+ (v/1000000).toFixed(1)+"m":(currency==="NGN"?"₦":"")+(v/1000).toFixed(0)+"k"}/><Tooltip formatter={(v)=>money(Number(v),currency)} contentStyle={{borderRadius:12,border:"1px solid #e5ebe7",fontSize:12}}/><Area type="monotone" dataKey="revenue" name="Income" stroke="#19866a" strokeWidth={2.5} fill="url(#revenueFill)"/><Area type="monotone" dataKey="expenses" name="Expenses" stroke="#e6a24a" strokeWidth={2.5} fill="transparent"/></AreaChart></ResponsiveContainer> : <div className="chart-empty">No recorded income or expenses in this period. Add transactions to build your trend.</div>}</div><div className="chart-caption">Cancelled entries are excluded. Pending entries are shown separately and do not affect net operating result.</div></article>
+              <article className="panel health-panel"><div className="panel-heading"><div><h2>Performance signals</h2><p>Rule-based observations from this period</p></div><span className="live-chart-badge">CALCULATED</span></div><div className="signal-list">
+                <div className="signal-row"><span className={totals.profit>=0?"signal-icon good":"signal-icon warn"}><Activity size={17}/></span><div><strong>{totals.income===0?"Income data needed":totals.profit>=0?"Positive operating result":"Expenses exceed income"}</strong><small>{totals.income===0?"Record income to calculate operating performance":totals.profit>=0?"Recorded income is above recorded expenses":"Review costs and revenue for this period"}</small></div></div>
+                <div className="signal-row"><span className="signal-icon info"><Wallet size={17}/></span><div><strong>{totals.income ? totals.margin.toFixed(1)+"% operating margin":"Margin unavailable"}</strong><small>{totals.income ? (totals.margin>=20?"At least 20% of recorded income remains after recorded expenses":totals.margin>=0?"Keep monitoring costs relative to income":"Negative margin for selected period") : "Requires recorded income"}</small></div></div>
+                <div className="signal-row"><span className={totals.pending>0?"signal-icon warn":"signal-icon good"}><FileText size={17}/></span><div><strong>{totals.pending>0?"Pending items need review":"No pending items in period"}</strong><small>{totals.pending>0?money(totals.pending,currency)+" awaiting confirmation":"All visible period entries are marked recorded or cancelled"}</small></div></div>
+              </div><div className="health-disclaimer">Signals are simple calculations from your recorded data, not forecasts or professional financial advice.</div></article></div>
+            <article className="panel transactions-panel" id="transactions"><div className="panel-heading"><div><h2>Transaction ledger</h2><p>Search and export the records available to your workspace</p></div><button className="subtle-btn" onClick={exportCsv}><Download size={14}/> Export CSV</button></div><div className="table-scroll"><table><thead><tr><th>TRANSACTION</th><th>CATEGORY</th><th>DATE</th><th>STATUS</th><th className="align-right">AMOUNT</th></tr></thead><tbody>{filtered.slice(0,100).map(t=><tr key={t.id}><td><div className="transaction-name"><span className={t.kind==="income"?"transaction-icon income":"transaction-icon expense"}>{t.kind==="income"?<ArrowDownRight size={16}/>:<ArrowUpRight size={16}/>}</span><strong>{t.description}</strong></div></td><td>{t.category||"Uncategorized"}</td><td>{new Date(t.transaction_date+"T00:00:00").toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"})}</td><td><span className={"status-badge "+(t.status==="recorded"?"recorded":"pending")}>{t.status}</span></td><td className={"align-right amount "+(t.kind==="income"?"amount-in":"")}>{t.kind==="income"?"+":"−"}{money(Number(t.amount),t.currency)}</td></tr>)}</tbody></table>{filtered.length===0&&<div className="empty-state">{query?"No transactions match your search.":"No transactions yet. Add your first record to begin analysis."}</div>}</div><div className="table-footer">Showing {Math.min(filtered.length,100)} of {filtered.length} matching records <span>Workspace-scoped data</span></div></article>
+          </>}
+        </>}
+        <footer className="footer"><span>BusinessIQ · Business intelligence workspace</span><span>Metrics are calculated from authorised workspace records</span><Link href="/admin">Admin centre</Link></footer>
+      </div>
+    </section>
+    {showAdd && <div className="modal-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setShowAdd(false)}}><section className="transaction-modal" role="dialog" aria-modal="true" aria-labelledby="add-transaction-title"><div className="modal-heading"><div><h2 id="add-transaction-title">Add transaction</h2><p>Record a real entry in {organization?.name || "your workspace"}.</p></div><button className="icon-btn" onClick={()=>setShowAdd(false)} aria-label="Close"><X size={19}/></button></div><form onSubmit={addTransaction}><label>Description<input required maxLength={240} value={form.description} onChange={e=>setForm({...form,description:e.target.value})} placeholder="e.g. Customer payment"/></label><div className="form-two"><label>Type<select value={form.kind} onChange={e=>setForm({...form,kind:e.target.value as "income"|"expense"})}><option value="income">Income</option><option value="expense">Expense</option></select></label><label>Amount ({currency})<input required type="number" min="0.01" step="0.01" value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})} placeholder="0.00"/></label></div><div className="form-two"><label>Date<input required type="date" value={form.transaction_date} onChange={e=>setForm({...form,transaction_date:e.target.value})}/></label><label>Status<select value={form.status} onChange={e=>setForm({...form,status:e.target.value as "recorded"|"pending"})}><option value="recorded">Recorded</option><option value="pending">Pending</option></select></label></div><label>Category<input maxLength={120} value={form.category} onChange={e=>setForm({...form,category:e.target.value})} placeholder="e.g. Sales, Logistics, Rent"/></label><div className="modal-note"><ShieldCheck size={15}/> Saved securely to this workspace. Your dashboard totals and trend will update after saving.</div><div className="modal-actions"><button type="button" className="subtle-btn" onClick={()=>setShowAdd(false)}>Cancel</button><button className="primary-btn" type="submit" disabled={saving}>{saving?<><LoaderCircle className="spin" size={15}/> Saving…</>:<><Plus size={15}/> Save transaction</>}</button></div></form></section></div>}
   </main>;
 }
