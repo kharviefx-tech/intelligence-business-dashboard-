@@ -130,9 +130,9 @@ export default function Home() {
       return Array.from({ length: 5 }, (_, index) => {
         const end = new Date(now);
         end.setHours(23, 59, 59, 999);
-        end.setDate(end.getDate() - (4 - index) * 7);
+        end.setDate(end.getDate() - (4 - index) * 6);
         const start = new Date(end);
-        start.setDate(start.getDate() - 6);
+        start.setDate(start.getDate() - 5);
         start.setHours(0, 0, 0, 0);
         const rows = periodTransactions.filter(t => {
           const d = new Date(t.transaction_date + "T00:00:00");
