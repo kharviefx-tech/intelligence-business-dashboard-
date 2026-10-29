@@ -76,17 +76,34 @@ export default function Home() {
       const preferredId = profileInfo?.preferred_organization_id;
       const currentId = safeOrgs.some(o => o.id === organizationId) ? organizationId : safeOrgs.some(o => o.id === preferredId) ? preferredId : safeOrgs[0].id;
       setOrganizationId(currentId);
+      const fetchAllTransactionPages = async (columns: string) => {
+        const pageSize = 1000;
+        const all: Record<string, unknown>[] = [];
+        for (let from = 0; ; from += pageSize) {
+          const result = await supabase.from("bi_transactions")
+            .select(columns)
+            .eq("organization_id", currentId)
+            .order("transaction_date", { ascending: false })
+            .order("id", { ascending: false })
+            .range(from, from + pageSize - 1);
+          if (result.error) return { data: null, error: result.error };
+          const batch = (result.data ?? []) as Record<string, unknown>[];
+          all.push(...batch);
+          if (batch.length < pageSize) break;
+        }
+        return { data: all, error: null };
+      };
       let rows: Transaction[] = [];
-      const withAnalytics = await supabase.from("bi_transactions").select("id,organization_id,transaction_date,description,kind,amount,currency,category,status,sub_category,customer_segment,city,region,country").eq("organization_id", currentId).order("transaction_date", { ascending: false }).limit(1000);
+      const withAnalytics = await fetchAllTransactionPages("id,organization_id,transaction_date,description,kind,amount,currency,category,status,sub_category,customer_segment,city,region,country");
       if (withAnalytics.error) {
-        const withGeo = await supabase.from("bi_transactions").select("id,organization_id,transaction_date,description,kind,amount,currency,category,status,city,region,country").eq("organization_id", currentId).order("transaction_date", { ascending: false }).limit(1000);
+        const withGeo = await fetchAllTransactionPages("id,organization_id,transaction_date,description,kind,amount,currency,category,status,city,region,country");
         if (withGeo.error) {
-          const base = await supabase.from("bi_transactions").select("id,organization_id,transaction_date,description,kind,amount,currency,category,status").eq("organization_id", currentId).order("transaction_date", { ascending: false }).limit(1000);
+          const base = await fetchAllTransactionPages("id,organization_id,transaction_date,description,kind,amount,currency,category,status");
           if (base.error) throw base.error;
-          rows = (base.data ?? []).map((t: any) => ({ ...t, sub_category: null, customer_segment: null, city: null, region: null, country: null })) as Transaction[];
+          rows = (base.data ?? []).map((t) => ({ ...t, sub_category: null, customer_segment: null, city: null, region: null, country: null })) as Transaction[];
           setGeoSchemaReady(false); setSalesSchemaReady(false);
         } else {
-          rows = (withGeo.data ?? []).map((t: any) => ({ ...t, sub_category: null, customer_segment: null })) as Transaction[];
+          rows = (withGeo.data ?? []).map((t) => ({ ...t, sub_category: null, customer_segment: null })) as Transaction[];
           setGeoSchemaReady(true); setSalesSchemaReady(false);
         }
       } else { rows = (withAnalytics.data ?? []) as Transaction[]; setGeoSchemaReady(true); setSalesSchemaReady(true); }
