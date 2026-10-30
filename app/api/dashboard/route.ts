@@ -35,14 +35,9 @@ export async function GET(request: NextRequest) {
     let transactions: unknown[] = [];
 
     if (selected) {
-      const membership = await db.query(
-        "select 1 from bi_organization_members where organization_id=$1 and user_id=$2",
-        [selected.id, user.id],
-      );
-      if (!membership.rowCount) return NextResponse.json({ error: "You do not have access to this workspace." }, { status: 403 });
       const result = await db.query(
         `select id,organization_id,transaction_date,description,kind,amount,currency,category,status
-         from bi_transactions where organization_id=$1 order by transaction_date desc,created_at desc limit 500`,
+         from bi_transactions where organization_id=$1 order by transaction_date desc,created_at desc limit 1000`,
         [selected.id],
       );
       transactions = result.rows;
