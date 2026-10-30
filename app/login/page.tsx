@@ -30,6 +30,7 @@ export default function LoginPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -47,8 +48,20 @@ export default function LoginPage() {
       setError("Authentication is not configured yet. Please contact the platform administrator.");
       return;
     }
-    if (password.length < 8) {
-      setError("Use a password with at least 8 characters.");
+    if (mode === "signup" && password.length < 10) {
+      setError("For a new account, use at least 10 characters.");
+      return;
+    }
+    if (mode === "signup" && (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password))) {
+      setError("Use a mix of uppercase letters, lowercase letters and numbers.");
+      return;
+    }
+    if (mode === "signup" && password !== confirmPassword) {
+      setError("Your passwords do not match.");
+      return;
+    }
+    if (mode === "signin" && password.length < 8) {
+      setError("Enter your password (at least 8 characters).");
       return;
     }
     setBusy(true);
@@ -115,24 +128,24 @@ export default function LoginPage() {
   }
 
   return <main className="auth-page">
-    <div className="auth-top"><Link href="/" className="back-link"><ArrowLeft size={16}/> Back to preview</Link><span className="auth-secure"><LockKeyhole size={14}/> Secure account access</span></div>
+    <div className="auth-top"><Link href="/" className="back-link"><ArrowLeft size={16}/> Back to BusinessIQ</Link><span className="auth-secure"><LockKeyhole size={14}/> Secure account access</span></div>
     <section className="auth-card">
-      <div className="auth-logo">B</div>
-      <span className="tool-eyebrow">BUSINESS INTELLIGENCE WORKSPACE</span>
+      <div className="auth-logo"><span>B</span></div>
+      <span className="tool-eyebrow">BUSINESSIQ · SECURE WORKSPACE</span>
       <h1>{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
       <p className="auth-intro">{mode === "signin" ? "Sign in to continue to your business workspace." : "Set up your account to begin your workspace journey."}</p>
       {!supabase && <div className="auth-info"><strong>Setup required</strong><p>This sign-in screen is not connected. Please contact the platform administrator.</p></div>}
       <form onSubmit={handleSubmit}>
-        {mode === "signup" && <label className="auth-field">Your name<input required minLength={2} maxLength={80} autoComplete="name" value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="e.g. Alex Morgan"/></label>}
-        <label className="auth-field">Email address<input required type="email" autoComplete="email" maxLength={254} value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com"/></label>
-        <label className="auth-field">Password<span className="password-control"><input required type={showPassword ? "text" : "password"} minLength={8} autoComplete={mode === "signin" ? "current-password" : "new-password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters"/><button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(v => !v)}>{showPassword ? <EyeOff size={17}/> : <Eye size={17}/>}</button></span></label>
+        {mode === "signup" && <label className="auth-field">Full name<input required minLength={2} maxLength={80} autoComplete="name" value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Your full name"/></label>}
+        <label className="auth-field">Email address<input required type="email" autoComplete="email" maxLength={254} value={email} onChange={e => setEmail(e.target.value)} placeholder="name@company.com"/></label>
+        <label className="auth-field">Password<span className="password-control"><input required type={showPassword ? "text" : "password"} minLength={8} autoComplete={mode === "signin" ? "current-password" : "new-password"} value={password} onChange={e => setPassword(e.target.value)} placeholder={mode === "signup" ? "At least 10 characters" : "Enter your password"}/><button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(v => !v)}>{showPassword ? <EyeOff size={17}/> : <Eye size={17}/>}</button></span></label>
         {error && <div className="auth-error" role="alert">{error}</div>}
         {message && <div className="auth-success" role="status">{message}</div>}
         <button className="auth-submit" disabled={busy || resending} type="submit">{busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}</button>
       </form>
       {mode === "signin" && <p className="auth-switch"><Link href="/reset-password">Forgot your password?</Link></p>}
       {canResend && <button className="auth-resend" type="button" onClick={handleResendConfirmation} disabled={resending || busy}><Mail size={16}/>{resending ? "Requesting email…" : "Resend confirmation email"}</button>}
-      <p className="auth-switch">{mode === "signin" ? "New to the platform?" : "Already have an account?"} <button onClick={() => {setMode(mode === "signin" ? "signup" : "signin"); setError(""); setMessage(""); setCanResend(false);}}>{mode === "signin" ? "Create an account" : "Sign in instead"}</button></p>
+      <p className="auth-switch">{mode === "signin" ? "New to the platform?" : "Already have an account?"} <button onClick={() => {setMode(mode === "signin" ? "signup" : "signin"); setError(""); setMessage(""); setCanResend(false); setConfirmPassword("");}}>{mode === "signin" ? "Create an account" : "Sign in instead"}</button></p>
       <p className="auth-legal">Use a unique password. Never share your password or account recovery codes. Workspace data access is controlled by account permissions.</p>
     </section>
   </main>;
