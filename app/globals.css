@@ -1024,3 +1024,85 @@ tbody tr:hover{background:#fbfdfb}
 @media(max-width:900px){.sidebar{width:264px;transform:translateX(-100%);transition:transform .22s ease;box-shadow:12px 0 35px rgba(17,38,27,.12)}.sidebar.sidebar-open{transform:translateX(0)}.main-area{margin-left:0}.menu-toggle,.close-nav{display:grid}.topbar{gap:12px}.content{padding:24px 20px}.workspace-contextbar{padding:12px 20px}.dashboard-grid,.dashboard-grid-lower{grid-template-columns:minmax(0,1fr)}.powerbi-visual-grid{grid-template-columns:minmax(0,1fr) minmax(260px,.9fr)}}
 @media(max-width:640px){.topbar{height:60px;padding:0 14px}.crumb{font-size:10px}.top-actions{gap:8px}.searchbox{width:min(42vw,180px);height:34px}.workspace-contextbar{padding:10px 15px;align-items:flex-start;flex-direction:column;gap:7px}.contextbar-meta{gap:12px;flex-wrap:wrap;font-size:9px}.content{padding:21px 14px 22px}.welcome-row{align-items:flex-start;flex-direction:column;margin-bottom:18px}.welcome-row h1{font-size:25px}.header-controls{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px}.period-select{min-width:0}.period-select select{width:100%}.header-controls .primary-btn{justify-content:center}.header-controls .subtle-btn{justify-content:center}.metrics-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.metric-card{padding:13px;min-height:119px}.metric-top{font-size:10px}.metric-icon{width:29px;height:29px}.metric-value{font-size:clamp(16px,5vw,21px);margin:13px 0 8px}.metric-foot{font-size:8px;flex-wrap:wrap}.panel{padding:16px 14px}.panel-heading h2{font-size:13px}.panel-heading p{font-size:9px}.chart-wrap{height:195px}.dashboard-grid,.dashboard-grid-lower{gap:10px;margin-bottom:10px}.powerbi-report{padding:15px;margin:16px 0}.powerbi-report-heading{align-items:flex-start;flex-direction:column;gap:10px}.powerbi-report-heading h2{font-size:17px}.powerbi-visual-grid{grid-template-columns:minmax(0,1fr)}.powerbi-bar-chart{height:210px}.powerbi-donut-wrap{height:180px}.powerbi-report-foot{flex-direction:column;gap:5px}.transactions-panel{padding:15px 12px 0}.transactions-panel .panel-heading{align-items:flex-start;gap:8px}.transactions-panel .subtle-btn{font-size:9px;padding:7px}.table-scroll{margin-left:-5px;margin-right:-5px;width:calc(100% + 10px)}thead th,tbody td{padding:11px 8px}.pbi-page-tabs{margin:17px -4px 0;overflow-x:auto;white-space:nowrap}.pbi-page-count{display:none}.footer{gap:8px;flex-wrap:wrap;line-height:1.5}.currency-integrity-note{font-size:9px}.loading-panel{min-height:210px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
+
+
+/* BusinessIQ independent analytics workspace refresh — Databox-inspired, not a Microsoft/Power BI clone */
+:root{--ink:#17251f;--muted:#78877f;--line:#e6ece8;--green:#18845f;--green-dark:#116849;--soft:#f3f7f4}
+body{background:#f4f7f5;color:#17251f}
+.sidebar{width:254px;background:#14241e;border-right:1px solid #263a31;padding:24px 15px 0;color:#f3f8f5}
+.brand{padding-bottom:27px}
+.brand-mark{background:#1b966b;border-radius:10px;box-shadow:0 5px 14px #0b120e55}
+.brand strong{color:#f7fbf8}
+.brand span{color:#91a99c}
+.workspace-label,.nav-label{color:#82968b}
+.workspace-switch{background:#1b3027;border:1px solid #2b4338;color:#f0f7f2;border-radius:11px;margin-bottom:24px}
+.workspace-avatar{background:#285342;color:#c5f2dc}
+.workspace-text small{color:#a2b7ab}
+.nav-item{color:#b5c5bc;border-radius:9px;padding:10px 11px;font-size:12px}
+.nav-item.active{background:#224a39;color:#d6f7e7;box-shadow:inset 3px 0 #48c18d}
+.nav-item:hover{background:#1d392d;color:#fff}
+.sidebar-bottom{border-top:1px solid #2a4035}
+.secure-icon{background:#214635;color:#70d4a7}
+.sidebar-bottom>strong{color:#f1f8f3}
+.sidebar-bottom p{color:#9db1a5}
+.sidebar-bottom>a,.sidebar-signout{color:#7bd7ac}
+.profile{border-top-color:#2a4035}
+.profile strong{color:#f4f8f5}
+.profile small{color:#9eb2a6}
+.profile-avatar{background:#315342;color:#e1f6e9}
+.main-area{margin-left:254px}
+.topbar{height:70px;background:#fff;border-bottom:1px solid #e7ede9;padding:0 34px;box-shadow:0 2px 8px rgba(18,43,30,.025)}
+.crumb{font-size:12px;color:#829087}
+.crumb strong{color:#263b30}
+.searchbox{border-radius:10px;background:#f7faf8;border-color:#e8eeea;height:37px}
+.content{max-width:1500px;padding:32px 34px 24px}
+.workspace-contextbar{background:#fff;border-bottom:1px solid #e8eeea;padding:12px 34px}
+.contextbar-label{color:#8a9a91}
+.contextbar-meta{color:#78877f}
+.contextbar-meta i{background:#24a477}
+.welcome-row{margin-bottom:22px}
+.welcome-row h1{font-size:29px;letter-spacing:-1.2px;color:#172920}
+.welcome-row h1 span{color:#23a474}
+.subheading{font-size:12px;color:#7d8c83}
+.eyebrow{color:#74877c;letter-spacing:1.25px}
+.status-dot{background:#24a477;box-shadow:0 0 0 4px #e5f5ed}
+.primary-btn{background:#18845f;border-radius:9px;padding:11px 15px;box-shadow:0 4px 10px #18845f20}
+.primary-btn:hover{background:#116849}
+.subtle-btn,.period-select{border-radius:9px}
+.metrics-grid{gap:14px;margin-bottom:17px}
+.metric-card,.panel{border:1px solid #e6ece8;border-radius:15px;box-shadow:0 3px 12px rgba(21,48,34,.035)}
+.metric-card{padding:18px 18px 16px;min-height:137px}
+.metric-card-primary{background:#173c2d;border-color:#173c2d;color:#fff}
+.metric-card-primary .metric-top,.metric-card-primary .metric-foot,.metric-card-primary .metric-foot span{color:#c3d9cc}
+.metric-card-primary .metric-value{color:#fff}
+.metric-card-primary .metric-icon{background:#285a43;color:#9de5bd}
+.metric-top{color:#78877f}
+.metric-value{color:#1c2e24;font-size:clamp(20px,1.8vw,27px);letter-spacing:-1px}
+.metric-icon{border-radius:10px}
+.dashboard-grid,.dashboard-grid-lower{gap:16px;margin-bottom:16px}
+.panel{padding:21px}
+.panel-heading h2{font-size:15px;color:#1c3025}
+.panel-heading p{font-size:10px;color:#849188}
+.live-chart-badge{background:#eff7f2;color:#4e8069;border:1px solid #e4f0e8;border-radius:20px}
+.chart-wrap{height:245px}
+.chart-legend{margin-top:18px}
+.finance-summary-panel{background:linear-gradient(150deg,#fff 0%,#f7fbf8 100%)}
+.pnl-total strong{font-size:30px}
+.powerbi-report{margin:20px 0 17px;padding:22px;background:#edf5f0;border:1px solid #e1ece5;border-radius:15px}
+.powerbi-report-heading h2{font-size:20px;color:#1b3025}
+.powerbi-report-heading p{color:#718278}
+.powerbi-eyebrow{color:#52806a}
+.powerbi-source-badge{border-radius:20px;background:#fff;color:#5b7969}
+.powerbi-visual{border-radius:13px;box-shadow:0 2px 8px rgba(18,43,30,.025)}
+.transactions-panel{padding:21px 21px 0}
+thead th{background:#f8faf9;color:#829188}
+tbody tr:hover{background:#f7fbf8}
+.pbi-page-tabs{position:static;display:flex;gap:7px;margin:18px 0 0;padding:0;border:0;background:transparent;box-shadow:none;backdrop-filter:none;overflow-x:auto}
+.pbi-page-tab,.pbi-page-tab-active{background:#fff;border:1px solid #e6ece8;border-radius:9px;padding:9px 12px;color:#64766b}
+.pbi-page-tab-active{background:#e5f4eb;border-color:#d4eadc;color:#176c4d}
+.pbi-page-tabs-spacer,.pbi-page-count{display:none}
+.footer{padding:20px 0 8px}
+.loading-panel{border-radius:15px;box-shadow:0 3px 12px rgba(21,48,34,.035)}
+@media(max-width:1200px){.sidebar{width:245px}.main-area{margin-left:245px}.content{padding-left:24px;padding-right:24px}.workspace-contextbar{padding-left:24px;padding-right:24px}}
+@media(max-width:900px){.sidebar{width:264px;background:#14241e}.main-area{margin-left:0}.topbar{padding:0 20px}.content{padding:24px 20px}.workspace-contextbar{padding:12px 20px}}
+@media(max-width:640px){.topbar{padding:0 14px}.workspace-contextbar{padding:10px 15px}.content{padding:21px 14px 22px}.welcome-row h1{font-size:25px}.metric-card-primary{grid-column:span 2}.metric-card{min-height:115px}.panel{padding:16px 14px}.chart-wrap{height:210px}.powerbi-report{padding:15px}.transactions-panel{padding:15px 12px 0}}
