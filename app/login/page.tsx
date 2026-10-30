@@ -10,6 +10,11 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabase = supabaseUrl && supabaseAnonKey ? createBrowserClient(supabaseUrl, supabaseAnonKey) : null;
 
+function getPostAuthDestination() {
+  const requested = new URLSearchParams(window.location.search).get("next");
+  return requested && requested.startsWith("/") && !requested.startsWith("//") ? requested : "/";
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
@@ -47,7 +52,7 @@ export default function LoginPage() {
         if (authError) throw authError;
         if (data.session) {
           setMessage("Account created. Opening your workspace…");
-          router.replace("/");
+          router.replace(getPostAuthDestination());
         } else {
           setMessage("Your account request was received. Check your inbox and spam folder for a confirmation email. If it does not arrive, use the resend option below.");
           setCanResend(true);
@@ -64,7 +69,7 @@ export default function LoginPage() {
           throw authError;
         }
         setMessage("Signed in. Opening your workspace…");
-        router.replace("/");
+        router.replace(getPostAuthDestination());
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unable to complete authentication. Please try again.");
