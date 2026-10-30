@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    const pending = rows.filter((r:any)=>r.status==="pending");
+    const pending = rows.filter((r:any)=>r.status==="pending" && new Date(r.transaction_date) >= currentStart);
     const categories = new Map<string,{currency:string;amount:number;count:number}>();
     currentRows.filter((r:any)=>r.kind==="expense").forEach((r:any)=>{
       const key = r.currency + "::" + (r.category || "Uncategorised");
@@ -95,8 +95,8 @@ export async function GET(request: NextRequest) {
       { id:"operations", name:"Operational intelligence", status:operationsReady?"partial":"needs_data", source:"Workspace membership and manually recorded business locations", description:"Team and footprint coverage are visible. Department KPIs, inventory, delivery, service levels and workforce productivity are not yet captured." },
       { id:"predictive", name:"Predictive analytics", status:"readiness", source:"Historical transaction coverage", description:"Forecasting and anomaly models are not activated. BusinessIQ will not label a run-rate or rule-based alert as a prediction." },
       { id:"drilldown", name:"Drill-down analytics", status:hasFinancialData?"available":"needs_data", source:"Transaction ledger and expense categories", description:"Financial totals can be traced to recorded transaction rows and expense categories; customer, product and department drill-downs await those data sources." },
-      { id:"enterprise", name:"Enterprise controls & integrations", status:"partial", source:"Workspace membership, role checks, audit trail and connector configuration", description:"Workspace-isolated access and multi-workspace comparison are available. Live third-party syncs and automated scheduled reporting require connector setup." },
-      { id:"ai", name:"AI decision support", status:hasFinancialData?"available":"needs_data", source:"Authorised workspace transaction context", description:"BusinessIQ Assistant answers from permission-scoped workspace records and states the limits of available data." },
+      { id:"enterprise", name:"Enterprise controls & integrations", status:"partial", source:"Workspace membership and role checks; audit events are only partially instrumented", description:"Workspace-isolated access and membership across multiple workspaces are supported. Comprehensive audit coverage, live third-party syncs and automated scheduled reporting are not yet verified as complete." },
+      { id:"ai", name:"Decision support assistant", status:hasFinancialData?"available":"needs_data", source:"Permission-checked workspace transaction context", description:"The current decision assistant uses transparent rule-based analysis of authorised workspace records; it is not a generative AI model." },
     ];
 
     return NextResponse.json({
@@ -117,8 +117,8 @@ export async function GET(request: NextRequest) {
       operational: { workspace_members: memberCount, recorded_locations: locationCount },
       predictive: { enabled: false, reason: "A reliable forecasting layer requires sufficiently complete historical periods and validated source coverage.", available_history_days: period * 2 },
       drilldown: { available_dimensions: ["transaction_date","transaction_type","currency","category","status"], unavailable_dimensions: ["customer","product","department","sales_channel"] },
-      enterprise: { multi_workspace_access: true, workspace_member_count: memberCount, audit_logging: true, live_external_sync: false, scheduled_reporting: false },
-      ai: { assistant_available: true, grounded_in_authorised_workspace_data: true, external_company_data_used: false },
+      enterprise: { multi_workspace_access: true, workspace_member_count: memberCount, audit_logging: false, live_external_sync: false, scheduled_reporting: false },
+      ai: { assistant_available: true, grounded_in_authorised_workspace_data: true, external_company_data_used: false, generative_model_active: false },
       modules,
       data_quality: {
         source: "BusinessIQ workspace records",
