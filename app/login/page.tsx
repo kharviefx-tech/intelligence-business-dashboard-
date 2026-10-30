@@ -107,7 +107,7 @@ export default function LoginPage() {
   return <main className="auth-page pbi-auth-page">
     <header className="auth-commandbar">
       <Link href="/" className="auth-brand"><span className="auth-brand-mark">B</span><span><strong>BusinessIQ</strong><small>BUSINESS INTELLIGENCE</small></span></Link>
-      <nav className="auth-command-tabs" aria-label="BusinessIQ sections"><Link className="selected" href="/">Workspace</Link><Link href="/#analytics">Analytics</Link><Link href="/settings">Security</Link></nav>
+      <nav className="auth-command-tabs" aria-label="BusinessIQ sections"><Link className="selected" href="/">Workspace</Link><Link href="/company">Company</Link><Link href="/security">Security</Link></nav>
       <span className="auth-secure"><LockKeyhole size={14}/> Secure account access</span>
     </header>
     <div className="auth-workspace">
