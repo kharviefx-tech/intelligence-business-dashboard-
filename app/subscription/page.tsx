@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Check, CreditCard, ShieldCheck, Sparkles, Building2, Crown, LoaderCircle, ArrowUpRight, RefreshCw } from "lucide-react";
 
@@ -105,7 +105,7 @@ export default function SubscriptionPage() {
   const selectedWorkspace = workspaces.find(w => w.id === selectedWorkspaceId) || workspaces[0];
   const currentPlan = selectedWorkspace?.plan || "Free";
 
-  async function startCheckout(planCode: string) {
+  const startCheckout = useCallback(async (planCode: string) => {
     if (planCode === "enterprise") {
       setNotice("Enterprise is arranged through a requirements discussion and custom quotation. No payment is requested until the scope and price are agreed.");
       setNoticeType("info");
@@ -143,7 +143,7 @@ export default function SubscriptionPage() {
       setNoticeType("error");
       setCheckoutPlan("");
     }
-  }
+  }, [billingCycle, selectedWorkspaceId]);
 
   async function checkPaymentStatus() {
     if (!pendingReference) return;
@@ -193,7 +193,7 @@ export default function SubscriptionPage() {
     setSelectedWorkspaceId(organizationId);
     setBillingCycle(cycle as BillingCycle);
     void startCheckout(planCode);
-  }, [loading, workspaces]);
+  }, [loading, workspaces, startCheckout]);
 
   return <main className="tool-page subscription-page">
     <header className="tool-topbar">
