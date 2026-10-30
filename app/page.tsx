@@ -2,15 +2,15 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Activity, ArrowDownRight, ArrowUpRight, Bell, ChevronDown, CircleHelp, Download, FileText, LayoutDashboard, LoaderCircle, LogOut, Menu, Plus, Search, Settings, ShieldCheck, ShoppingCart, Users, Wallet, X, RefreshCw, AlertCircle } from "lucide-react";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Activity, ArrowDownRight, ArrowUpRight, ChevronDown, CircleHelp, Download, Upload, FileText, LayoutDashboard, LoaderCircle, LogOut, Menu, Plus, Search, Settings, ShieldCheck, ShoppingCart, Users, Wallet, X, RefreshCw, AlertCircle, Globe2, MapPin, MapPinned, Sparkles, Send, BrainCircuit } from "lucide-react";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell, Pie, PieChart } from "recharts";
 import { useRouter } from "next/navigation";
 import { createClient } from "../utils/supabase/client";
 
 type Organization = { id: string; name: string; currency: string; plan: string };
 type Transaction = {
   id: string; organization_id: string; transaction_date: string; description: string;
-  kind: "income" | "expense"; amount: number; currency: string; category: string; status: "pending" | "recorded" | "cancelled";
+  kind: "income" | "expense"; amount: number; currency: string; category: string; status: "pending" | "recorded" | "cancelled"; sub_category?: string | null; customer_segment?: string | null; city?: string | null; region?: string | null; country?: string | null;
 };
 const supabase = createClient();
 const allowedCurrencies = ["NGN", "USD", "GBP", "EUR", "GHS", "KES", "ZAR"];
@@ -19,7 +19,38 @@ const money = (n: number, currency: string) => {
   catch { return new Intl.NumberFormat("en-NG", { maximumFractionDigits: 0 }).format(n) + " " + currency; }
 };
 const monthName = (date: Date) => date.toLocaleDateString("en", { month: "short" });
-const initialForm = { description: "", kind: "income" as "income" | "expense", amount: "", category: "", transaction_date: new Date().toISOString().slice(0, 10), status: "recorded" as "recorded" | "pending" };
+function parseCsvText(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = "";
+  let quoted = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '"' && quoted && text[i + 1] === '"') {
+      cell += '"';
+      i++;
+    } else if (ch === '"') {
+      quoted = !quoted;
+    } else if (ch === ',' && !quoted) {
+      row.push(cell.trim());
+      cell = "";
+    } else if ((ch === '\n' || ch === '\r') && !quoted) {
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+      row.push(cell.trim());
+      if (row.some((value) => value !== "")) rows.push(row);
+      row = [];
+      cell = "";
+    } else {
+      cell += ch;
+    }
+  }
+
+  row.push(cell.trim());
+  if (row.some((value) => value !== "")) rows.push(row);
+  return rows;
+}
+const initialForm = { description: "", kind: "income" as "income" | "expense", amount: "", category: "", sub_category: "", customer_segment: "", city: "", region: "", country: "", transaction_date: new Date().toISOString().slice(0, 10), status: "recorded" as "recorded" | "pending" };
 
 export default function Home() {
   const router = useRouter();
@@ -30,6 +61,8 @@ export default function Home() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [organizationId, setOrganizationId] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [geoSchemaReady, setGeoSchemaReady] = useState(false);
+  const [salesSchemaReady, setSalesSchemaReady] = useState(false);
   const [period, setPeriod] = useState("30");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -39,7 +72,13 @@ export default function Home() {
   const [mobileNav, setMobileNav] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [importBusy, setImportBusy] = useState(false);
   const [form, setForm] = useState(initialForm);
+  const [aiAnalysis, setAiAnalysis] = useState("");
+  const [aiQuestion, setAiQuestion] = useState("");
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiError, setAiError] = useState("");
+  const [aiUpdatedAt, setAiUpdatedAt] = useState("");
 
   const loadData = useCallback(async (quiet = false) => {
     if (quiet) setRefreshing(true); else setLoading(true);
@@ -68,11 +107,38 @@ export default function Home() {
       const preferredId = profileInfo?.preferred_organization_id;
       const currentId = safeOrgs.some(o => o.id === organizationId) ? organizationId : safeOrgs.some(o => o.id === preferredId) ? preferredId : safeOrgs[0].id;
       setOrganizationId(currentId);
-      const { data: rows, error: txError } = await supabase.from("bi_transactions")
-        .select("id,organization_id,transaction_date,description,kind,amount,currency,category,status")
-        .eq("organization_id", currentId).order("transaction_date", { ascending: false }).limit(1000);
-      if (txError) throw txError;
-      setTransactions((rows ?? []) as Transaction[]);
+      const fetchAllTransactionPages = async (columns: string) => {
+        const pageSize = 1000;
+        const all: Record<string, unknown>[] = [];
+        for (let from = 0; ; from += pageSize) {
+          const result = await supabase.from("bi_transactions")
+            .select(columns)
+            .eq("organization_id", currentId)
+            .order("transaction_date", { ascending: false })
+            .order("id", { ascending: false })
+            .range(from, from + pageSize - 1);
+          if (result.error) return { data: null, error: result.error };
+          const batch = (result.data ?? []) as unknown as Record<string, unknown>[];
+          all.push(...batch);
+          if (batch.length < pageSize) break;
+        }
+        return { data: all, error: null };
+      };
+      let rows: Transaction[] = [];
+      const withAnalytics = await fetchAllTransactionPages("id,organization_id,transaction_date,description,kind,amount,currency,category,status,sub_category,customer_segment,city,region,country");
+      if (withAnalytics.error) {
+        const withGeo = await fetchAllTransactionPages("id,organization_id,transaction_date,description,kind,amount,currency,category,status,city,region,country");
+        if (withGeo.error) {
+          const base = await fetchAllTransactionPages("id,organization_id,transaction_date,description,kind,amount,currency,category,status");
+          if (base.error) throw base.error;
+          rows = (base.data ?? []).map((t) => ({ ...t, sub_category: null, customer_segment: null, city: null, region: null, country: null })) as Transaction[];
+          setGeoSchemaReady(false); setSalesSchemaReady(false);
+        } else {
+          rows = (withGeo.data ?? []).map((t) => ({ ...t, sub_category: null, customer_segment: null })) as Transaction[];
+          setGeoSchemaReady(true); setSalesSchemaReady(false);
+        }
+      } else { rows = (withAnalytics.data ?? []) as Transaction[]; setGeoSchemaReady(true); setSalesSchemaReady(true); }
+      setTransactions(rows);
       setNotice("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "We could not load your workspace data.");
@@ -86,18 +152,20 @@ export default function Home() {
 
   const organization = organizations.find(o => o.id === organizationId);
   const currency = organization?.currency && allowedCurrencies.includes(organization.currency) ? organization.currency : "NGN";
-  const since = useMemo(() => {
-    const d = new Date();
-    if (period === "30") d.setDate(d.getDate() - 30);
-    else if (period === "90") d.setDate(d.getDate() - 90);
-    else d.setMonth(d.getMonth() - 6);
-    d.setHours(0, 0, 0, 0);
-    return d;
+  const dateRange = useMemo(() => {
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+    const start = new Date();
+    if (period === "30") start.setDate(start.getDate() - 29);
+    else if (period === "90") start.setDate(start.getDate() - 89);
+    else start.setMonth(start.getMonth() - 5, 1);
+    start.setHours(0, 0, 0, 0);
+    return { start, end };
   }, [period]);
   const periodTransactions = useMemo(() => transactions.filter(t => {
     const date = new Date(t.transaction_date + "T00:00:00");
-    return date >= since && t.status !== "cancelled" && t.currency === currency;
-  }), [transactions, since, currency]);
+    return date >= dateRange.start && date <= dateRange.end && t.status !== "cancelled" && t.currency === currency;
+  }), [transactions, dateRange, currency]);
   const totals = useMemo(() => {
     const income = periodTransactions.filter(t => t.kind === "income" && t.status === "recorded").reduce((s,t) => s + Number(t.amount), 0);
     const expenses = periodTransactions.filter(t => t.kind === "expense" && t.status === "recorded").reduce((s,t) => s + Number(t.amount), 0);
@@ -106,7 +174,22 @@ export default function Home() {
   }, [periodTransactions]);
   const trend = useMemo(() => {
     const now = new Date();
-    const count = period === "30" ? 6 : period === "90" ? 3 : 6;
+    if (period === "30") {
+      return Array.from({ length: 5 }, (_, index) => {
+        const end = new Date(now);
+        end.setHours(23, 59, 59, 999);
+        end.setDate(end.getDate() - (4 - index) * 6);
+        const start = new Date(end);
+        start.setDate(start.getDate() - 5);
+        start.setHours(0, 0, 0, 0);
+        const rows = periodTransactions.filter(t => {
+          const d = new Date(t.transaction_date + "T00:00:00");
+          return d >= start && d <= end && t.status === "recorded";
+        });
+        return { month: start.toLocaleDateString("en", { month: "short", day: "numeric" }), revenue: rows.filter(t => t.kind === "income").reduce((s,t) => s + Number(t.amount), 0), expenses: rows.filter(t => t.kind === "expense").reduce((s,t) => s + Number(t.amount), 0) };
+      });
+    }
+    const count = period === "90" ? 3 : 6;
     return Array.from({ length: count }, (_, index) => {
       const d = new Date(now.getFullYear(), now.getMonth() - (count - 1 - index), 1);
       const key = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
@@ -114,7 +197,32 @@ export default function Home() {
       return { month: monthName(d), revenue: monthRows.filter(t => t.kind === "income").reduce((s,t) => s + Number(t.amount), 0), expenses: monthRows.filter(t => t.kind === "expense").reduce((s,t) => s + Number(t.amount), 0) };
     });
   }, [periodTransactions, period]);
-  const filtered = useMemo(() => transactions.filter(t => (t.description + " " + t.category + " " + t.status).toLowerCase().includes(query.toLowerCase())), [transactions]);
+  const filtered = useMemo(() => transactions.filter(t => (t.description + " " + t.category + " " + (t.sub_category ?? "") + " " + (t.customer_segment ?? "") + " " + t.status + " " + (t.city ?? "") + " " + (t.region ?? "") + " " + (t.country ?? "")).toLowerCase().includes(query.toLowerCase())), [transactions, query]);
+  const salesAnalytics = useMemo(() => {
+    const sales = periodTransactions.filter(t => t.kind === "income" && t.status === "recorded");
+    const aggregate = (keyOf: (t: Transaction) => string) => {
+      const groups = new Map<string, { name: string; sales: number; orders: number }>();
+      for (const t of sales) {
+        const name = keyOf(t).trim() || "Unspecified";
+        const g = groups.get(name) ?? { name, sales: 0, orders: 0 };
+        g.sales += Number(t.amount); g.orders += 1; groups.set(name, g);
+      }
+      return [...groups.values()].sort((a,b) => b.sales - a.sales);
+    };
+    const categories = aggregate(t => t.category || "Uncategorized");
+    const subCategories = aggregate(t => t.sub_category || "Unspecified");
+    const segments = aggregate(t => t.customer_segment || "Unspecified");
+    const regions = aggregate(t => [(t.region || "").trim(), (t.country || "").trim()].filter(Boolean).join(", ") || "Unspecified");
+    const now = new Date();
+    const monthly = Array.from({ length: 12 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
+      const key = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+      const rows = transactions.filter(t => t.currency === currency && t.kind === "income" && t.status === "recorded" && t.transaction_date.startsWith(key));
+      return { month: d.toLocaleDateString("en", { month: "short", year: "2-digit" }), sales: rows.reduce((sum,t) => sum + Number(t.amount), 0), orders: rows.length };
+    });
+    return { salesTotal: sales.reduce((sum,t) => sum + Number(t.amount), 0), orderCount: sales.length, categories, topCategories: categories.slice(0,5), subCategories: subCategories.filter(g => g.name !== "Unspecified").slice(0,8), segments, regions: regions.filter(g => g.name !== "Unspecified").slice(0,8), monthly, hasSubCategories: sales.some(t => Boolean(t.sub_category?.trim())), hasSegments: sales.some(t => Boolean(t.customer_segment?.trim())), hasRegions: sales.some(t => Boolean(t.region?.trim() || t.country?.trim())) };
+  }, [periodTransactions, transactions, currency]);
+  const geographic = useMemo(() => { const located = periodTransactions.filter(t => Boolean((t.city ?? "").trim() || (t.region ?? "").trim() || (t.country ?? "").trim())); const groupBy = (keyOf: (t: Transaction) => string) => { const groups = new Map<string, { name: string; country: string; region: string; city: string; revenue: number; expenses: number; count: number }>(); for (const t of located) { const name = keyOf(t); if (!name) continue; const g = groups.get(name) ?? { name, country: "", region: "", city: "", revenue: 0, expenses: 0, count: 0 }; g.count += 1; if (t.status === "recorded") { if (t.kind === "income") g.revenue += Number(t.amount); else g.expenses += Number(t.amount); } g.country ||= t.country?.trim() ?? ""; g.region ||= t.region?.trim() ?? ""; g.city ||= t.city?.trim() ?? ""; groups.set(name, g); } return [...groups.values()].sort((a,b) => (b.revenue+b.expenses) - (a.revenue+a.expenses)); }; const countries = groupBy(t => (t.country ?? "").trim()); const regions = groupBy(t => [(t.region ?? "").trim(), (t.country ?? "").trim()].filter(Boolean).join(", ")); const cities = groupBy(t => [(t.city ?? "").trim(), (t.region ?? "").trim(), (t.country ?? "").trim()].filter(Boolean).join(", ")); const locatedIncome = located.filter(t => t.kind === "income" && t.status === "recorded").reduce((n,t)=>n+Number(t.amount),0); const allIncome = periodTransactions.filter(t => t.kind === "income" && t.status === "recorded").reduce((n,t)=>n+Number(t.amount),0); return { located, countries: countries.filter(g=>g.name).slice(0,6), regions: regions.filter(g=>g.name).slice(0,8), cities: cities.filter(g=>g.name).slice(0,6), countryCount: new Set(located.map(t=>(t.country??"").trim()).filter(Boolean)).size, regionCount: new Set(located.map(t=>(t.region??"").trim()).filter(Boolean)).size, cityCount: new Set(located.map(t=>(t.city??"").trim()).filter(Boolean)).size, coverage: allIncome > 0 ? Math.round(locatedIncome / allIncome * 100) : 0 }; }, [periodTransactions]);
 
   async function addTransaction(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -122,6 +230,8 @@ export default function Home() {
     if (!organizationId) { setError("Create or select a workspace first."); return; }
     const amount = Number(form.amount);
     if (!Number.isFinite(amount) || amount <= 0) { setError("Enter an amount greater than zero."); return; }
+    if (!geoSchemaReady && (form.city.trim() || form.region.trim() || form.country.trim())) { setError("Geographic fields are not enabled in the connected database yet. Apply the BusinessIQ geographic analytics migration before saving location details."); return; }
+    if (!salesSchemaReady && (form.sub_category.trim() || form.customer_segment.trim())) { setError("Sales category and customer segment fields are not enabled in the connected database yet. Apply the BusinessIQ sales analytics migration before saving these details."); return; }
     setSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -129,7 +239,7 @@ export default function Home() {
       const { error: insertError } = await supabase.from("bi_transactions").insert({
         organization_id: organizationId, created_by: user.id, description: form.description.trim(),
         kind: form.kind, amount, currency, category: form.category.trim() || "Uncategorized",
-        transaction_date: form.transaction_date, status: form.status,
+        transaction_date: form.transaction_date, status: form.status, ...(salesSchemaReady ? { sub_category: form.sub_category.trim() || null, customer_segment: form.customer_segment.trim() || null } : {}), ...(geoSchemaReady ? { city: form.city.trim() || null, region: form.region.trim() || null, country: form.country.trim() || null } : {}),
       });
       if (insertError) throw insertError;
       setForm(initialForm); setShowAdd(false);
@@ -140,13 +250,72 @@ export default function Home() {
     } finally { setSaving(false); }
   }
 
-  function exportCsv() {
-    const rows = [["Date", "Description", "Category", "Type", "Status", "Currency", "Amount"], ...filtered.map(t => [t.transaction_date, t.description, t.category, t.kind, t.status, t.currency, String(t.amount)])];
-    const csv = rows.map(row => row.map(cell => '"' + String(cell).replaceAll('"', '""') + '"').join(",")).join("\n");
-    const url = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }));
-    const link = document.createElement("a"); link.href = url; link.download = "businessiq-transactions.csv"; link.click(); URL.revokeObjectURL(url);
+  async function importCsvFile(file: File) {
+    setError(""); setNotice("");
+    if (!organizationId) { setError("Create or select a workspace before importing records."); return; }
+    setImportBusy(true);
+    let importedBeforeFailure = 0;
+    try {
+      const parsed = parseCsvText(await file.text());
+      if (parsed.length < 2) throw new Error("This CSV has no data rows. Add transactions beneath the header row.");
+      const headers = parsed[0].map(h => h.toLowerCase().replace(/[\s_-]+/g, "").replace(/[^a-z]/g, ""));
+      const index = (...names: string[]) => headers.findIndex(h => names.includes(h));
+      const ix = { date:index("date","transactiondate"), description:index("description","transaction","name"), kind:index("type","kind","transactiontype"), amount:index("amount","value","total"), category:index("category"), sub:index("subcategory","product","service"), segment:index("customersegment","segment"), status:index("status"), city:index("city"), region:index("region","state","stateprovince"), country:index("country") };
+      const missing = ([["date",ix.date],["description",ix.description],["type",ix.kind],["amount",ix.amount]] as [string,number][]).filter(([,i])=>i<0).map(([n])=>n);
+      if (missing.length) throw new Error("Missing required CSV columns: " + missing.join(", ") + ". Download the BusinessIQ CSV template.");
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Your session expired. Sign in again before importing.");
+      const valid: Record<string, unknown>[] = []; const issues: string[] = [];
+      for (let r=1;r<parsed.length;r++) {
+        const row=parsed[r]; const get=(i:number)=>i<0?"":(row[i]??"").trim();
+        const date=get(ix.date), description=get(ix.description), kind=get(ix.kind).toLowerCase();
+        const amount=Number(get(ix.amount).replace(/[,\s]/g,"")); const status=(get(ix.status)||"recorded").toLowerCase();
+        const parsedDate = /^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(date + "T00:00:00Z") : null;
+        const validDate = Boolean(parsedDate && !Number.isNaN(parsedDate.getTime()) && parsedDate.toISOString().slice(0,10) === date);
+        if(!validDate||!description||!["income","expense"].includes(kind)||!Number.isFinite(amount)||amount<=0||!["recorded","pending","cancelled"].includes(status)){issues.push("row "+(r+1));continue;}
+        const item:Record<string,unknown>={organization_id:organizationId,created_by:user.id,transaction_date:date,description:description.slice(0,240),kind,amount,currency,category:(get(ix.category)||"Uncategorized").slice(0,120),status};
+        if(salesSchemaReady){item.sub_category=get(ix.sub)||null;item.customer_segment=get(ix.segment)||null;}
+        if(geoSchemaReady){item.city=get(ix.city)||null;item.region=get(ix.region)||null;item.country=get(ix.country)||null;}
+        valid.push(item);
+      }
+      if(!valid.length) throw new Error("No valid rows found. Use YYYY-MM-DD dates, income/expense types, positive amounts, and recorded/pending/cancelled status.");
+      for(let start=0;start<valid.length;start+=100){
+        const {error:insertError}=await supabase.from("bi_transactions").insert(valid.slice(start,start+100));
+        if(insertError) throw new Error("CSV batch failed after "+importedBeforeFailure+" of "+valid.length+" valid rows were saved. Do not re-import the entire file unchanged, or duplicates may be created. Error: "+insertError.message);
+        importedBeforeFailure += Math.min(100, valid.length-start);
+      }
+      await loadData(true);
+      setNotice("Imported "+valid.length.toLocaleString()+" transaction(s) into "+(organization?.name||"your workspace")+"."+(issues.length?" Skipped "+issues.length+" invalid row(s): "+issues.slice(0,5).join(", ")+(issues.length>5?", …":"")+".":" All rows passed validation."));
+    } catch(e) {
+      setError(e instanceof Error ? e.message : "CSV import failed. Check the file and try again.");
+      if(importedBeforeFailure > 0) await loadData(true);
+    } finally { setImportBusy(false); }
   }
 
+  function downloadCsvTemplate() {
+    const sample = [
+      "date,description,type,amount,category,sub_category,customer_segment,status,city,region,country",
+      "2026-10-01,Example sale,income,25000,Product sales,Accessories,Consumer,recorded,Lagos,Lagos State,Nigeria",
+      "2026-10-02,Example expense,expense,5000,Operations,,Corporate,recorded,Lagos,Lagos State,Nigeria",
+    ].join("\n");
+    const url = URL.createObjectURL(new Blob([sample], { type: "text/csv;charset=utf-8;" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "businessiq-import-template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportCsv() {
+    const rows = [["Date", "Description", "Category", "Sub-category", "Customer segment", "Type", "Status", "Currency", "Amount", "City", "Region/State", "Country"], ...filtered.map(t => [t.transaction_date, t.description, t.category, t.sub_category ?? "", t.customer_segment ?? "", t.kind, t.status, t.currency, String(t.amount), t.city ?? "", t.region ?? "", t.country ?? ""])];
+    const csv = rows.map(row => row.map(cell => '"' + String(cell).replaceAll('"', '""') + '"').join(",")).join("\n");
+    const url = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "businessiq-transactions.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
   async function signOut() { await supabase.auth.signOut(); router.replace("/login"); router.refresh(); }
 
   return <main className="app-shell">
@@ -154,7 +323,7 @@ export default function Home() {
       <div className="brand"><div className="brand-mark">B</div><div><strong>BusinessIQ</strong><span>BUSINESS INTELLIGENCE</span></div><button className="icon-btn close-nav" onClick={() => setMobileNav(false)} aria-label="Close menu"><X size={18}/></button></div>
       <div className="workspace-label">WORKSPACE</div>
       <label className="workspace-switch"><span className="workspace-avatar">{organization?.name?.slice(0,2).toUpperCase() || "BI"}</span><span className="workspace-text"><strong>{organization?.name || "No workspace yet"}</strong><small>{organization ? organization.plan + " plan" : "Set up to begin"}</small></span>{organizations.length > 1 && <select aria-label="Select workspace" value={organizationId} onChange={e => setOrganizationId(e.target.value)}>{organizations.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}</select>}</label>
-      <div className="nav-label">ANALYTICS</div><nav className="nav-list"><a className="nav-item active" href="#overview"><LayoutDashboard size={18}/>Overview</a><a className="nav-item" href="#transactions"><Wallet size={18}/>Transactions</a><a className="nav-item" href="#performance"><Activity size={18}/>Performance</a><a className="nav-item" href="#reports"><FileText size={18}/>Reports &amp; exports</a></nav>
+      <div className="nav-label">ANALYTICS</div><nav className="nav-list"><a className="nav-item active" href="#overview"><LayoutDashboard size={18}/>Overview</a><a className="nav-item" href="#transactions"><Wallet size={18}/>Transactions</a><a className="nav-item" href="#performance"><Activity size={18}/>Performance</a><a className="nav-item" href="#sales-analysis"><ShoppingCart size={18}/>Sales analytics</a><a className="nav-item" href="#geography"><Globe2 size={18}/>Geographic analytics</a><a className="nav-item" href="#reports"><FileText size={18}/>Reports &amp; exports</a></nav>
       <div className="nav-label">MY ACCOUNT</div><nav className="nav-list"><Link className="nav-item" href="/profile"><Users size={18}/>My profile</Link><Link className="nav-item" href="/settings"><Settings size={18}/>Account settings</Link><Link className="nav-item" href="/help"><CircleHelp size={18}/>Help centre</Link></nav>
       {["admin","super_admin"].includes(platformRole) && <><div className="nav-label admin-nav-label"><ShieldCheck size={12}/> PRIVATE ADMIN</div><nav className="nav-list admin-nav-list"><Link className="nav-item admin-nav-item" href="/admin"><ShieldCheck size={18}/>Admin centre<span className="admin-nav-tag">ADMIN</span></Link><Link className="nav-item admin-nav-item" href="/monetization"><ShoppingCart size={18}/>Monetization<span className="admin-nav-tag">ADMIN</span></Link></nav></>}
       <div className="sidebar-bottom"><div className="secure-icon"><ShieldCheck size={18}/></div><strong>Grounded in your records.</strong><p>Metrics update from transactions you record in this workspace.</p><button className="sidebar-signout" onClick={signOut}><LogOut size={14}/> Sign out</button><Link className="profile" href="/profile"><div className="profile-avatar">{userAvatar ? <img src={userAvatar} alt="" /> : (userName || userEmail.split("@")[0] || "BI").split(/\\s+/).slice(0,2).map(v=>v[0]).join("").toUpperCase()}</div><div><strong>{userName || userEmail || "Signed-in account"}</strong><small>{userEmail || "View or edit profile"}</small></div></Link></div>
@@ -163,7 +332,7 @@ export default function Home() {
     <section className="main-area">
       <header className="topbar"><button className="icon-btn menu-toggle" onClick={() => setMobileNav(true)} aria-label="Open menu"><Menu size={21}/></button><div className="crumb">Workspace <span>/</span> <strong>Overview</strong></div><div className="top-actions"><div className="searchbox"><Search size={16}/><input aria-label="Search transactions" placeholder="Search records..." value={query} onChange={e => setQuery(e.target.value)}/></div><button className="icon-btn" aria-label="Refresh analysis" onClick={() => void loadData(true)} disabled={refreshing}>{refreshing ? <LoaderCircle className="spin" size={18}/> : <RefreshCw size={18}/>}</button><Link className="top-avatar top-avatar-link" href="/profile" aria-label="Open your profile">{userAvatar ? <img src={userAvatar} alt="" /> : (userName || userEmail.split("@")[0] || "BI").split(/\\s+/).slice(0,2).map(v=>v[0]).join("").toUpperCase()}</Link></div></header>
       <div className="content" id="overview">
-        <div className="welcome-row"><div><div className="eyebrow"><span className="status-dot"/> LIVE WORKSPACE ANALYTICS</div><h1>Business overview <span>✦</span></h1><p className="subheading">A clear view of income, spending and operating performance from your records.</p></div><div className="header-controls"><label className="period-select"><span className="sr-only">Reporting period</span><select value={period} onChange={e => setPeriod(e.target.value)}><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="180">Last 6 months</option></select><ChevronDown size={15}/></label><button className="primary-btn" onClick={() => setShowAdd(v => !v)}><Plus size={16}/> Add transaction</button><button className="subtle-btn" onClick={exportCsv}><Download size={15}/> Export</button></div></div>
+        <div className="welcome-row"><div><div className="eyebrow"><span className="status-dot"/> LIVE WORKSPACE ANALYTICS</div><h1>Business overview <span>✦</span></h1><p className="subheading">A clear view of income, spending and operating performance from your records.</p></div><div className="header-controls"><label className="period-select"><span className="sr-only">Reporting period</span><select value={period} onChange={e => setPeriod(e.target.value)}><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="180">Last 6 months</option></select><ChevronDown size={15}/></label><button className="subtle-btn" onClick={downloadCsvTemplate}><Download size={15}/> CSV template</button><label className={"subtle-btn import-label" + (importBusy?" disabled":"")}><Upload size={15}/>{importBusy?"Importing…":"Import CSV"}<input type="file" accept=".csv,text/csv" disabled={importBusy} hidden onChange={e=>{const file=e.target.files?.[0];if(file)void importCsvFile(file);e.currentTarget.value="";}}/></label><button className="primary-btn" onClick={() => setShowAdd(v => !v)}><Plus size={16}/> Add transaction</button><button className="subtle-btn" onClick={exportCsv}><Download size={15}/> Export</button></div></div>
         {error && <div className="data-alert error-alert" role="alert"><AlertCircle size={17}/><span>{error}</span><button onClick={() => setError("")} aria-label="Dismiss error"><X size={15}/></button></div>}
         {notice && <div className="data-alert success-alert" role="status"><ShieldCheck size={17}/><span>{notice}</span><button onClick={() => setNotice("")} aria-label="Dismiss notice"><X size={15}/></button></div>}
         {loading ? <div className="loading-panel"><LoaderCircle className="spin" size={25}/><strong>Loading your workspace</strong><span>Fetching authorised records and calculating metrics…</span></div> : <>
@@ -182,12 +351,27 @@ export default function Home() {
                 <div className="signal-row"><span className="signal-icon info"><Wallet size={17}/></span><div><strong>{totals.income ? totals.margin.toFixed(1)+"% operating margin":"Margin unavailable"}</strong><small>{totals.income ? (totals.margin>=20?"At least 20% of recorded income remains after recorded expenses":totals.margin>=0?"Keep monitoring costs relative to income":"Negative margin for selected period") : "Requires recorded income"}</small></div></div>
                 <div className="signal-row"><span className={totals.pending>0?"signal-icon warn":"signal-icon good"}><FileText size={17}/></span><div><strong>{totals.pending>0?"Pending items need review":"No pending items in period"}</strong><small>{totals.pending>0?money(totals.pending,currency)+" awaiting confirmation":"All visible period entries are marked recorded or cancelled"}</small></div></div>
               </div><div className="health-disclaimer">Signals are simple calculations from your recorded data, not forecasts or professional financial advice.</div></article></div>
-            <article className="panel transactions-panel" id="reports"><div className="panel-heading"><div><h2>Transaction ledger</h2><p>Search and export the records available to your workspace</p></div><button className="subtle-btn" onClick={exportCsv}><Download size={14}/> Export CSV</button></div><div className="table-scroll"><table><thead><tr><th>TRANSACTION</th><th>CATEGORY</th><th>DATE</th><th>STATUS</th><th className="align-right">AMOUNT</th></tr></thead><tbody>{filtered.slice(0,100).map(t=><tr key={t.id}><td><div className="transaction-name"><span className={t.kind==="income"?"transaction-icon income":"transaction-icon expense"}>{t.kind==="income"?<ArrowDownRight size={16}/>:<ArrowUpRight size={16}/>}</span><strong>{t.description}</strong></div></td><td>{t.category||"Uncategorized"}</td><td>{new Date(t.transaction_date+"T00:00:00").toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"})}</td><td><span className={"status-badge "+(t.status==="recorded"?"recorded":"pending")}>{t.status}</span></td><td className={"align-right amount "+(t.kind==="income"?"amount-in":"")}>{t.kind==="income"?"+":"−"}{money(Number(t.amount),t.currency)}</td></tr>)}</tbody></table>{filtered.length===0&&<div className="empty-state">{query?"No transactions match your search.":"No transactions yet. Add your first record to begin analysis."}</div>}</div><div className="table-footer">Showing {Math.min(filtered.length,100)} of {filtered.length} matching records <span>Workspace-scoped data</span></div></article>
+            <section className="ai-workspace-section" id="ai-analyst"><div className="ai-workspace-heading"><div><span className="eyebrow">BUSINESSIQ INTELLIGENCE</span><h2>AI analyst</h2><p>A dedicated workspace for asking questions and exploring insights from your authorised business records.</p></div><span className="ai-live-badge"><span/> AI ASSISTANT</span></div><div className="ai-workspace-content"><article className="panel ai-analyst-panel"><div className="panel-heading"><div><h2><Sparkles size={18}/> AI business analyst</h2><p>Ask questions about this workspace’s authorised transaction data</p></div><span className="ai-live-badge"><span/> AI ANALYST</span></div><div className="ai-analyst-intro"><span className="ai-brain-icon"><BrainCircuit size={21}/></span><div><strong>Turn your business records into practical decisions</strong><p>Analysis uses workspace-scoped figures for the selected company and reporting period. It is not a substitute for professional financial advice.</p></div></div><div className="ai-prompt-chips"><button type="button" onClick={()=>setAiQuestion("What are the three most important things management should focus on based on this period's results?")}>Management priorities</button><button type="button" onClick={()=>setAiQuestion("Analyse expense patterns and suggest practical cost controls.")}>Review expenses</button><button type="button" onClick={()=>setAiQuestion("Which sales categories are strongest and weakest, and what should we investigate?")}>Sales performance</button><button type="button" onClick={()=>setAiQuestion("Identify data gaps that limit the reliability of this analysis.")}>Data quality</button></div>{aiAnalysis&&<div className="ai-answer"><div className="ai-answer-label"><Sparkles size={14}/> ANALYSIS <span>{aiUpdatedAt ? "Updated " + aiUpdatedAt : ""}</span></div><div className="ai-answer-copy">{aiAnalysis.split("\n").map((line,i)=>line.trim()?<p key={i}>{line}</p>:<br key={i}/>)}</div></div>}{aiError&&<div className="ai-error"><AlertCircle size={15}/><span>{aiError}</span></div>}<form className="ai-question-form" onSubmit={async e=>{e.preventDefault();if(aiBusy||!organizationId)return;setAiBusy(true);setAiError("");try{const {data:{session}}=await supabase.auth.getSession();if(!session?.access_token){router.replace("/login?next=/");return;}const res=await fetch("/api/ai-analysis",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token},body:JSON.stringify({organizationId,period,question:aiQuestion.trim()||"Give me an executive summary of the business performance, risks, and recommended next actions."})});const data=await res.json();if(!res.ok)throw new Error(data.error||"AI analysis could not be completed.");setAiAnalysis(data.analysis||"No analysis was returned.");setAiUpdatedAt(new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}));}catch(err){setAiError(err instanceof Error?err.message:"AI analysis could not be completed. Please try again.");}finally{setAiBusy(false);}}}><input aria-label="Ask the AI business analyst" value={aiQuestion} onChange={e=>setAiQuestion(e.target.value)} maxLength={500} placeholder="Ask about profit, expenses, sales, risks or next steps…"/><button type="submit" disabled={aiBusy||!organizationId}>{aiBusy?<LoaderCircle className="spin" size={16}/>:<Send size={16}/>}<span>{aiBusy?"Analysing…":"Analyse"}</span></button></form><div className="ai-footnote">AI-generated insights are estimates from available records. Verify important decisions against your accounting records.</div></article></div></section>
+            <section className="sales-section" id="sales-analysis">
+              <div className="sales-section-heading"><div><div className="eyebrow"><ShoppingCart size={14}/> BUSINESSIQ · SALES INTELLIGENCE</div><h2>Sales analytics workspace</h2><p>All sales categories, product breakdowns, monthly trends, regional performance and customer segments—organized in one place.</p></div><span className="sales-period">{period === "30" ? "Last 30 days" : period === "90" ? "Last 90 days" : "Last 6 months"}</span></div>
+              <nav className="sales-quick-nav" aria-label="Sales analytics sections"><a href="#sales-top-categories">Top categories</a><a href="#sales-category-mix">Category mix</a><a href="#sales-subcategories">Sub-categories</a><a href="#sales-monthly">Monthly sales</a><a href="#sales-regions">Regions</a><a href="#sales-segments">Customer segments</a></nav>
+              <div className="sales-summary-strip"><div><span>Recorded sales</span><strong>{money(salesAnalytics.salesTotal,currency)}</strong></div><div><span>Sales transactions</span><strong>{salesAnalytics.orderCount.toLocaleString()}</strong></div><div><span>Categories</span><strong>{salesAnalytics.categories.length}</strong></div><div><span>Monthly view</span><strong>12 months</strong></div></div>
+              {!salesSchemaReady && <div className="sales-schema-notice"><AlertCircle size={17}/><span>Category sales work with existing records. To collect sub-categories and customer segments on new transactions, apply the BusinessIQ sales analytics database migration.</span></div>}
+              <div className="sales-charts-grid">
+                <article id="sales-top-categories" className="panel sales-chart-panel"><div className="panel-heading"><div><h2>Top 5 sales categories</h2><p>Highest recorded sales by category</p></div><span className="live-chart-badge">TOP 5</span></div>{salesAnalytics.topCategories.length ? <div className="sales-horizontal-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={salesAnalytics.topCategories} layout="vertical" margin={{top:5,right:16,left:4,bottom:0}}><CartesianGrid strokeDasharray="3 5" horizontal={false} stroke="#e9eef5"/><XAxis type="number" axisLine={false} tickLine={false} tick={{fill:"#8290a0",fontSize:10}} tickFormatter={v=>v>=1000000?(v/1000000).toFixed(1)+"m":v>=1000?(v/1000).toFixed(0)+"k":String(v)}/><YAxis type="category" dataKey="name" width={105} axisLine={false} tickLine={false} tick={{fill:"#52677e",fontSize:10}}/><Tooltip formatter={(v)=>money(Number(v),currency)} contentStyle={{borderRadius:10,border:"1px solid #e1e8f0",fontSize:12}}/><Bar dataKey="sales" name="Sales" fill="#1768d2" radius={[0,5,5,0]} barSize={19}/></BarChart></ResponsiveContainer></div> : <div className="sales-empty">Recorded sales will appear here when income transactions are added.</div>}</article>
+                <article id="sales-category-mix" className="panel sales-chart-panel"><div className="panel-heading"><div><h2>Sales by category</h2><p>Share of recorded sales by category</p></div><span className="live-chart-badge">SALES MIX</span></div>{salesAnalytics.categories.length ? <div className="sales-pie-layout"><div className="sales-pie"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={salesAnalytics.categories.slice(0,7)} dataKey="sales" nameKey="name" innerRadius={54} outerRadius={78} paddingAngle={3} stroke="none">{salesAnalytics.categories.slice(0,7).map((entry,index)=><Cell key={entry.name} fill={["#1768d2","#24a486","#e7a33e","#805ad5","#e56f7c","#36a4b6","#7d8ba0"][index%7]}/>)}</Pie><Tooltip formatter={(v)=>money(Number(v),currency)}/></PieChart></ResponsiveContainer><div className="sales-pie-center"><strong>{money(salesAnalytics.salesTotal,currency)}</strong><span>Total sales</span></div></div><div className="sales-legend">{salesAnalytics.categories.slice(0,7).map((entry,index)=><div key={entry.name}><i style={{background:["#1768d2","#24a486","#e7a33e","#805ad5","#e56f7c","#36a4b6","#7d8ba0"][index%7]}}/><span>{entry.name}</span><strong>{Math.round(salesAnalytics.salesTotal ? entry.sales/salesAnalytics.salesTotal*100 : 0)}%</strong></div>)}</div></div> : <div className="sales-empty">No recorded sales for this period.</div>}</article>
+                <article id="sales-subcategories" className="panel sales-chart-panel"><div className="panel-heading"><div><h2>Sales by sub-category</h2><p>Products or services ranked by sales</p></div><span className="live-chart-badge">SUB-CATEGORY</span></div>{salesAnalytics.subCategories.length ? <div className="sales-horizontal-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={salesAnalytics.subCategories} layout="vertical" margin={{top:5,right:16,left:4,bottom:0}}><CartesianGrid strokeDasharray="3 5" horizontal={false} stroke="#e9eef5"/><XAxis type="number" axisLine={false} tickLine={false} tick={{fill:"#8290a0",fontSize:10}} tickFormatter={v=>v>=1000000?(v/1000000).toFixed(1)+"m":v>=1000?(v/1000).toFixed(0)+"k":String(v)}/><YAxis type="category" dataKey="name" width={105} axisLine={false} tickLine={false} tick={{fill:"#52677e",fontSize:10}}/><Tooltip formatter={(v)=>money(Number(v),currency)}/><Bar dataKey="sales" name="Sales" fill="#24a486" radius={[0,5,5,0]} barSize={17}/></BarChart></ResponsiveContainer></div> : <div className="sales-empty">{salesSchemaReady ? "Add a sub-category to sales transactions to compare products or services here." : "Apply the sales analytics migration to enable sub-category reporting."}</div>}</article>
+                <article id="sales-monthly" className="panel sales-chart-panel"><div className="panel-heading"><div><h2>Sales by month</h2><p>12-month recorded sales trend</p></div><span className="live-chart-badge">MONTHLY</span></div><div className="sales-monthly-chart">{salesAnalytics.monthly.some(m=>m.sales>0) ? <ResponsiveContainer width="100%" height="100%"><AreaChart data={salesAnalytics.monthly} margin={{top:12,right:8,left:-16,bottom:0}}><defs><linearGradient id="salesMonthlyFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#1768d2" stopOpacity={.2}/><stop offset="100%" stopColor="#1768d2" stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e9eef5"/><XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill:"#8290a0",fontSize:9}} interval={1}/><YAxis axisLine={false} tickLine={false} tick={{fill:"#8290a0",fontSize:10}} tickFormatter={v=>v>=1000000?(v/1000000).toFixed(1)+"m":v>=1000?(v/1000).toFixed(0)+"k":String(v)}/><Tooltip formatter={(v)=>money(Number(v),currency)}/><Area type="monotone" dataKey="sales" name="Sales" stroke="#1768d2" strokeWidth={2.5} fill="url(#salesMonthlyFill)"/></AreaChart></ResponsiveContainer> : <div className="sales-empty">No recorded sales in the last 12 months.</div>}</div></article>
+                <article id="sales-regions" className="panel sales-chart-panel"><div className="panel-heading"><div><h2>Sales by region</h2><p>Compare recorded sales by state or region</p></div><span className="live-chart-badge">REGIONAL</span></div>{salesAnalytics.regions.length ? <div className="sales-horizontal-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={salesAnalytics.regions} layout="vertical" margin={{top:5,right:16,left:4,bottom:0}}><CartesianGrid strokeDasharray="3 5" horizontal={false} stroke="#e9eef5"/><XAxis type="number" axisLine={false} tickLine={false} tick={{fill:"#8290a0",fontSize:10}} tickFormatter={v=>v>=1000000?(v/1000000).toFixed(1)+"m":v>=1000?(v/1000).toFixed(0)+"k":String(v)}/><YAxis type="category" dataKey="name" width={115} axisLine={false} tickLine={false} tick={{fill:"#52677e",fontSize:10}}/><Tooltip formatter={(v)=>money(Number(v),currency)}/><Bar dataKey="sales" name="Sales" fill="#805ad5" radius={[0,5,5,0]} barSize={17}/></BarChart></ResponsiveContainer></div> : <div className="sales-empty">Add a region/state and country to sales transactions to compare regional performance.</div>}</article>
+                <article id="sales-segments" className="panel sales-chart-panel"><div className="panel-heading"><div><h2>Sales by customer segment</h2><p>Understand which customer groups contribute sales</p></div><span className="live-chart-badge">SEGMENTS</span></div>{salesAnalytics.segments.some(g=>g.name!=="Unspecified") ? <div className="sales-pie-layout"><div className="sales-pie"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={salesAnalytics.segments} dataKey="sales" nameKey="name" innerRadius={54} outerRadius={78} paddingAngle={3} stroke="none">{salesAnalytics.segments.map((entry,index)=><Cell key={entry.name} fill={["#1768d2","#24a486","#e7a33e","#805ad5","#e56f7c","#36a4b6","#7d8ba0"][index%7]}/>)}</Pie><Tooltip formatter={(v)=>money(Number(v),currency)}/></PieChart></ResponsiveContainer><div className="sales-pie-center"><strong>{salesAnalytics.segments.length}</strong><span>Segments</span></div></div><div className="sales-legend">{salesAnalytics.segments.map((entry,index)=><div key={entry.name}><i style={{background:["#1768d2","#24a486","#e7a33e","#805ad5","#e56f7c","#36a4b6","#7d8ba0"][index%7]}}/><span>{entry.name}</span><strong>{Math.round(salesAnalytics.salesTotal ? entry.sales/salesAnalytics.salesTotal*100 : 0)}%</strong></div>)}</div></div> : <div className="sales-empty">{salesSchemaReady ? "Choose a customer segment when recording sales to activate this chart." : "Apply the sales analytics migration to enable customer-segment reporting."}</div>}</article>
+              </div>
+            </section>
+            <section className="geo-section" id="geography"><div className="geo-section-heading"><div><div className="eyebrow"><Globe2 size={14}/> MARKET INTELLIGENCE</div><h2>Geographic analytics</h2><p>Compare recorded business activity by country, region and city. No location is guessed or inferred.</p></div><span className="geo-period">{period === "30" ? "Last 30 days" : period === "90" ? "Last 90 days" : "Last 6 months"}</span></div>{!geoSchemaReady ? <div className="geo-setup-alert"><MapPin size={22}/><div><strong>Enable location intelligence</strong><p>Your existing transactions still work normally. Apply <code>supabase/migrations/202610290002_geographic_analytics.sql</code> to the connected database to enable location fields and geographic reporting.</p></div></div> : <><div className="geo-kpi-grid"><article className="geo-kpi"><span><Globe2 size={17}/> Countries</span><strong>{geographic.countryCount}</strong><small>Countries represented</small></article><article className="geo-kpi"><span><MapPinned size={17}/> Regions / states</span><strong>{geographic.regionCount}</strong><small>Distinct regions recorded</small></article><article className="geo-kpi"><span><MapPin size={17}/> Cities</span><strong>{geographic.cityCount}</strong><small>Distinct cities recorded</small></article><article className="geo-kpi"><span><Activity size={17}/> Revenue coverage</span><strong>{geographic.coverage}%</strong><small>Recorded income with a location</small></article></div>{geographic.located.length === 0 ? <div className="geo-empty"><div className="geo-empty-icon"><MapPinned size={24}/></div><strong>No geographic records in this period yet</strong><p>Add a city, region/state and country when recording transactions. The analytics will update from those saved records.</p><button className="primary-btn" onClick={()=>setShowAdd(true)}><Plus size={15}/> Add a located transaction</button></div> : <div className="geo-grid"><article className="panel geo-chart-panel"><div className="panel-heading"><div><h3>Activity by region</h3><p>Recorded income and expenses by region / state</p></div><span className="live-chart-badge">WORKSPACE DATA</span></div><div className="geo-chart-wrap"><ResponsiveContainer width="100%" height="100%"><BarChart data={geographic.regions} layout="vertical" margin={{top:5,right:18,left:5,bottom:0}}><CartesianGrid strokeDasharray="3 5" horizontal={false} stroke="#e8edf4"/><XAxis type="number" axisLine={false} tickLine={false} tick={{fill:"#8290a0",fontSize:10}} tickFormatter={v=>v>=1000000?(v/1000000).toFixed(1)+"m":v>=1000?(v/1000).toFixed(0)+"k":String(v)}/><YAxis type="category" dataKey="name" width={105} axisLine={false} tickLine={false} tick={{fill:"#52677e",fontSize:10}}/><Tooltip formatter={(v)=>money(Number(v),currency)} contentStyle={{borderRadius:10,border:"1px solid #e1e8f0",fontSize:12}}/><Bar dataKey="revenue" name="Income" fill="#1768d2" radius={[0,5,5,0]} barSize={13}/><Bar dataKey="expenses" name="Expenses" fill="#24a486" radius={[0,5,5,0]} barSize={13}/></BarChart></ResponsiveContainer></div><div className="geo-legend"><span><i className="geo-blue-dot"/> Income</span><span><i className="geo-green-dot"/> Expenses</span></div></article><article className="panel geo-chart-panel"><div className="panel-heading"><div><h3>Market distribution</h3><p>Recorded transaction volume by country</p></div><span className="live-chart-badge">TOP MARKETS</span></div>{geographic.countries.length ? <div className="geo-country-layout"><div className="geo-donut"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={geographic.countries} dataKey="count" nameKey="name" innerRadius={54} outerRadius={78} paddingAngle={3} stroke="none">{geographic.countries.map((entry,index)=><Cell key={entry.name} fill={["#1768d2","#24a486","#e7a33e","#805ad5","#e56f7c","#36a4b6"][index%6]}/>)}</Pie><Tooltip formatter={(v)=>[String(v)+" records","Transactions"]}/></PieChart></ResponsiveContainer><div className="geo-donut-center"><strong>{geographic.located.length}</strong><span>located records</span></div></div><div className="geo-country-legend">{geographic.countries.map((c,index)=><div key={c.name}><i style={{background:["#1768d2","#24a486","#e7a33e","#805ad5","#e56f7c","#36a4b6"][index%6]}}/><span>{c.name}</span><strong>{c.count}</strong></div>)}</div></div> : <div className="geo-empty-compact">Add a country to start comparing markets.</div>}</article><article className="panel geo-table-panel"><div className="panel-heading"><div><h3>Leading cities</h3><p>Ranked by recorded income and expense volume</p></div><span className="live-chart-badge">TOP CITIES</span></div><div className="geo-city-list">{geographic.cities.map((city,index)=><div className="geo-city-row" key={city.name}><span className="geo-city-rank">{String(index+1).padStart(2,"0")}</span><span className="geo-city-marker"><MapPin size={15}/></span><div className="geo-city-copy"><strong>{city.city || city.name}</strong><small>{[city.region,city.country].filter(Boolean).join(", ") || "Location recorded"}</small></div><div className="geo-city-stats"><strong>{money(city.revenue,currency)}</strong><small>{city.count} records</small></div></div>)}</div></article><article className="panel geo-insight-panel"><div className="panel-heading"><div><h3>Location data quality</h3><p>Coverage checks for this reporting period</p></div><span className="live-chart-badge">DATA QUALITY</span></div><div className="geo-quality-row"><span>Transactions with a location</span><strong>{geographic.located.length} / {periodTransactions.length}</strong></div><div className="geo-quality-track"><span style={{width: periodTransactions.length ? `${Math.round(geographic.located.length / periodTransactions.length * 100)}%` : "0%"}}/></div><div className="geo-quality-row"><span>Country coverage</span><strong>{periodTransactions.length ? Math.round(periodTransactions.filter(t=>(t.country??"").trim()).length / periodTransactions.length * 100) : 0}%</strong></div><div className="geo-quality-row"><span>Region coverage</span><strong>{periodTransactions.length ? Math.round(periodTransactions.filter(t=>(t.region??"").trim()).length / periodTransactions.length * 100) : 0}%</strong></div><div className="geo-quality-row"><span>City coverage</span><strong>{periodTransactions.length ? Math.round(periodTransactions.filter(t=>(t.city??"").trim()).length / periodTransactions.length * 100) : 0}%</strong></div><p className="geo-quality-note">Geography is based only on the locations entered in your records. BusinessIQ does not guess locations from names or descriptions.</p></article></div>}</>}</section><article className="panel transactions-panel" id="transactions"><div className="panel-heading" id="reports"><div><h2>Transaction ledger</h2><p>Search and export the records available to your workspace</p></div><button className="subtle-btn" onClick={exportCsv}><Download size={14}/> Export CSV</button></div><div className="table-scroll"><table><thead><tr><th>TRANSACTION</th><th>CATEGORY</th><th>DATE</th><th>STATUS</th><th className="align-right">AMOUNT</th></tr></thead><tbody>{filtered.slice(0,100).map(t=><tr key={t.id}><td><div className="transaction-name"><span className={t.kind==="income"?"transaction-icon income":"transaction-icon expense"}>{t.kind==="income"?<ArrowDownRight size={16}/>:<ArrowUpRight size={16}/>}</span><strong>{t.description}</strong></div></td><td>{t.category||"Uncategorized"}</td><td>{new Date(t.transaction_date+"T00:00:00").toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"})}</td><td><span className={"status-badge "+(t.status==="recorded"?"recorded":"pending")}>{t.status}</span></td><td className={"align-right amount "+(t.kind==="income"?"amount-in":"")}>{t.kind==="income"?"+":"−"}{money(Number(t.amount),t.currency)}</td></tr>)}</tbody></table>{filtered.length===0&&<div className="empty-state">{query?"No transactions match your search.":"No transactions yet. Add your first record to begin analysis."}</div>}</div><div className="table-footer">Showing {Math.min(filtered.length,100)} of {filtered.length} matching records <span>Workspace-scoped data</span></div></article>
           </>}
         </>}
         <footer className="footer"><span>BusinessIQ · Business intelligence workspace</span><span>Metrics are calculated from authorised workspace records</span>{["admin","super_admin"].includes(platformRole) && <Link href="/admin">Admin centre</Link>}<Link href="/help">Help &amp; support</Link></footer>
       </div>
     </section>
-    {showAdd && <div className="modal-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setShowAdd(false)}}><section className="transaction-modal" role="dialog" aria-modal="true" aria-labelledby="add-transaction-title"><div className="modal-heading"><div><h2 id="add-transaction-title">Add transaction</h2><p>Record a real entry in {organization?.name || "your workspace"}.</p></div><button className="icon-btn" onClick={()=>setShowAdd(false)} aria-label="Close"><X size={19}/></button></div><form onSubmit={addTransaction}><label>Description<input required maxLength={240} value={form.description} onChange={e=>setForm({...form,description:e.target.value})} placeholder="e.g. Customer payment"/></label><div className="form-two"><label>Type<select value={form.kind} onChange={e=>setForm({...form,kind:e.target.value as "income"|"expense"})}><option value="income">Income</option><option value="expense">Expense</option></select></label><label>Amount ({currency})<input required type="number" min="0.01" step="0.01" value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})} placeholder="0.00"/></label></div><div className="form-two"><label>Date<input required type="date" value={form.transaction_date} onChange={e=>setForm({...form,transaction_date:e.target.value})}/></label><label>Status<select value={form.status} onChange={e=>setForm({...form,status:e.target.value as "recorded"|"pending"})}><option value="recorded">Recorded</option><option value="pending">Pending</option></select></label></div><label>Category<input maxLength={120} value={form.category} onChange={e=>setForm({...form,category:e.target.value})} placeholder="e.g. Sales, Logistics, Rent"/></label><div className="modal-note"><ShieldCheck size={15}/> Saved securely to this workspace. Your dashboard totals and trend will update after saving.</div><div className="modal-actions"><button type="button" className="subtle-btn" onClick={()=>setShowAdd(false)}>Cancel</button><button className="primary-btn" type="submit" disabled={saving}>{saving?<><LoaderCircle className="spin" size={15}/> Saving…</>:<><Plus size={15}/> Save transaction</>}</button></div></form></section></div>}
+    {showAdd && <div className="modal-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setShowAdd(false)}}><section className="transaction-modal" role="dialog" aria-modal="true" aria-labelledby="add-transaction-title"><div className="modal-heading"><div><h2 id="add-transaction-title">Add transaction</h2><p>Record a real entry in {organization?.name || "your workspace"}.</p></div><button className="icon-btn" onClick={()=>setShowAdd(false)} aria-label="Close"><X size={19}/></button></div><form onSubmit={addTransaction}><label>Description<input required maxLength={240} value={form.description} onChange={e=>setForm({...form,description:e.target.value})} placeholder="e.g. Customer payment"/></label><div className="form-two"><label>Type<select value={form.kind} onChange={e=>setForm({...form,kind:e.target.value as "income"|"expense"})}><option value="income">Income</option><option value="expense">Expense</option></select></label><label>Amount ({currency})<input required type="number" min="0.01" step="0.01" value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})} placeholder="0.00"/></label></div><div className="form-two"><label>Date<input required type="date" value={form.transaction_date} onChange={e=>setForm({...form,transaction_date:e.target.value})}/></label><label>Status<select value={form.status} onChange={e=>setForm({...form,status:e.target.value as "recorded"|"pending"})}><option value="recorded">Recorded</option><option value="pending">Pending</option></select></label></div><label>Category<input maxLength={120} value={form.category} onChange={e=>setForm({...form,category:e.target.value})} placeholder="e.g. Product sales, Services, Marketing"/></label><div className="form-two"><label>Sub-category<input maxLength={120} value={form.sub_category} onChange={e=>setForm({...form,sub_category:e.target.value})} placeholder="e.g. Phones, Chairs, Software"/></label><label>Customer segment<select value={form.customer_segment} onChange={e=>setForm({...form,customer_segment:e.target.value})}><option value="">Not specified</option><option value="Consumer">Consumer</option><option value="Corporate">Corporate</option><option value="Small business">Small business</option><option value="Enterprise">Enterprise</option><option value="Government">Government</option><option value="Home office">Home office</option><option value="Other">Other</option></select></label></div><div className="geo-form-heading"><MapPin size={15}/> Geographic details <span>Optional</span></div><div className="form-two"><label>City<input maxLength={100} value={form.city} onChange={e=>setForm({...form,city:e.target.value})} placeholder="e.g. Lagos"/></label><label>State / region<input maxLength={100} value={form.region} onChange={e=>setForm({...form,region:e.target.value})} placeholder="e.g. Lagos State"/></label></div><label>Country<input maxLength={100} value={form.country} onChange={e=>setForm({...form,country:e.target.value})} placeholder="e.g. Nigeria"/></label><div className="modal-note"><ShieldCheck size={15}/> Saved securely to this workspace. Your dashboard totals and trend will update after saving.</div><div className="modal-actions"><button type="button" className="subtle-btn" onClick={()=>setShowAdd(false)}>Cancel</button><button className="primary-btn" type="submit" disabled={saving}>{saving?<><LoaderCircle className="spin" size={15}/> Saving…</>:<><Plus size={15}/> Save transaction</>}</button></div></form></section></div>}
   </main>;
 }

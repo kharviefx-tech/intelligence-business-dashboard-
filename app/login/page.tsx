@@ -12,6 +12,21 @@ const supabase = supabaseUrl && supabaseAnonKey ? createBrowserClient(supabaseUr
 
 export default function LoginPage() {
   const router = useRouter();
+
+  async function routeAfterAuth() {
+    if (!supabase) throw new Error("Authentication is not configured.");
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error("Please sign in again to verify your account.");
+    const { data: membership, error: membershipError } = await supabase.from("bi_organization_members").select("organization_id").eq("user_id", user.id).limit(1).maybeSingle();
+    if (membershipError) throw new Error("Signed in, but we could not load your saved workspace. Please retry.");
+    const requestedNext = new URLSearchParams(window.location.search).get("next");
+    const safeNext = requestedNext && requestedNext.startsWith("/") && !requestedNext.startsWith("//") && !requestedNext.includes("\\") ? requestedNext : null;
+    if (safeNext && safeNext !== "/onboarding") {
+      router.replace(safeNext);
+      return;
+    }
+    router.replace(membership?.organization_id ? "/" : "/onboarding");
+  }
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,8 +62,7 @@ export default function LoginPage() {
         if (authError) throw authError;
         if (data.session) {
           setMessage("Account created. Opening your workspace…");
-          router.push("/onboarding");
-          router.refresh();
+          await routeAfterAuth();
         } else {
           setMessage("Your account request was received. Check your inbox and spam folder for a confirmation email. If it does not arrive, use the resend option below.");
           setCanResend(true);
@@ -65,8 +79,7 @@ export default function LoginPage() {
           throw authError;
         }
         setMessage("Signed in. Opening your workspace…");
-        router.push("/onboarding");
-        router.refresh();
+        await routeAfterAuth();
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unable to complete authentication. Please try again.");
@@ -117,6 +130,7 @@ export default function LoginPage() {
         {message && <div className="auth-success" role="status">{message}</div>}
         <button className="auth-submit" disabled={busy || resending} type="submit">{busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}</button>
       </form>
+      {mode === "signin" && <p className="auth-switch"><Link href="/reset-password">Forgot your password?</Link></p>}
       {canResend && <button className="auth-resend" type="button" onClick={handleResendConfirmation} disabled={resending || busy}><Mail size={16}/>{resending ? "Requesting email…" : "Resend confirmation email"}</button>}
       <p className="auth-switch">{mode === "signin" ? "New to the platform?" : "Already have an account?"} <button onClick={() => {setMode(mode === "signin" ? "signup" : "signin"); setError(""); setMessage(""); setCanResend(false);}}>{mode === "signin" ? "Create an account" : "Sign in instead"}</button></p>
       <p className="auth-legal">Use a unique password. Never share your password or account recovery codes. Workspace data access is controlled by account permissions.</p>
