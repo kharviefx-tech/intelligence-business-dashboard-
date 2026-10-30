@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Check, CreditCard, ShieldCheck, Sparkles } from "lucide-react";
 import { createClient } from "../../utils/supabase/client";
 
@@ -17,7 +17,6 @@ const formatNaira = (amount: number) => new Intl.NumberFormat("en-NG", { style: 
 
 export default function PricingPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [annual, setAnnual] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,14 +40,12 @@ export default function PricingPage() {
     router.push(next);
   }
 
-  const checkoutPlan = searchParams.get("checkout");
   return <main className="tool-page">
     <header className="tool-topbar"><Link href="/" className="tool-brand"><span className="tool-brand-mark">B</span><span>BusinessIQ <small>PLANS &amp; BILLING</small></span></Link><Link href="/" className="back-link"><ArrowLeft size={16}/> Back to dashboard</Link></header>
     <div className="tool-content">
       <div className="tool-eyebrow"><CreditCard size={15}/> BUSINESSIQ PLANS</div>
       <h1>Choose the right plan for your business.</h1>
       <p className="tool-intro">Transparent plans for businesses at every stage. Choose monthly or annual billing.</p>
-      {checkoutPlan && <div className="tool-warning monetization-warning"><ShieldCheck size={19}/><div><strong>You're signed in and ready to continue.</strong><p>Choose your billing interval below. Secure payment checkout will open once the payment provider is connected.</p></div></div>}
       <div className="billing-interval-switch" role="group" aria-label="Billing interval">
         <button className={!annual ? "active" : ""} onClick={() => setAnnual(false)}>Monthly</button>
         <button className={annual ? "active" : ""} onClick={() => setAnnual(true)}>Yearly <span>2 months free</span></button>
