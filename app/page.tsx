@@ -2,7 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Activity, ArrowDownRight, ArrowUpRight, Bell, ChevronDown, CircleHelp, Download, FileSpreadsheet, FileText, LayoutDashboard, LoaderCircle, LogOut, Menu, Network, Plus, Search, Settings, ShieldCheck, ShoppingCart, Store, Users, Wallet, X, RefreshCw, AlertCircle, Globe2 } from "lucide-react";
+import { Activity, ArrowDownRight, ArrowUpRight, Bell, ChevronDown, CircleHelp, Download, FileSpreadsheet, FileText, LayoutDashboard, LoaderCircle, LogOut, Menu, Network, Plus, Search, Settings, ShieldCheck, ShoppingCart, Store, Users, Wallet, X, RefreshCw, AlertCircle, Globe2, Gauge } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useRouter } from "next/navigation";
 import { createClient } from "../utils/supabase/client";
