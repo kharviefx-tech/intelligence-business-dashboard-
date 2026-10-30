@@ -295,11 +295,11 @@ export default function Home() {
         </>}
         
         <nav className="biq-report-tabs" aria-label="Dashboard report tabs">
-          <a href="#overview" onClick={()=>selectSection("overview")} className="is-active">Overview</a>
-          <a href="#analytics" onClick={()=>selectSection("analytics")}>Financial analysis</a>
-          <a href="#performance" onClick={()=>selectSection("performance")}>Expense analysis</a>
-          <a href="#transactions" onClick={()=>selectSection("transactions")}>Transactions</a>
-          <a href="#reports" onClick={()=>selectSection("reports")}>Reports</a>
+          <a href="#overview" onClick={()=>selectSection("overview")} className={activeNav==="overview"?"is-active":""}>Overview</a>
+          <a href="#analytics" onClick={()=>selectSection("analytics")} className={activeNav==="analytics"?"is-active":""}>Financial analysis</a>
+          <a href="#performance" onClick={()=>selectSection("performance")} className={activeNav==="performance"?"is-active":""}>Expense analysis</a>
+          <a href="#transactions" onClick={()=>selectSection("transactions")} className={activeNav==="transactions"?"is-active":""}>Transactions</a>
+          <a href="#reports" onClick={()=>selectSection("reports")} className={activeNav==="reports"?"is-active":""}>Reports</a>
         </nav>
         <footer className="footer"><span>BusinessIQ · Business intelligence workspace</span><span>Metrics are calculated from authorised workspace records</span>{["admin","super_admin"].includes(platformRole) && <Link href="/admin">Admin centre</Link>}<Link href="/help">Help &amp; support</Link></footer>
       </div>
