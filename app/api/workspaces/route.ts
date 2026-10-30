@@ -40,9 +40,39 @@ export async function POST(request: NextRequest) {
     if (name.length < 2 || name.length > 120) return NextResponse.json({ error: "Workspace name must be between 2 and 120 characters." }, { status: 400 });
     if (!["NGN","USD","GBP","EUR","GHS","KES","ZAR"].includes(currency)) return NextResponse.json({ error: "Unsupported currency." }, { status: 400 });
     const db = getNeonPool();
-    await db.query("insert into bi_profiles(id,full_name) values($1,$2) on conflict(id) do nothing", [user.id, user.user_metadata?.display_name ?? user.user_metadata?.full_name ?? null]);
-    const result = await db.query("select bi_create_workspace($1,$2,$3) as id", [user.id, name, currency]);
-    return NextResponse.json({ id: result.rows[0].id }, { status: 201 });
+    const client = await db.connect();
+    let workspaceId: string;
+    try {
+      await client.query("begin");
+      await client.query(
+        "insert into bi_profiles(id,full_name) values($1,$2) on conflict(id) do nothing",
+        [user.id, user.user_metadata?.display_name ?? user.user_metadata?.full_name ?? null],
+      );
+      const created = await client.query(
+        "insert into bi_organizations(name,currency,created_by) values($1,$2,$3) returning id",
+        [name,currency,user.id],
+      );
+      workspaceId = created.rows[0].id;
+      await client.query(
+        "insert into bi_organization_members(organization_id,user_id,role) values($1,$2,'owner')",
+        [workspaceId,user.id],
+      );
+      await client.query(
+        "update bi_profiles set preferred_organization_id=$1 where id=$2",
+        [workspaceId,user.id],
+      );
+      await client.query(
+        "insert into bi_audit_logs(organization_id,actor_id,action,entity,detail) values($1,$2,'workspace.created','organization',$3::jsonb)",
+        [workspaceId,user.id,JSON.stringify({name,currency})],
+      );
+      await client.query("commit");
+    } catch (error) {
+      await client.query("rollback");
+      throw error;
+    } finally {
+      client.release();
+    }
+    return NextResponse.json({ id: workspaceId }, { status: 201 });
   } catch (error) {
     console.error("BusinessIQ workspace creation failed", error);
     return NextResponse.json({ error: "Unable to create workspace. Please try again." }, { status: 500 });
