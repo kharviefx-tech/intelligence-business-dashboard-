@@ -33,6 +33,7 @@ export default function Home() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [organizationId, setOrganizationId] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [totalRecords, setTotalRecords] = useState(0);
   const [period, setPeriod] = useState("30");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -66,6 +67,7 @@ export default function Home() {
       setOrganizations(safeOrgs);
       if (!safeOrgs.length) {
         setTransactions([]);
+        setTotalRecords(0);
         setOrganizationId("");
         setNotice("Create your first workspace to start analysing real business activity.");
         return;
@@ -74,6 +76,7 @@ export default function Home() {
       const currentId = safeOrgs.some((o: Organization) => o.id === requestedOrganizationId) ? requestedOrganizationId : safeOrgs.some((o: Organization) => o.id === preferredId) ? preferredId : safeOrgs[0].id;
       setOrganizationId(currentId);
       setTransactions((dashboardData.transactions ?? []) as Transaction[]);
+      setTotalRecords(Number(dashboardData.transaction_count ?? dashboardData.transactions?.length ?? 0));
       setNotice("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "We could not load your workspace data.");
@@ -131,6 +134,21 @@ export default function Home() {
     const pending = periodTransactions.filter(t => t.status === "pending").reduce((s,t) => s + Number(t.amount), 0);
     return { income, expenses, profit: income - expenses, pending, count: periodTransactions.length, margin: income > 0 ? ((income - expenses) / income) * 100 : 0 };
   }, [periodTransactions]);
+  const comparison = useMemo(() => {
+    const days = Number(period);
+    const previousStart = new Date(since);
+    previousStart.setDate(previousStart.getDate() - days);
+    const previousRows = transactions.filter(t => {
+      const date = new Date(t.transaction_date + "T00:00:00");
+      return date >= previousStart && date < since && t.status !== "cancelled" && t.currency === currency;
+    });
+    const previousRevenue = previousRows.filter(t => t.kind === "income" && t.status === "recorded").reduce((sum,t) => sum + Number(t.amount), 0);
+    const previousExpenses = previousRows.filter(t => t.kind === "expense" && t.status === "recorded").reduce((sum,t) => sum + Number(t.amount), 0);
+    const previousNet = previousRevenue - previousExpenses;
+    const delta = (current: number, previous: number) => previous === 0 ? null : ((current - previous) / Math.abs(previous)) * 100;
+    return { revenue: delta(totals.income, previousRevenue), net: delta(totals.profit, previousNet), previousRevenue, previousNet };
+  }, [transactions, period, since, currency, totals.income, totals.profit]);
+  const deltaText = (value: number | null) => value === null ? "No prior-period baseline" : (value > 0 ? "+" : "") + value.toFixed(1) + "% vs previous period";
   const trend = useMemo(() => {
     if (period === "30") {
       const start = new Date();
@@ -259,12 +277,16 @@ export default function Home() {
           <div><div className="eyebrow"><span className="status-dot"/> LIVE WORKSPACE DATA</div><h2 id="executive-overview-title" style={{fontSize:20,fontWeight:750,margin:"5px 0 0",color:"#17231e"}}>Executive overview</h2><p style={{fontSize:12,color:"#718078",margin:"3px 0 0"}}>A concise view of your organisation’s recorded financial position.</p></div>
           <span className="live-chart-badge">LIVE · {period==="180"?"LAST 6 MONTHS":period==="90"?"LAST 90 DAYS":"LAST 30 DAYS"}</span>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",gap:12}}>
-          <div style={{background:"#fff",border:"1px solid #e7eee9",borderRadius:14,padding:16}}><span style={{fontSize:10,fontWeight:750,letterSpacing:".1em",color:"#74827a"}}>NET RESULT</span><strong style={{display:"block",fontSize:27,lineHeight:1.25,marginTop:7,color:totals.profit>=0?"#147452":"#b54736"}}>{money(totals.profit,currency)}</strong><small style={{color:"#7b8981"}}>Recorded income less expenses</small></div>
-          <div style={{background:"#fff",border:"1px solid #e7eee9",borderRadius:14,padding:16}}><span style={{fontSize:10,fontWeight:750,letterSpacing:".1em",color:"#74827a"}}>REVENUE</span><strong style={{display:"block",fontSize:27,lineHeight:1.25,marginTop:7,color:"#172b24"}}>{money(totals.income,currency)}</strong><small style={{color:"#7b8981"}}>Recorded income in selected period</small></div>
-          <div style={{background:"#fff",border:"1px solid #e7eee9",borderRadius:14,padding:16}}><span style={{fontSize:10,fontWeight:750,letterSpacing:".1em",color:"#74827a"}}>PERFORMANCE TREND</span><div style={{display:"flex",alignItems:"end",gap:7,height:48,marginTop:8}}>{trend.map((point,index)=><div key={point.month+index} title={point.month+": "+money(point.revenue,currency)} style={{flex:1,minWidth:5,height:Math.max(5,Math.min(100,(point.revenue/Math.max(1,...trend.map(p=>p.revenue)))*100))+"%",borderRadius:"5px 5px 2px 2px",background:"#19866a",opacity:.45+(index/Math.max(1,trend.length-1))*.55}}/>)}</div><small style={{color:"#7b8981"}}>{period==="180"?"Last 6 months":period==="90"?"Last 3 months":"Recent 30-day trend"} · income by period</small></div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(185px,1fr))",gap:12}}>
+          <div style={{background:"#fff",border:"1px solid #e7eee9",borderRadius:14,padding:16}}><span style={{fontSize:10,fontWeight:750,letterSpacing:".1em",color:"#74827a"}}>NET RESULT</span><strong style={{display:"block",fontSize:27,lineHeight:1.25,marginTop:7,color:totals.profit>=0?"#147452":"#b54736"}}>{money(totals.profit,currency)}</strong><small style={{display:"block",marginTop:5,color:comparison.net===null?"#7b8981":comparison.net>=0?"#147452":"#b54736"}}>{deltaText(comparison.net)}</small></div>
+          <div style={{background:"#fff",border:"1px solid #e7eee9",borderRadius:14,padding:16}}><span style={{fontSize:10,fontWeight:750,letterSpacing:".1em",color:"#74827a"}}>REVENUE</span><strong style={{display:"block",fontSize:27,lineHeight:1.25,marginTop:7,color:"#172b24"}}>{money(totals.income,currency)}</strong><small style={{display:"block",marginTop:5,color:comparison.revenue===null?"#7b8981":comparison.revenue>=0?"#147452":"#b54736"}}>{deltaText(comparison.revenue)}</small></div>
+          <div style={{background:"#fff",border:"1px solid #e7eee9",borderRadius:14,padding:16}}><span style={{fontSize:10,fontWeight:750,letterSpacing:".1em",color:"#74827a"}}>OPERATING EXPENSES</span><strong style={{display:"block",fontSize:27,lineHeight:1.25,marginTop:7,color:"#172b24"}}>{money(totals.expenses,currency)}</strong><small style={{color:"#7b8981"}}>Recorded costs in selected period</small></div>
+          <div style={{background:"#fff",border:"1px solid #e7eee9",borderRadius:14,padding:16}}><span style={{fontSize:10,fontWeight:750,letterSpacing:".1em",color:"#74827a"}}>OPERATING MARGIN</span><strong style={{display:"block",fontSize:27,lineHeight:1.25,marginTop:7,color:totals.margin>=0?"#147452":"#b54736"}}>{totals.income?totals.margin.toFixed(1)+"%":"—"}</strong><small style={{color:"#7b8981"}}>Net result as a share of revenue</small></div>
+          <div style={{background:"#fff",border:"1px solid #e7eee9",borderRadius:14,padding:16}}><span style={{fontSize:10,fontWeight:750,letterSpacing:".1em",color:"#74827a"}}>PENDING VALUE</span><strong style={{display:"block",fontSize:27,lineHeight:1.25,marginTop:7,color:totals.pending>0?"#a56b13":"#172b24"}}>{money(totals.pending,currency)}</strong><small style={{color:"#7b8981"}}>Awaiting confirmation · excluded from result</small></div>
+          <div style={{background:"#fff",border:"1px solid #e7eee9",borderRadius:14,padding:16}}><span style={{fontSize:10,fontWeight:750,letterSpacing:".1em",color:"#74827a"}}>PERFORMANCE TREND</span><div style={{display:"flex",alignItems:"end",gap:7,height:48,marginTop:8}}>{trend.map((point,index)=><div key={point.month+index} title={point.month+": "+money(point.revenue,currency)} style={{flex:1,minWidth:5,height:Math.max(5,Math.min(100,(point.revenue/Math.max(1,...trend.map(p=>p.revenue)))*100))+"%",borderRadius:"5px 5px 2px 2px",background:"#19866a",opacity:.45+(index/Math.max(1,trend.length-1))*.55}}/>)}</div><small style={{color:"#7b8981"}}>{period==="180"?"Last 6 months":period==="90"?"Last 3 months":"Recent 30-day trend"} · recorded income</small></div>
         </div>
-        <p style={{fontSize:11,color:"#87938c",margin:"12px 0 0"}}>All figures are calculated from this workspace’s authorised records. No sample values or estimated growth percentages are displayed.</p>
+        {totalRecords>transactions.length && <div style={{marginTop:12,padding:"10px 12px",borderRadius:10,background:"#fff7e8",border:"1px solid #f2dfb8",fontSize:12,color:"#815b19"}}>Showing the latest {transactions.length.toLocaleString("en-NG")} of {totalRecords.toLocaleString("en-NG")} workspace transactions. Dashboard totals are based on the records currently loaded; comparisons may be incomplete until the full history is available.</div>}
+        <p style={{fontSize:11,color:"#87938c",margin:"12px 0 0"}}>All figures use recorded transactions in this workspace and selected reporting period. Growth compares with the immediately preceding period of equal length; no growth rate is shown without a prior-period baseline.</p>
       </section>
       <div className="content" id="overview">
         <div className="welcome-row"><div><div className="eyebrow"><span className="status-dot"/> YOUR BUSINESS AT A GLANCE</div><h1>Business performance <span>✦</span></h1><p className="subheading">Understand performance, spot changes and make decisions using your organisation’s own data.</p></div><div className="header-controls"><label className="period-select"><span className="sr-only">Reporting period</span><select value={period} onChange={e => setPeriod(e.target.value)}><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="180">Last 6 months</option></select><ChevronDown size={15}/></label><button className="primary-btn" onClick={() => setShowAdd(v => !v)}><Plus size={16}/> Add transaction</button><button className="subtle-btn" onClick={exportCsv}><Download size={15}/> Export</button></div></div>
