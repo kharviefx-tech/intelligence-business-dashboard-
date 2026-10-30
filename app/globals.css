@@ -592,3 +592,25 @@ td,th{border-bottom-color:#edf1ee}
 .ai-answer-copy{font-size:11px;line-height:1.7}
 .ai-footnote{font-size:9px;margin-top:8px}
 @media(max-width:760px){.ai-workspace-section{margin:22px 0 14px}.ai-workspace-heading{align-items:flex-start}.ai-workspace-content{max-width:none}.ai-analyst-panel{padding:13px}.ai-workspace-heading h2{font-size:15px}.ai-workspace-heading p{max-width:270px}}
+
+
+/* Customer pricing and subscription discovery */
+.customer-pricing-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:24px 0 30px;align-items:stretch}
+.customer-plan{position:relative;display:flex;flex-direction:column;padding:22px 18px;border:1px solid #e4ebe6;border-radius:15px;background:#fff;box-shadow:0 5px 20px rgba(21,48,34,.035);min-width:0}
+.customer-plan.featured{border:1.5px solid #24936e;box-shadow:0 10px 28px rgba(29,132,94,.1)}
+.customer-plan-badge{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;margin:-8px 0 10px;padding:5px 8px;border-radius:20px;background:#eaf6ef;color:#18714f;font-size:9px;font-weight:800;letter-spacing:.5px}
+.customer-plan h2{font-size:18px;color:#20352a;margin:5px 0 7px}
+.customer-plan>p{min-height:48px;color:#7c8a81;font-size:11px;line-height:1.6;margin:0}
+.customer-plan-price{margin:18px 0 15px;color:#193e2c;font-size:25px;font-weight:800;letter-spacing:-.8px;white-space:nowrap}
+.customer-plan-price small{font-size:10px;font-weight:500;letter-spacing:0;color:#8a968e}
+.customer-plan ul{list-style:none;padding:0;margin:0 0 20px;display:grid;gap:11px;flex:1}
+.customer-plan li{display:flex;align-items:flex-start;gap:8px;color:#52645a;font-size:10px;line-height:1.45}
+.customer-plan li svg{flex:none;color:#23936b;margin-top:1px}
+.customer-plan-cta{width:100%;justify-content:center;text-decoration:none;min-height:40px;font-size:11px}
+.customer-plan-note{display:block;text-align:center;color:#98a29b;font-size:9px;margin-top:9px}
+.pricing-faq{padding:20px 22px;border:1px solid #e7ede9;border-radius:13px;background:#f8fbf9;margin:24px 0 10px}
+.pricing-faq h2{font-size:16px;color:#294236;margin:0 0 8px}
+.pricing-faq p{font-size:11px;line-height:1.75;color:#68776e;margin:7px 0}
+.pricing-faq a,.tool-content a{color:#167653}
+@media(max-width:1050px){.customer-pricing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.customer-pricing-grid{grid-template-columns:1fr;gap:12px}.customer-plan{padding:19px}.customer-plan>p{min-height:0}.customer-plan-price{font-size:23px}.pricing-faq{padding:16px}}
