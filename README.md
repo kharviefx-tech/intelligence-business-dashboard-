@@ -1,54 +1,119 @@
-# Business Intelligence Dashboard — starter
+# BusinessIQ — Global Company & Product Charter
 
-A responsive Next.js frontend prototype for a business intelligence workspace. The working UI label **BusinessIQ** is temporary; the final product/company name has not been decided.
+BusinessIQ is an independent global business intelligence company and software platform. It is not a Microsoft add-on, a single-company dashboard, or a collection of AI-generated descriptions. Its purpose is to help organisations connect their authorised business data, understand performance, detect risks and make better decisions through one governed intelligence workspace.
 
-## Included
-- Responsive dashboard layout and navigation
-- Illustrative revenue, expense, profit, invoice and transaction sample data
-- Revenue/expense chart
-- Client-side search over the sample transactions
-- CSV export of the displayed sample transactions
-- Initial styling for desktop, tablet and mobile
-- Example environment file for a future Supabase connection
+**Company principle:** BusinessIQ stands on its own. Other platforms are optional data and workflow connections. No competitor is foundational to BusinessIQ's identity or operation.
 
-## Important scope and data notice
-This is a **frontend prototype only**. It does not yet include user authentication, a connected database, company workspaces, real transaction ingestion, AI analysis, durable reports, or production-grade permissions. The figures shown are fabricated demo examples and must not be treated as real financial results. Do not enter confidential business records into this prototype.
+## Product promise
 
-## Run locally
+Turn an organisation's real operational and financial records into understandable, traceable business intelligence. Every metric must identify its source, reporting period, currency and calculation. Actuals, estimates, forecasts and recommendations must never be presented as the same thing.
+
+## Global product architecture
+
+| Product layer | Responsibility | Current position |
+| --- | --- | --- |
+| BusinessIQ Core | Identity, organisations, workspaces, roles, settings and tenant boundaries | Foundation implemented; security review and expanded controls remain |
+| BusinessIQ Connect | Imports, APIs and authorised third-party data connections | CSV import and Microsoft identity/connection foundations exist; most live connectors remain |
+| BusinessIQ Data | Validation, normalisation, currency handling, lineage and governed storage | Transaction foundations exist; broader data model and lineage remain |
+| BusinessIQ Analytics | KPIs, trends, financial and operational reporting | Native workspace dashboard and CSV exports exist; deeper analytics remain |
+| BusinessIQ Intelligence | Evidence-based observations, anomalies and business explanations | Rule-based 90-day observations exist; richer diagnostic coverage remains |
+| BusinessIQ AI | Conversational analysis grounded in permitted workspace data | Assistant foundation exists; citations, evaluation, safety and deeper data coverage remain |
+| BusinessIQ Finance | Income, expenses, cash flow, budgets, reconciliation and financial reporting | Transactions and Paystack subscription foundation exist; full finance suite remains |
+| BusinessIQ Decisions | Scenarios, priorities, recommendations and decision tracking | Not yet a complete product |
+| BusinessIQ Enterprise | SSO, advanced governance, audit, compliance, retention and service controls | Early role/audit foundations; enterprise controls remain |
+| BusinessIQ Network | Approved cross-company collaboration, benchmarking and partner ecosystem | Not yet implemented; opt-in and strict tenant separation required |
+
+## Current implemented foundations
+
+- Authenticated BusinessIQ workspace experience.
+- Organisation/workspace creation and switching foundations.
+- Workspace-scoped transaction records and dashboard calculations.
+- Manual transaction entry and validated CSV import workflow.
+- Transaction CSV export and reporting period controls.
+- Workspace profile management.
+- Team invitations and role-based workspace access foundations.
+- Developer API credentials and read-only transaction API foundations.
+- Rule-based intelligence observations that disclose limitations.
+- BusinessIQ assistant foundation.
+- Paystack checkout, verification and webhook foundations.
+- Microsoft identity and connector foundations.
+
+Implementation status is not a claim that every feature is fully production-ready. External connectors are only live when an authenticated connection, permission grant, sync process and working data path have been implemented and tested.
+
+## Global operating principles
+
+1. **Tenant isolation:** each organisation's data is private to that organisation; no cross-company access without explicit, revocable authorisation.
+2. **Least privilege:** role-based access, scoped API credentials, revocation and audit trails.
+3. **Data truth:** never fabricate customers, revenue, integrations, forecasts, benchmarks or AI findings.
+4. **Traceability:** show the source records and calculation behind material insights.
+5. **Currency integrity:** never add different currencies together without a disclosed conversion source, rate and timestamp.
+6. **Customer control:** consent, export, retention and deletion controls must be clear.
+7. **Resilience:** backups, recovery tests, monitoring and incident response are required before enterprise claims.
+8. **Global readiness:** design for multiple countries, time zones, currencies, languages, tax regimes and regional privacy requirements.
+9. **Accessible product design:** working application screens and task-focused workflows take priority over brochure-like text.
+10. **Honest release status:** distinguish available, beta, planned and unavailable capabilities in the interface.
+
+## Next build programme
+
+### Phase 1 — Trustworthy operating core
+- Complete security review of every API and tenant boundary.
+- Add automated tests for cross-tenant access, role permissions, payment verification and data validation.
+- Add durable audit history, data export and account/workspace deletion workflows.
+- Add backup and restore procedures, monitoring and error reporting.
+- Verify subscription entitlements server-side and complete Paystack lifecycle handling.
+
+### Phase 2 — Real data connectivity
+- Improve CSV mapping, duplicate detection, import preview, rollback and scheduled re-import.
+- Add secure Excel workbook ingestion.
+- Build a connector framework with OAuth consent, scoped tokens, sync status, retries and disconnect/revoke controls.
+- Prioritise customer-demanded sources such as accounting, payments, ecommerce, CRM and databases.
+- Add public API documentation, webhooks, key rotation and usage limits.
+
+### Phase 3 — Decision-grade intelligence
+- Add source-linked metric definitions and reproducible calculations.
+- Add cash-flow, margin, customer, product, inventory and operational analysis where the source data supports it.
+- Add anomaly detection with explainable evidence and false-positive controls.
+- Add forecasting only after sufficient historical data and backtesting exist.
+- Add scenarios and decision tracking; label assumptions and uncertainty.
+
+### Phase 4 — Global and enterprise readiness
+- Multi-currency conversion with documented rate provider, timestamp and methodology.
+- Regional date, time, number and language support.
+- SSO/MFA options, granular permissions, audit exports and organisation policies.
+- Privacy, retention, data-processing agreements and regional compliance reviews.
+- Service monitoring, incident response, recovery objectives and support processes.
+
+### Phase 5 — Commercial and ecosystem growth
+- Validate pricing and usage limits with real pilot customers.
+- Add invoices, receipts, failed-payment recovery, cancellation and plan-change handling.
+- Launch an integration directory only for verified, working integrations.
+- Introduce opt-in partner collaboration and aggregated benchmarks only with privacy safeguards and minimum cohort thresholds.
+- Measure activation, retention, time-to-insight and customer business outcomes.
+
+## What is required to complete the programme
+
+- Product decisions: initial ideal customer profile, highest-value business problems, supported industries and pilot success criteria.
+- Technical operations: production database access, secure environment configuration, test/staging environment, observability and backup ownership.
+- Integrations: developer/OAuth credentials and approved scopes for each provider; no credentials should be committed to source control.
+- Payments: live Paystack credentials and webhook configuration, plus tested plan/entitlement rules.
+- Business operations: company registration and professional legal/accounting advice as appropriate, customer contracts, privacy notice, terms, support and incident procedures.
+- Validation: pilot organisations willing to connect real, authorised data and verify whether BusinessIQ improves decisions.
+
+## Architecture and data stack
+
+The current application is built with Next.js, TypeScript, Supabase Auth helpers and a Neon-backed application data layer, with Paystack billing foundations and Vercel deployment. Keep the existing production data and authentication architecture intact unless a reviewed migration plan explicitly authorises a change. Never place secrets in GitHub or client-side code.
+
+## Local development
+
 Requirements: Node.js 20 or newer.
 
-1. Install dependencies: `npm install`
-2. Start development: `npm run dev`
-3. Open `http://localhost:3000`
+```bash
+npm install
+npm run dev
+```
 
-## Next implementation milestones
-1. Add Supabase Auth and a verified account onboarding flow.
-2. Design tenant-aware database tables and enforce Row Level Security (RLS) for every company-owned record.
-3. Add server-side validation, role-based access and audit logs before accepting real data.
-4. Implement manual transaction entry and validated CSV imports with clear currency and date handling.
-5. Add calculations and reports that can be traced back to source records.
-6. Add AI assistance only after it can access authorised records, cite underlying data and label estimates/forecasts separately from actuals.
-7. Add backup, export, deletion, privacy and security review before a public production launch.
+Set required environment variables using the deployment environment or a local `.env.local` file. Never commit secret values. Use `npm run lint` and `npm run build` before release.
 
-## Security principles
-- Never commit secrets or service-role keys.
-- Keep all database access protected by server-side authorization and Supabase RLS.
-- A public/anonymous key is not a substitute for correct RLS policies.
-- Do not advertise share purchases or accept investments until company structure, disclosures and applicable securities rules have been reviewed by qualified counsel.
+## Release standard
 
-## Deployment
-This project is designed for a Next.js-capable host such as Vercel. GitHub Pages alone cannot host the server-side features planned for the full product. The app is not production-ready until the backend, security controls, tests and deployment configuration are implemented and reviewed.
-
-
-## Backend foundation added
-
-- `/login` provides a Supabase Auth email/password sign-in and sign-up interface. It requires environment configuration before it can authenticate.
-- `supabase/migrations/202610280001_initial_business_intelligence.sql` defines the initial tenant-aware schema: profiles, organizations, memberships, transactions and read-only audit-log access, plus Row Level Security policies and a workspace-creation RPC.
-- Copy `.env.example` to `.env.local` and fill in the project URL and public anon key from your Supabase project. Do not commit `.env.local`.
-- Apply the SQL migration to a new or intended Supabase project only after reviewing it. The migration does not create a Supabase project or connect this GitHub repository to one.
-- The dashboard and admin routes are still not fully protected by server-side session checks. Do not put real financial data into the product until server-side authorization, tenant policies, tests and a security review are completed.
-
-- Supabase SSR helpers are in `utils/supabase/client.ts` and `utils/supabase/server.ts`; install dependencies after pulling the changes.
-- Middleware checks sessions on `/onboarding` and requires a database profile role of `admin` or `super_admin` for `/admin` and `/monetization`.
-- New profiles default to `user`. Only promote a verified account using a trusted Supabase SQL session; never allow users to promote themselves.
-- `/onboarding` creates a workspace using the database RPC. This requires the migration to be applied and Supabase environment variables to be configured.
+A feature is not complete merely because a card or page exists. It is complete when its user flow works end-to-end, server-side permissions are enforced, errors and empty states are handled, data is persisted correctly, tests cover critical paths, and its actual release status is communicated accurately.
