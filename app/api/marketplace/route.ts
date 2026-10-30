@@ -20,7 +20,7 @@ export async function GET(req:NextRequest){
  try{const db=getNeonPool();const member=await db.query("select role from bi_organization_members where organization_id=$1 and user_id=$2",[org,user.id]);if(!member.rowCount)return NextResponse.json({error:"Workspace access denied."},{status:403});
  const rows=await db.query("select id,provider,display_name,connection_status,config,created_at from bi_data_sources where organization_id=$1 and provider='businessiq_module' order by created_at desc",[org]);
  const installed=Object.fromEntries(rows.rows.map((r:any)=>[r.config?.module_id,{id:r.id,status:r.connection_status,created_at:r.created_at}]));
- return NextResponse.json({modules,installed,organization_id:org});
+ return NextResponse.json({modules,installed,organization_id:org,viewer_role:member.rows[0].role});
  }catch(e){console.error("Marketplace load failed",e);return NextResponse.json({error:"Unable to load the marketplace."},{status:500});}
 }
 export async function POST(req:NextRequest){
