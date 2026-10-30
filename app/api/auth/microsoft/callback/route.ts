@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   const clientId = process.env.MICROSOFT_CLIENT_ID;
   const clientSecret = process.env.MICROSOFT_CLIENT_SECRET;
   const tenant = process.env.MICROSOFT_TENANT_ID || "common";
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://intelligence-business-dashboard-thinksociety.vercel.app";
   const code = request.nextUrl.searchParams.get("code");
   const returnedState = request.nextUrl.searchParams.get("state");
   const expectedState = request.cookies.get("bi_ms_state")?.value;
