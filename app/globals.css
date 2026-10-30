@@ -1233,3 +1233,90 @@ main.min-h-screen:not(.app-shell) .bg-white{background:#fff}
 .app-shell .nav-item.active{
   color:#176b52;
 }
+
+
+/* Power BI-inspired analytics canvas: real BusinessIQ workspace metrics only. */
+.app-shell .finance-kpis{
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:12px;
+  margin-bottom:16px;
+}
+.app-shell .finance-kpis .metric-card{
+  min-height:132px;
+  padding:16px 17px;
+  border-radius:12px;
+  border-color:#e5e9e7;
+  box-shadow:0 1px 3px rgba(20,35,28,.045);
+}
+.app-shell .finance-kpis .metric-value{
+  font-size:clamp(16px,1.5vw,23px);
+  margin:13px 0 9px;
+}
+.app-shell .powerbi-visual-grid{
+  grid-template-columns:minmax(0,1.35fr) minmax(250px,1fr) minmax(230px,.9fr);
+  gap:13px;
+}
+.app-shell .powerbi-visual{
+  min-height:340px;
+  padding:17px;
+  border-radius:12px;
+  border-color:#e5e9e7;
+  box-shadow:0 1px 3px rgba(20,35,28,.045);
+}
+.app-shell .powerbi-visual .panel-heading h2{font-size:13px}
+.app-shell .powerbi-visual .panel-heading p{font-size:10px;line-height:1.45}
+.app-shell .powerbi-bar-chart{height:220px}
+.app-shell .powerbi-donut-wrap{height:178px}
+.app-shell .activity-total{
+  display:flex;flex-direction:column;gap:4px;
+  padding:25px 0 19px;border-bottom:1px solid #edf1ee;
+}
+.app-shell .activity-total strong{
+  color:#172b21;font-size:34px;letter-spacing:-1.5px;line-height:1.1;
+  font-family:Manrope,sans-serif;
+}
+.app-shell .activity-total span{font-size:10px;color:#8a958e}
+.app-shell .activity-breakdown{display:grid;gap:10px;padding-top:18px}
+.app-shell .activity-breakdown>div:not(.activity-track){
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  font-size:11px;color:#68766e;
+}
+.app-shell .activity-breakdown>div>span{display:flex;align-items:center;gap:8px}
+.app-shell .activity-breakdown strong{font-size:12px;color:#26382e}
+.app-shell .activity-breakdown i:not(.activity-track i){
+  width:8px;height:8px;border-radius:50%;display:inline-block;
+}
+.app-shell .activity-recorded{background:#16866a}
+.app-shell .activity-pending{background:#e7a44d}
+.app-shell .activity-cancelled{background:#aab4ae}
+.app-shell .activity-track{
+  height:6px;border-radius:20px;background:#eff3f0;overflow:hidden;margin-top:-6px;
+}
+.app-shell .activity-track i{display:block;height:100%;border-radius:20px;background:#16866a}
+.app-shell .activity-track i.pending-track{background:#e7a44d}
+.app-shell .activity-note{
+  margin-top:9px;padding-top:12px;border-top:1px solid #edf1ee;
+  color:#98a29c;font-size:9px;line-height:1.6;
+}
+.app-shell .analysis-report{margin-top:20px}
+.app-shell .powerbi-report-heading{
+  padding:17px 19px;margin-bottom:13px;border-radius:12px;
+  background:#fff;border:1px solid #e5e9e7;
+}
+.app-shell .powerbi-report-heading h2{font-size:19px}
+.app-shell .powerbi-report-heading p{font-size:11px}
+.app-shell .transactions-panel{margin-top:16px}
+@media(max-width:1200px){
+  .app-shell .finance-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .app-shell .powerbi-visual-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .app-shell .powerbi-activity-visual{grid-column:span 2;min-height:240px}
+  .app-shell .activity-breakdown{grid-template-columns:1fr 1fr;column-gap:24px}
+}
+@media(max-width:700px){
+  .app-shell .finance-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .app-shell .finance-kpis .metric-card{min-height:120px;padding:13px}
+  .app-shell .finance-kpis .metric-value{font-size:17px}
+  .app-shell .powerbi-visual-grid{grid-template-columns:minmax(0,1fr)}
+  .app-shell .powerbi-activity-visual{grid-column:auto}
+  .app-shell .activity-breakdown{grid-template-columns:minmax(0,1fr)}
+}
