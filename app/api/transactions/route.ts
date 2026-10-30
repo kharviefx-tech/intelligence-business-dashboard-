@@ -39,6 +39,12 @@ export async function POST(request: NextRequest) {
     const db = getNeonPool();
     const access = await db.query("select role from bi_organization_members where organization_id=$1 and user_id=$2", [organization_id, user.id]);
     if (!access.rowCount || !["owner","manager","staff"].includes(access.rows[0].role)) return NextResponse.json({ error: "You do not have permission to add transactions." }, { status: 403 });
+    const allowance = await db.query("select monthly_transaction_limit from bi_profiles where id=$1", [user.id]);
+    const limit = Number(allowance.rows[0]?.monthly_transaction_limit ?? 0);
+    if (limit > 0) {
+      const usage = await db.query("select count(*)::int as used from bi_transactions where created_by=$1 and created_at >= date_trunc('month', now())", [user.id]);
+      if (Number(usage.rows[0]?.used ?? 0) >= limit) return NextResponse.json({ error: "You have reached your monthly transaction allowance. Contact your administrator to increase it." }, { status: 429 });
+    }
     const result = await db.query(
       `insert into bi_transactions(organization_id,created_by,description,kind,amount,currency,category,transaction_date,status)
        values($1,$2,$3,$4,$5,$6,$7,$8,$9)
