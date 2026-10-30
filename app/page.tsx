@@ -38,6 +38,7 @@ export default function Home() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [mobileNav, setMobileNav] = useState(false);
+  const [activeNav, setActiveNav] = useState("overview");
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(initialForm);
@@ -79,6 +80,23 @@ export default function Home() {
       setRefreshing(false);
     }
   }, [organizationId, router]);
+
+  useEffect(() => {
+    const syncHash = () => setActiveNav(window.location.hash.replace(/^#/, "") || "overview");
+    syncHash();
+    window.addEventListener("hashchange", syncHash);
+    return () => window.removeEventListener("hashchange", syncHash);
+  }, []);
+
+  function selectSection(section: string) {
+    setActiveNav(section);
+    setMobileNav(false);
+  }
+
+  function selectPage(page: string) {
+    setActiveNav(page);
+    setMobileNav(false);
+  }
 
   const hasBootstrapped = useRef(false);
   useEffect(() => {
@@ -195,10 +213,10 @@ export default function Home() {
       <div className="brand"><div className="brand-mark">B</div><div><strong>BusinessIQ</strong><span>BUSINESS INTELLIGENCE</span></div><button className="icon-btn close-nav" onClick={() => setMobileNav(false)} aria-label="Close menu"><X size={18}/></button></div>
       <div className="workspace-label">WORKSPACE</div>
       <label className="workspace-switch"><span className="workspace-avatar">{organization?.name?.slice(0,2).toUpperCase() || "BI"}</span><span className="workspace-text"><strong>{organization?.name || "No workspace yet"}</strong><small>{organization ? organization.plan + " plan" : "Set up to begin"}</small></span>{organizations.length > 1 && <select aria-label="Select workspace" value={organizationId} onChange={e => { const nextId = e.target.value; setOrganizationId(nextId); void loadData(true, nextId); }}>{organizations.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}</select>}</label>
-      <div className="nav-label">ANALYTICS</div><nav className="nav-list"><a className="nav-item active" href="#overview"><LayoutDashboard size={18}/>Overview</a><a className="nav-item" href="#analytics"><Activity size={18}/>Analytics report</a><a className="nav-item" href="#transactions"><Wallet size={18}/>Transactions</a><a className="nav-item" href="#performance"><Activity size={18}/>Performance trend</a><a className="nav-item" href="#reports"><FileText size={18}/>Reports &amp; exports</a><Link className="nav-item" href="/import"><FileSpreadsheet size={18}/>Import business data</Link></nav>
-      <div className="nav-label">BUSINESSIQ TOOLS</div><nav className="nav-list"><Link className="nav-item" href="/platform"><Network size={18}/>Intelligence centre</Link><Link className="nav-item" href="/marketplace"><Store size={18}/>App marketplace</Link><Link className="nav-item" href="/integrations"><Activity size={18}/>Connected services</Link><Link className="nav-item" href="/team"><Users size={18}/>People &amp; access</Link><Link className="nav-item" href="/developers"><ShieldCheck size={18}/>Developer API</Link></nav>
-      <div className="nav-label">MY ACCOUNT</div><nav className="nav-list"><Link className="nav-item" href="/subscription"><Wallet size={18}/>Plans &amp; billing</Link><Link className="nav-item" href="/profile"><Users size={18}/>My profile</Link><Link className="nav-item" href="/settings"><Settings size={18}/>Account settings</Link><Link className="nav-item" href="/help"><CircleHelp size={18}/>Help centre</Link></nav>
-      {["admin","super_admin"].includes(platformRole) && <><div className="nav-label admin-nav-label"><ShieldCheck size={12}/> ADMINISTRATION</div><nav className="nav-list admin-nav-list"><Link className="nav-item admin-nav-item" href="/admin"><ShieldCheck size={18}/>Admin centre<span className="admin-nav-tag">ADMIN</span></Link><Link className="nav-item admin-nav-item" href="/monetization"><ShoppingCart size={18}/>Monetization<span className="admin-nav-tag">ADMIN</span></Link></nav></>}
+      <div className="nav-label">ANALYTICS</div><nav className="nav-list" aria-label="Analytics navigation" onCopy={e=>e.preventDefault()} onContextMenu={e=>e.preventDefault()}><a className={`nav-item${activeNav==="overview"?" active":""}`} aria-current={activeNav==="overview"?"location":undefined} href="#overview" onClick={()=>selectSection("overview")}><LayoutDashboard size={18}/>Overview</a><a className={`nav-item${activeNav==="analytics"?" active":""}`} aria-current={activeNav==="analytics"?"location":undefined} href="#analytics" onClick={()=>selectSection("analytics")}><Activity size={18}/>Analytics report</a><a className={`nav-item${activeNav==="transactions"?" active":""}`} aria-current={activeNav==="transactions"?"location":undefined} href="#transactions" onClick={()=>selectSection("transactions")}><Wallet size={18}/>Transactions</a><a className={`nav-item${activeNav==="performance"?" active":""}`} aria-current={activeNav==="performance"?"location":undefined} href="#performance" onClick={()=>selectSection("performance")}><Activity size={18}/>Performance trend</a><a className={`nav-item${activeNav==="reports"?" active":""}`} aria-current={activeNav==="reports"?"location":undefined} href="#reports" onClick={()=>selectSection("reports")}><FileText size={18}/>Reports &amp; exports</a><Link className={`nav-item${activeNav==="import"?" active":""}`} aria-current={activeNav==="import"?"page":undefined} href="/import" onClick={()=>selectPage("import")}><FileSpreadsheet size={18}/>Import business data</Link></nav>
+      <div className="nav-label">BUSINESSIQ TOOLS</div><nav className="nav-list" aria-label="BusinessIQ tools" onCopy={e=>e.preventDefault()} onContextMenu={e=>e.preventDefault()}><Link className={`nav-item${activeNav==="platform"?" active":""}`} href="/platform" onClick={()=>selectPage("platform")}><Network size={18}/>Intelligence centre</Link><Link className={`nav-item${activeNav==="marketplace"?" active":""}`} href="/marketplace" onClick={()=>selectPage("marketplace")}><Store size={18}/>App marketplace</Link><Link className={`nav-item${activeNav==="integrations"?" active":""}`} href="/integrations" onClick={()=>selectPage("integrations")}><Activity size={18}/>Connected services</Link><Link className={`nav-item${activeNav==="team"?" active":""}`} href="/team" onClick={()=>selectPage("team")}><Users size={18}/>People &amp; access</Link><Link className={`nav-item${activeNav==="developers"?" active":""}`} href="/developers" onClick={()=>selectPage("developers")}><ShieldCheck size={18}/>Developer API</Link></nav>
+      <div className="nav-label">MY ACCOUNT</div><nav className="nav-list" aria-label="Account navigation" onCopy={e=>e.preventDefault()} onContextMenu={e=>e.preventDefault()}><Link className={`nav-item${activeNav==="subscription"?" active":""}`} href="/subscription" onClick={()=>selectPage("subscription")}><Wallet size={18}/>Plans &amp; billing</Link><Link className={`nav-item${activeNav==="profile"?" active":""}`} href="/profile" onClick={()=>selectPage("profile")}><Users size={18}/>My profile</Link><Link className={`nav-item${activeNav==="settings"?" active":""}`} href="/settings" onClick={()=>selectPage("settings")}><Settings size={18}/>Account settings</Link><Link className={`nav-item${activeNav==="help"?" active":""}`} href="/help" onClick={()=>selectPage("help")}><CircleHelp size={18}/>Help centre</Link></nav>
+      {["admin","super_admin"].includes(platformRole) && <><div className="nav-label admin-nav-label"><ShieldCheck size={12}/> ADMINISTRATION</div><nav className="nav-list admin-nav-list" aria-label="Administration navigation" onCopy={e=>e.preventDefault()} onContextMenu={e=>e.preventDefault()}><Link className={`nav-item admin-nav-item${activeNav==="admin"?" active":""}`} href="/admin" onClick={()=>selectPage("admin")}><ShieldCheck size={18}/>Admin centre<span className="admin-nav-tag">ADMIN</span></Link><Link className={`nav-item admin-nav-item${activeNav==="monetization"?" active":""}`} href="/monetization" onClick={()=>selectPage("monetization")}><ShoppingCart size={18}/>Monetization<span className="admin-nav-tag">ADMIN</span></Link></nav></>}
       <div className="sidebar-bottom"><div className="secure-icon"><ShieldCheck size={18}/></div><strong>Grounded in your records.</strong><p>Metrics update from transactions you record in this workspace.</p><button className="sidebar-signout" onClick={signOut}><LogOut size={14}/> Sign out</button><Link className="profile" href="/profile"><div className="profile-avatar">{userAvatar ? <img src={userAvatar} alt="" /> : (userName || userEmail.split("@")[0] || "BI").split(/\\s+/).slice(0,2).map(v=>v[0]).join("").toUpperCase()}</div><div><strong>{userName || userEmail || "Signed-in account"}</strong><small>{userEmail || "View or edit profile"}</small></div></Link></div>
     </aside>
     {mobileNav && <button className="mobile-overlay" onClick={() => setMobileNav(false)} aria-label="Close navigation"/>}
