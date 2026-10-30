@@ -201,9 +201,9 @@ export default function SubscriptionPage() {
       <Link href="/" className="back-link"><ArrowLeft size={16}/> Back to dashboard</Link>
     </header>
     <div className="tool-content subscription-content">
-      <div className="tool-eyebrow"><CreditCard size={15}/> CUSTOMER SUBSCRIPTIONS</div>
+      <div className="subscription-hero"><div><div className="tool-eyebrow"><CreditCard size={15}/> BUSINESSIQ MEMBERSHIPS</div>
       <h1>Plans that grow with your business</h1>
-      <p className="tool-intro">Choose the level of business visibility and support that matches where your organisation is today.</p>
+      <p className="tool-intro">Start with the essentials. Add more capacity as your team, operations and reporting needs expand.</p><div className="subscription-hero-points"><span><ShieldCheck size={14}/> Secure Paystack checkout</span><span><Check size={14}/> Clear upfront pricing</span><span><RefreshCw size={14}/> Choose monthly or yearly</span></div></div><div className="subscription-hero-aside"><span>FLEXIBLE BY DESIGN</span><strong>One workspace.<br/>The right plan for your next stage.</strong><small>Upgrade when you need more. Your workspace stays yours.</small></div></div>
 
       <section className="tool-warning monetization-warning">
         <ShieldCheck size={19}/>
@@ -229,10 +229,10 @@ export default function SubscriptionPage() {
       </label>}
 
       <div className="subscription-heading-row">
-        <div><h2 className="tool-section-title">Choose your plan</h2><p>Compare the options, then select a billing period.</p></div>
+        <div><span className="subscription-section-kicker">SIMPLE, TRANSPARENT PRICING</span><h2 className="tool-section-title">Find your fit</h2><p>All prices are shown in Nigerian naira (NGN). Select the billing period that works for you.</p></div>
         <div className="subscription-cycle" role="group" aria-label="Billing period">
           <button type="button" className={billingCycle === "monthly" ? "active" : ""} aria-pressed={billingCycle === "monthly"} onClick={() => setBillingCycle("monthly")}>Monthly</button>
-          <button type="button" className={billingCycle === "yearly" ? "active" : ""} aria-pressed={billingCycle === "yearly"} onClick={() => setBillingCycle("yearly")}>Yearly <span>Save 2 months</span></button>
+          <button type="button" className={billingCycle === "yearly" ? "active" : ""} aria-pressed={billingCycle === "yearly"} onClick={() => setBillingCycle("yearly")}>Yearly <span>2 months free</span></button>
         </div>
       </div>
 
@@ -266,7 +266,8 @@ export default function SubscriptionPage() {
         <div><strong>Why choose Enterprise?</strong><p>Enterprise is for organisations that need a considered rollout rather than a one-size-fits-all subscription. We’ll scope the organisation’s teams, operating requirements, configuration and onboarding needs before preparing a tailored proposal. The scope and delivery commitments will be agreed before purchase.</p></div>
       </section>
 
-      <p className="tool-footer-note"><strong>Billing transparency:</strong> Monthly and yearly options are paid upfront for the selected period. Yearly subscriptions are charged once per year at the displayed amount. BusinessIQ does not automatically renew these payments; you can renew manually before the period ends. Applicable taxes and final payment details are shown by Paystack before you confirm payment.</p>
+      <section className="subscription-assurance"><div><ShieldCheck size={18}/><span><strong>Payments handled securely</strong><small>Checkout is processed by Paystack. BusinessIQ never asks you to send card details in chat or email.</small></span></div><div><CreditCard size={18}/><span><strong>Know what you will pay</strong><small>The selected amount and payment method are shown before you approve a transaction.</small></span></div><div><RefreshCw size={18}/><span><strong>No surprise automatic renewal</strong><small>Subscriptions are paid upfront for the selected period. Renewal is manual before the period ends.</small></span></div></section>
+      <p className="tool-footer-note"><strong>Billing transparency:</strong> Prices are displayed in NGN. Monthly and yearly options are charged upfront for the selected period. Yearly pricing is equivalent to 10 monthly payments (two months’ savings). BusinessIQ does not automatically renew these payments. Applicable taxes and final payment details are shown by Paystack before you confirm payment.</p>
     </div>
   </main>;
 }
