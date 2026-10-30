@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft, Building2, Camera, Check, ChevronDown, Globe2, Mail, MapPin,
-  ShieldCheck, UserRound, BriefcaseBusiness, Clock3, Save, Settings2, Upload, X
+  ShieldCheck, UserRound, BriefcaseBusiness, Clock3, Save, Settings2, Upload, X, Code2, ArrowUpRight
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
@@ -165,6 +165,8 @@ export default function ProfilePage() {
   if (loading) return <main className="profile-page"><section className="profile-loading">Loading your BusinessIQ profile…</section></main>;
 
   const displayAvatar = imagePreview || avatarUrl;
+  const selectedWorkspaceRole = organizations.find(o => o.id === preferredOrg)?.role;
+  const canManageApi = selectedWorkspaceRole === "owner" || selectedWorkspaceRole === "manager";
   const initials = (name.trim() || email.split("@")[0] || "BI").split(/\s+/).slice(0, 2).map(v => v[0]).join("").toUpperCase();
 
   return <main className="profile-page">
@@ -228,6 +230,14 @@ export default function ProfilePage() {
             <div className="profile-field profile-field-wide"><span>Monthly transaction allowance</span><div className="profile-readonly-card"><ShieldCheck size={16}/><span>{profile?.monthly_transaction_limit ? profile.monthly_transaction_limit.toLocaleString() + " transactions per month" : "Unlimited transactions"}</span><em>Admin managed</em></div><small>This setting is read-only for users and staff. Only an administrator can change it.</small></div>
           </div>
         </section>
+
+        {canManageApi && <Link href="/developers" className="profile-section-card group block transition hover:border-emerald-300 hover:shadow-sm">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="profile-section-icon"><Code2 size={19}/></div>
+            <div className="min-w-0 flex-1"><h2 className="font-semibold text-slate-900">Developer access &amp; API keys</h2><p className="mt-1 text-sm text-slate-500">Connect approved company systems, generate workspace-scoped API credentials, review active keys and revoke access when needed.</p><span className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700">Manage API access <ArrowUpRight size={14}/></span></div>
+            <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700">Owner / manager</span>
+          </div>
+        </Link>}
 
         {error && <div className="profile-alert profile-alert-error" role="alert"><X size={17}/>{error}</div>}
         {message && <div className="profile-alert profile-alert-success" role="status"><Check size={17}/>{message}</div>}
