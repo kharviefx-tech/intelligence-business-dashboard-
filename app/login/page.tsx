@@ -115,12 +115,6 @@ export default function LoginPage() {
         <div className="auth-side-kicker"><i/> BUSINESSIQ WORKSPACE</div>
         <h1>Make every business decision count.</h1>
         <p>One clear workspace for financial performance, business intelligence and confident decisions.</p>
-        <div className="auth-preview-card">
-          <div className="auth-preview-head"><span>EXECUTIVE OVERVIEW</span><span className="auth-preview-live"><i/> LIVE</span></div>
-          <div className="auth-preview-kpis"><div><small>NET RESULT</small><b>₦12.8m</b><i>+12.4%</i></div><div><small>REVENUE</small><b>₦24.6m</b><i>+8.2%</i></div></div>
-          <div className="auth-preview-chart"><div className="auth-chart-labels"><span>PERFORMANCE TREND</span><span>LAST 6 MONTHS</span></div><div className="auth-bars"><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div></div>
-          <div className="auth-preview-foot"><span><i/> Income</span><span><i/> Expenses</span><span>Workspace analytics</span></div>
-        </div>
         <div className="auth-side-foot"><ShieldCheck size={15}/> Your workspace. Your records. Your decisions.</div>
       </aside>
       <section className="auth-form-stage">
