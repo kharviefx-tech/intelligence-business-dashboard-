@@ -1152,3 +1152,63 @@ tbody tr:hover{background:#f7fbf8}
  .biq-surface{padding:16px!important;border-radius:14px!important}
  .biq-chart-grid>.biq-surface{min-height:0}
 }
+
+
+/* BusinessIQ unified card system — consistent across every signed-in workspace area */
+:root{--biq-card-border:#e2eae5;--biq-card-shadow:0 4px 16px rgba(22,49,35,.045);--biq-card-shadow-hover:0 12px 28px rgba(22,49,35,.085)}
+.tool-page,.integrations-shell,.help-page{background:#f3f7f4!important;color:#1a3025}
+.tool-topbar,.integrations-topbar,.help-topbar{background:rgba(255,255,255,.96)!important;border-color:var(--biq-card-border)!important;box-shadow:0 2px 12px rgba(22,49,35,.035)}
+.tool-content,.integrations-content{max-width:1440px!important;padding-top:34px!important}
+.tool-content>h1,.integrations-content h1,.help-hero h1{color:#173b2b!important;letter-spacing:-1.1px}
+.tool-intro,.integrations-content p{color:#74847a}
+.tool-stat-grid article,.tool-card,.tool-footer-note,.pricing-preview,.tool-warning{border-radius:16px!important;box-shadow:var(--biq-card-shadow);border-color:var(--biq-card-border)}
+.tool-stat-grid article,.tool-card{position:relative;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.tool-stat-grid article:hover,.tool-card:hover{transform:translateY(-2px);box-shadow:var(--biq-card-shadow-hover);border-color:#c8dbce}
+.tool-stat-grid article:before,.tool-card:before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#18845f,#9acbb0)}
+.tool-card-grid{gap:17px!important}
+.tool-card{padding:22px!important;min-height:190px}
+.tool-card-icon{width:42px;height:42px;border-radius:12px;background:#eaf5ef}
+.tool-section-title{display:flex;align-items:center;gap:10px;color:#1b392b}
+.tool-section-title:before{content:"";width:4px;height:20px;border-radius:8px;background:#18845f}
+.tool-footer-note{padding:17px 19px;background:#fff}
+.pricing-preview{background:linear-gradient(135deg,#edf7f0,#f9fbfa)!important}
+.tool-eyebrow{letter-spacing:.15em!important}
+.tool-content .rounded-2xl.border,.tool-content .rounded-xl.border{border-color:var(--biq-card-border)!important;box-shadow:var(--biq-card-shadow)}
+.tool-content .rounded-2xl.border.bg-white,.tool-content .rounded-xl.border.bg-white{border-radius:16px!important}
+main.min-h-screen:not(.app-shell):not(.auth-page){background:#f3f7f4!important}
+main.min-h-screen:not(.app-shell) > header{background:rgba(255,255,255,.97)!important;border-color:var(--biq-card-border)!important;box-shadow:0 2px 12px rgba(22,49,35,.035)}
+main.min-h-screen:not(.app-shell) > div{max-width:1440px}
+main.min-h-screen:not(.app-shell) section.rounded-2xl.border,
+main.min-h-screen:not(.app-shell) article.rounded-2xl.border,
+main.min-h-screen:not(.app-shell) section.rounded-xl.border,
+main.min-h-screen:not(.app-shell) article.rounded-xl.border{border-color:var(--biq-card-border)!important;border-radius:16px!important;box-shadow:var(--biq-card-shadow);transition:box-shadow .18s ease,border-color .18s ease}
+main.min-h-screen:not(.app-shell) section.rounded-2xl.border:hover,
+main.min-h-screen:not(.app-shell) article.rounded-2xl.border:hover{border-color:#cbdcd1!important;box-shadow:var(--biq-card-shadow-hover)}
+main.min-h-screen:not(.app-shell) input,
+main.min-h-screen:not(.app-shell) select,
+main.min-h-screen:not(.app-shell) textarea{border-radius:10px}
+main.min-h-screen:not(.app-shell) button:not(.unstyled){border-radius:10px}
+main.min-h-screen:not(.app-shell) h1{letter-spacing:-1px;color:#173b2b}
+main.min-h-screen:not(.app-shell) h2{letter-spacing:-.35px}
+main.min-h-screen:not(.app-shell) .bg-slate-50{background:#f7faf8}
+main.min-h-screen:not(.app-shell) .bg-white{background:#fff}
+.integrations-content{padding-left:clamp(16px,3vw,42px)!important;padding-right:clamp(16px,3vw,42px)!important}
+.integrations-hero,.integration-identity,.integration-notice,.integration-card{border-radius:17px!important;box-shadow:var(--biq-card-shadow)}
+.integration-card{border:1px solid var(--biq-card-border)!important;background:#fff!important;transition:transform .18s ease,box-shadow .18s ease}
+.integration-card:hover{transform:translateY(-2px);box-shadow:var(--biq-card-shadow-hover)}
+.help-hero{border-radius:0 0 24px 24px;background:linear-gradient(135deg,#153d2e,#1e6046)!important}
+.help-topic,.help-faq,.help-contact-card{border:1px solid var(--biq-card-border)!important;border-radius:15px!important;background:#fff;box-shadow:var(--biq-card-shadow)}
+.help-topic{padding:18px!important;margin-bottom:15px}
+.help-faq{padding:0!important;overflow:hidden}
+.profile-section-card,.profile-hero-card{border-radius:17px!important;border-color:var(--biq-card-border)!important;box-shadow:var(--biq-card-shadow)!important}
+.profile-section-card{padding:23px!important}
+.settings-card,.auth-card{border-radius:20px!important;border:1px solid var(--biq-card-border)!important;box-shadow:0 18px 50px rgba(22,49,35,.08)!important}
+.settings-section{border:1px solid var(--biq-card-border);border-radius:15px;padding:18px;background:#fff;margin:18px 0}
+@media(max-width:760px){
+ .tool-content{padding:25px 14px 36px!important}
+ .tool-card{padding:17px!important;min-height:0}
+ .tool-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .profile-section-card{padding:16px!important}
+ .help-topic{padding:14px!important}
+}
+@media(max-width:430px){.tool-stat-grid{grid-template-columns:1fr!important}}
