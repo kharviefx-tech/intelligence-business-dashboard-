@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       const category = typeof row.category === "string" && row.category.trim() ? row.category.trim().slice(0, 120) : "Uncategorized";
       const status = row.status === "pending" ? "pending" : "recorded";
       if (!description || description.length > 240 || !["income", "expense"].includes(kind) ||
-          !Number.isFinite(amount) || amount <= 0 || !currencies.has(currency) || !validDate(row.transaction_date)) {
+          !Number.isFinite(amount) || amount <= 0 || amount > 999999999999 || Math.round(amount * 100) !== amount * 100 || !currencies.has(currency) || !validDate(row.transaction_date)) {
         return NextResponse.json({ error: "Row " + (index + 2) + " has invalid data. Check Date, Description, Type, Amount and Currency." }, { status: 400 });
       }
       normalized.push({ description, kind, amount, currency, category, status, transaction_date: row.transaction_date });
@@ -62,13 +62,20 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      const insertedIds: string[] = [];
       for (const row of normalized) {
-        await client.query(
+        const inserted = await client.query(
           `insert into bi_transactions(organization_id,created_by,description,kind,amount,currency,category,transaction_date,status)
-           values($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+           values($1,$2,$3,$4,$5,$6,$7,$8,$9) returning id`,
           [organizationId, user.id, row.description, row.kind, row.amount, row.currency, row.category, row.transaction_date, row.status],
         );
+        insertedIds.push(inserted.rows[0].id);
       }
+      await client.query(
+        `insert into bi_audit_logs(organization_id,actor_id,action,entity,detail)
+         values($1,$2,'transactions.imported','transaction_batch',$3::jsonb)`,
+        [organizationId, user.id, JSON.stringify({ count: normalized.length, transaction_ids: insertedIds, currencies: [...new Set(normalized.map((row) => row.currency))] })],
+      );
       await client.query("COMMIT");
       return NextResponse.json({ imported: normalized.length });
     } catch (error) {
