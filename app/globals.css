@@ -907,3 +907,120 @@ tbody tr:hover{background:#f5f9fd}
 .subscription-content>.tool-footer-note{font-size:10px;line-height:1.7;padding:14px 16px}
 @media(max-width:1050px){.subscription-plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.subscription-hero{grid-template-columns:minmax(0,1fr) 250px}}
 @media(max-width:700px){.subscription-hero{grid-template-columns:1fr;padding:22px 18px;gap:18px}.subscription-hero-aside{max-width:none}.subscription-heading-row{align-items:flex-start;flex-direction:column}.subscription-cycle{width:100%}.subscription-cycle button{flex:1}.subscription-assurance{grid-template-columns:1fr}.subscription-plan-grid{grid-template-columns:1fr}.subscription-plan-card{min-height:0}.subscription-plan-card>p{min-height:0}.subscription-hero h1{font-size:30px}.subscription-hero-points{gap:9px 13px}}
+
+
+/* BusinessIQ workspace refinement — unified navigation, reporting hierarchy and responsive analytics */
+:root{--ink:#172821;--muted:#718078;--line:#e7ede9;--green:#14785b;--green-dark:#0f6249;--soft:#f4f7f5}
+body{background:#f5f7f6;color:#172821;font-family:'DM Sans',sans-serif}
+.sidebar{width:264px;padding:24px 17px 0;background:#fff;border-right:1px solid #e5ebe7;box-shadow:1px 0 0 rgba(19,48,35,.015)}
+.brand{padding:0 8px 27px}.brand-mark{width:38px;height:38px;border-radius:12px;background:#126c51;box-shadow:0 5px 12px rgba(18,108,81,.16)}
+.brand strong{font-size:18px;letter-spacing:-.65px}.brand span{font-size:8px;letter-spacing:1.5px}
+.workspace-switch{margin-bottom:22px;padding:11px;border-radius:11px;background:#fbfcfb}
+.nav-label{font-size:9px;letter-spacing:1.35px;color:#9aa69f;padding-left:10px}
+.nav-list{gap:3px;margin-bottom:19px}
+.nav-item{min-height:39px;padding:10px 11px;border-radius:9px;font-size:12px;color:#627168;transition:background .16s ease,color .16s ease}
+.nav-item svg{width:17px;height:17px;color:#87948c}
+.nav-item.active{background:#eaf4ef;color:#12694e}.nav-item.active svg{color:#12694e}
+.nav-item:hover{background:#f2f6f3;color:#174d3b}
+.sidebar-bottom{padding:17px 5px 0}.secure-icon{width:32px;height:32px}
+.sidebar-bottom>strong{font-size:11px}.sidebar-bottom p{font-size:10px;line-height:1.55}
+.sidebar-signout{display:flex;align-items:center;gap:7px;border:0;background:transparent;color:#718078;font-size:10px;padding:8px 0;margin:5px 0 8px}
+.sidebar-signout:hover{color:#b45345}
+.profile{padding:12px 0 15px}.profile strong{font-size:10px}.profile small{font-size:9px}
+.main-area{margin-left:264px;background:#f5f7f6}
+.topbar{height:66px;padding:0 clamp(20px,3vw,42px);background:rgba(255,255,255,.96);border-bottom:1px solid #e8eeea}
+.crumb{font-size:11px}.top-actions{gap:13px}.searchbox{width:min(260px,28vw);height:36px;border-radius:9px;background:#f8faf8}
+.top-avatar{width:34px;height:34px;border:2px solid white;box-shadow:0 0 0 1px #e4ebe6}
+.workspace-contextbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px clamp(20px,3vw,42px);background:#fff;border-bottom:1px solid #edf1ee}
+.workspace-contextbar>div:first-child{display:flex;align-items:center;gap:12px;min-width:0}
+.contextbar-label{font-size:9px;font-weight:800;letter-spacing:1.1px;color:#9aa69f}
+.workspace-contextbar strong{font-size:12px;color:#34483d}
+.contextbar-meta{display:flex;align-items:center;gap:19px;color:#829087;font-size:10px}
+.contextbar-meta span{display:flex;align-items:center;gap:7px}
+.contextbar-meta i{width:6px;height:6px;border-radius:50%;background:#20a273;display:inline-block}
+.contextbar-meta b{color:#34483d}
+.content{max-width:1600px;padding:30px clamp(20px,3vw,42px) 28px}
+.welcome-row{align-items:center;margin-bottom:22px;gap:18px}
+.eyebrow{font-size:9px;letter-spacing:1.25px;color:#829087}
+.status-dot{width:7px;height:7px;box-shadow:0 0 0 4px #e4f2eb}
+.welcome-row h1{font-size:clamp(24px,2vw,30px);letter-spacing:-1.1px;margin:9px 0 5px;color:#172821}
+.welcome-row h1 span{font-size:15px;color:#c59a4e}
+.subheading{font-size:12px;color:#7a8980;line-height:1.6}
+.header-controls{gap:8px}.period-select{border-color:#e2e9e4;border-radius:9px}
+.period-select select{font-size:11px;padding:10px 30px 10px 12px}
+.primary-btn{padding:10px 14px;border-radius:9px;background:#14785b;font-size:11px;box-shadow:0 3px 8px rgba(20,120,91,.13)}
+.subtle-btn{border-radius:9px;padding:9px 11px;font-size:10px}
+.metrics-grid{gap:13px;margin-bottom:16px}
+.metric-card,.panel{border:1px solid #e7ede9;border-radius:13px;box-shadow:0 2px 7px rgba(21,43,31,.025)}
+.metric-card{padding:17px 18px 16px;min-height:132px}
+.metric-top{font-size:11px;color:#75837a}
+.metric-icon{width:34px;height:34px;border-radius:10px}
+.metric-value{font-size:clamp(19px,1.7vw,25px);margin:16px 0 10px;letter-spacing:-.9px;color:#172821}
+.metric-foot{font-size:9px}
+.dashboard-grid{grid-template-columns:minmax(0,1.65fr) minmax(290px,.9fr);gap:15px;margin-bottom:15px}
+.panel{padding:19px 20px}
+.panel-heading h2{font-size:14px;letter-spacing:-.35px;color:#21362b}
+.panel-heading p{font-size:10px;line-height:1.5;color:#87948c}
+.live-chart-badge{font-size:8px;letter-spacing:.65px;padding:6px 8px;border-radius:6px;background:#f1f6f3;color:#638074}
+.chart-legend{margin-top:21px;font-size:10px}
+.chart-wrap{height:228px;margin-top:3px}
+.chart-caption{font-size:9px;color:#87948c}
+.finance-summary-panel{background:linear-gradient(180deg,#fff 0%,#fbfdfb 100%)}
+.pnl-total{padding:22px 0 18px}.pnl-total>span{font-size:10px;color:#829087}
+.pnl-total strong{font-size:clamp(23px,2.1vw,30px);letter-spacing:-1px}
+.pnl-row{font-size:10px;margin:11px 0 8px}.pnl-row strong{font-size:11px}
+.pnl-track{height:7px;border-radius:10px;background:#eef2ef}
+.pnl-track-income,.pnl-track-expense{border-radius:10px}
+.pnl-foot{font-size:10px;padding-top:15px}
+.pnl-disclaimer{font-size:9px;line-height:1.6;color:#8a968e}
+.dashboard-grid-lower{grid-template-columns:minmax(0,1.1fr) minmax(290px,.9fr)}
+.category-list{gap:17px;padding:22px 0 16px}
+.category-item-heading{font-size:10px}.category-track{height:7px;border-radius:10px;background:#eff3f0}
+.category-track span{border-radius:10px}
+.category-foot{font-size:9px;color:#89968e}
+.signal-list{gap:0;padding:15px 0 12px}
+.signal-row{padding:11px 0;border-bottom:1px solid #f0f3f1}
+.signal-row:last-child{border-bottom:0}
+.signal-row strong{font-size:10px;color:#34473d}.signal-row small{font-size:9px;line-height:1.5;color:#859188}
+.signal-icon{width:31px;height:31px;border-radius:9px}
+.health-disclaimer{font-size:9px;line-height:1.6;border:1px solid #edf1ee;background:#f8faf8;border-radius:8px}
+.powerbi-report{margin:22px 0 17px;padding:21px;border:1px solid #e5ece7;border-radius:14px;background:#f0f5f2}
+.powerbi-report-heading{align-items:flex-end;margin-bottom:16px}
+.powerbi-eyebrow{font-size:8px;letter-spacing:1.25px;color:#6e897c}
+.powerbi-report-heading h2{font-size:19px;letter-spacing:-.6px;margin:7px 0 5px;color:#20372b}
+.powerbi-report-heading p{font-size:10px;color:#7e8d84}
+.powerbi-source-badge{font-size:9px;background:#fff;border:1px solid #e3ebe5;border-radius:7px;padding:7px 10px;color:#61776a}
+.powerbi-visual-grid{gap:14px;grid-template-columns:minmax(0,1.45fr) minmax(280px,.85fr)}
+.powerbi-visual{border-radius:12px;box-shadow:none}
+.powerbi-bar-chart{height:235px}
+.powerbi-donut-wrap{height:190px}
+.powerbi-category-legend{gap:9px}
+.powerbi-category-legend>div{font-size:9px}
+.powerbi-report-foot{font-size:9px;color:#839188;padding-top:13px}
+.transactions-panel{padding:19px 20px 0}
+.transactions-panel .panel-heading{align-items:center}
+.table-scroll{margin-top:15px}
+thead th{font-size:8px;letter-spacing:.9px;padding:13px 10px;background:#fafcfb}
+tbody td{padding:13px 10px;border-bottom:1px solid #f0f3f1;font-size:10px;color:#637168}
+tbody tr:hover{background:#fbfdfb}
+.transaction-name strong{font-size:10px;color:#34473d}
+.transaction-icon{width:29px;height:29px;border-radius:8px}
+.status-badge{font-size:8px;letter-spacing:.2px;padding:5px 7px;border-radius:6px}
+.amount{font-size:10px;font-weight:700}
+.table-footer{padding:13px 0;font-size:9px;color:#89968e}
+.pbi-page-tabs{position:sticky;bottom:0;z-index:8;margin:22px -10px 0;padding:10px;background:rgba(255,255,255,.94);border:1px solid #e5ece7;border-radius:11px;backdrop-filter:blur(12px);box-shadow:0 5px 18px rgba(25,48,36,.05)}
+.pbi-page-tab{font-size:10px;padding:8px 11px;border-radius:7px}
+.pbi-page-tab-active{font-size:10px;padding:8px 11px;border-radius:7px;background:#eaf4ef;color:#176b51}
+.footer{font-size:9px;color:#929d96;padding:17px 0 8px}
+.currency-integrity-note{display:flex;align-items:flex-start;gap:10px;margin:0 0 16px;padding:11px 13px;border:1px solid #f1dfb7;border-radius:10px;background:#fffaf0;color:#8a6828;font-size:10px;line-height:1.55}
+.currency-integrity-note svg{flex-shrink:0;margin-top:1px}
+.currency-integrity-note strong{font-weight:800;color:#78591e}
+.data-alert{border-radius:10px;padding:11px 13px;font-size:10px}
+.loading-panel{border:1px solid #e7ede9;border-radius:13px;background:#fff;min-height:260px}
+.empty-workspace{border:1px solid #e4eee7;border-radius:15px;box-shadow:0 5px 20px rgba(21,43,31,.035)}
+.transaction-modal{border-radius:16px;box-shadow:0 24px 80px rgba(15,35,25,.22)}
+.transaction-modal input,.transaction-modal select{border-radius:9px}
+@media(max-width:1200px){.sidebar{width:245px}.main-area{margin-left:245px}.content{padding-left:24px;padding-right:24px}.topbar{padding-left:24px;padding-right:24px}.metrics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-grid,.dashboard-grid-lower{grid-template-columns:minmax(0,1fr) minmax(260px,.85fr)}}
+@media(max-width:900px){.sidebar{width:264px;transform:translateX(-100%);transition:transform .22s ease;box-shadow:12px 0 35px rgba(17,38,27,.12)}.sidebar.sidebar-open{transform:translateX(0)}.main-area{margin-left:0}.menu-toggle,.close-nav{display:grid}.topbar{gap:12px}.content{padding:24px 20px}.workspace-contextbar{padding:12px 20px}.dashboard-grid,.dashboard-grid-lower{grid-template-columns:minmax(0,1fr)}.powerbi-visual-grid{grid-template-columns:minmax(0,1fr) minmax(260px,.9fr)}}
+@media(max-width:640px){.topbar{height:60px;padding:0 14px}.crumb{font-size:10px}.top-actions{gap:8px}.searchbox{width:min(42vw,180px);height:34px}.workspace-contextbar{padding:10px 15px;align-items:flex-start;flex-direction:column;gap:7px}.contextbar-meta{gap:12px;flex-wrap:wrap;font-size:9px}.content{padding:21px 14px 22px}.welcome-row{align-items:flex-start;flex-direction:column;margin-bottom:18px}.welcome-row h1{font-size:25px}.header-controls{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px}.period-select{min-width:0}.period-select select{width:100%}.header-controls .primary-btn{justify-content:center}.header-controls .subtle-btn{justify-content:center}.metrics-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.metric-card{padding:13px;min-height:119px}.metric-top{font-size:10px}.metric-icon{width:29px;height:29px}.metric-value{font-size:clamp(16px,5vw,21px);margin:13px 0 8px}.metric-foot{font-size:8px;flex-wrap:wrap}.panel{padding:16px 14px}.panel-heading h2{font-size:13px}.panel-heading p{font-size:9px}.chart-wrap{height:195px}.dashboard-grid,.dashboard-grid-lower{gap:10px;margin-bottom:10px}.powerbi-report{padding:15px;margin:16px 0}.powerbi-report-heading{align-items:flex-start;flex-direction:column;gap:10px}.powerbi-report-heading h2{font-size:17px}.powerbi-visual-grid{grid-template-columns:minmax(0,1fr)}.powerbi-bar-chart{height:210px}.powerbi-donut-wrap{height:180px}.powerbi-report-foot{flex-direction:column;gap:5px}.transactions-panel{padding:15px 12px 0}.transactions-panel .panel-heading{align-items:flex-start;gap:8px}.transactions-panel .subtle-btn{font-size:9px;padding:7px}.table-scroll{margin-left:-5px;margin-right:-5px;width:calc(100% + 10px)}thead th,tbody td{padding:11px 8px}.pbi-page-tabs{margin:17px -4px 0;overflow-x:auto;white-space:nowrap}.pbi-page-count{display:none}.footer{gap:8px;flex-wrap:wrap;line-height:1.5}.currency-integrity-note{font-size:9px}.loading-panel{min-height:210px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
