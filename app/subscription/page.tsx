@@ -88,6 +88,9 @@ export default function SubscriptionPage() {
       setNotice("Paystack has not confirmed the payment yet. If you paid by bank transfer, complete the transfer and check the status below.");
       setNoticeType("info");
       setPendingReference(reference);
+    } else if (payment === "failed") {
+      setNotice("The payment was not completed. Your plan has not changed. You can choose the plan again whenever you are ready.");
+      setNoticeType("error");
     } else if (payment === "review") {
       setNotice("The payment details did not match the expected amount or currency. Your plan has not been changed. Please contact support with your payment receipt.");
       setNoticeType("error");
@@ -154,6 +157,10 @@ export default function SubscriptionPage() {
           const workspaceData = await refreshed.json();
           setWorkspaces(workspaceData.workspaces ?? []);
         }
+      } else if (["failed", "abandoned"].includes(data.status)) {
+        setNotice("The payment was not completed. Your plan has not changed. You can start a new checkout when ready.");
+        setNoticeType("error");
+        setPendingReference("");
       } else {
         setNotice("Payment is still pending with Paystack. If you chose bank transfer, make sure the transfer is complete, then check again.");
         setNoticeType("info");
