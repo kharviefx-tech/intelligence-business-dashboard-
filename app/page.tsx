@@ -221,6 +221,7 @@ export default function Home() {
         <a className={`nav-item${activeNav==="analytics"?" active":""}`} aria-current={activeNav==="analytics"?"location":undefined} href="#analytics" onClick={()=>selectSection("analytics")}><Activity size={18}/>Analytics report</a>
         <a className={`nav-item${activeNav==="performance"?" active":""}`} aria-current={activeNav==="performance"?"location":undefined} href="#performance" onClick={()=>selectSection("performance")}><Activity size={18}/>{t("performance")}</a>
         <Link className="nav-item" href="/geography" onClick={()=>selectPage("geography")}><Globe2 size={18}/>Geographical analytics</Link>
+        <Link className={`nav-item${activeNav==="decision-centre"?" active":""}`} href="/decision-centre" onClick={()=>selectPage("decision-centre")}><Gauge size={18}/>Decision centre</Link>
         <Link className="nav-item" href="/reports" onClick={()=>selectPage("reports")}><FileText size={18}/>{t("reports")}</Link>
       </nav>
       <div className="nav-label">FINANCIAL &amp; DATA MANAGEMENT</div>
