@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, LockKeyhole, RefreshCw, ShieldCheck, Users, LayoutDashboard, CreditCard } from "lucide-react";
+import { LockKeyhole, RefreshCw, ShieldCheck, Users, LayoutDashboard, CreditCard, UserRound, Settings, CircleHelp } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 type Profile = { id: string; full_name: string | null; platform_role: string; monthly_transaction_limit: number; created_at: string };
@@ -54,7 +54,7 @@ export default function AdminPage() {
   }
 
   return <main className="tool-page">
-    <header className="tool-topbar admin-commandbar"><Link href="/" className="tool-brand"><span className="tool-brand-mark">B</span><span>BusinessIQ <small>ADMINISTRATION</small></span></Link><nav className="admin-command-nav" aria-label="Administrator navigation"><Link className="is-current" href="/admin"><ShieldCheck size={15}/> Admin centre</Link><Link href="/monetization"><CreditCard size={15}/> Monetization</Link><Link href="/"><LayoutDashboard size={15}/> User workspace</Link></nav><span className="admin-access-label"><LockKeyhole size={14}/> Restricted access</span></header>
+    <header className="tool-topbar admin-commandbar"><Link href="/" className="tool-brand"><span className="tool-brand-mark">B</span><span>BusinessIQ <small>ADMINISTRATION</small></span></Link><nav className="admin-command-nav" aria-label="Administrator navigation"><Link className="is-current" href="/admin"><ShieldCheck size={15}/> Admin centre</Link><Link href="/monetization"><CreditCard size={15}/> Monetization</Link><Link href="/"><LayoutDashboard size={15}/> Workspace</Link><Link href="/profile"><UserRound size={15}/> Profile</Link><Link href="/settings"><Settings size={15}/> Settings</Link><Link href="/help"><CircleHelp size={15}/> Help</Link></nav><span className="admin-access-label"><LockKeyhole size={14}/> Restricted access</span></header>
     <div className="tool-content">
       <div className="tool-eyebrow"><LockKeyhole size={15}/> ADMINISTRATION</div><h1>Admin control centre</h1>
       <p className="tool-intro">Manage account access limits. Users and staff can edit their own profiles and account security, but only administrators can change usage limits.</p>
