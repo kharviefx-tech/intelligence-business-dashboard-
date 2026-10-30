@@ -1,4 +1,5 @@
 import Link from "next/link";
+import MicrosoftConnect from "./MicrosoftConnect";
 import { Activity, ArrowUpRight, BarChart3, CheckCircle2, Cloud, FileSpreadsheet, FolderKanban, Mail, MessageSquare, ShieldCheck, Share2, Settings2 } from "lucide-react";
 
 const integrations = [
@@ -16,7 +17,7 @@ export default function IntegrationsPage() {
     <section className="integrations-content">
       <div className="integrations-eyebrow"><span/> BUSINESSIQ CONNECT</div>
       <div className="integrations-hero"><div><h1>Microsoft 365, connected to your business.</h1><p>Bring your Microsoft tools into one BusinessIQ workspace. Choose the services your organisation uses and build a connected reporting workflow without changing your BusinessIQ identity or branding.</p></div><div className="integrations-hero-mark"><Share2 size={34}/><span>MICROSOFT 365</span></div></div>
-      <div className="integration-notice"><ShieldCheck size={19}/><div><strong>Secure connection setup required</strong><p>Microsoft services are listed and ready for configuration. Live account linking and data access will activate after the BusinessIQ Microsoft Entra app is registered and its credentials are securely added to the server.</p></div><span>SETUP REQUIRED</span></div>
+      <MicrosoftConnect />\n      <div className="integration-notice"><ShieldCheck size={19}/><div><strong>Secure connection setup required</strong><p>Microsoft services are listed and ready for configuration. Live account linking and data access will activate after the BusinessIQ Microsoft Entra app is registered and its credentials are securely added to the server.</p></div><span>SETUP REQUIRED</span></div>
       <div className="integration-section-heading"><div><h2>Microsoft services</h2><p>Choose the services you want to connect to BusinessIQ.</p></div><span>6 SERVICES</span></div>
       <div className="integration-grid">{integrations.map(item => { const Icon=item.icon; return <article className="integration-card" key={item.name}>
         <div className="integration-card-top"><div className="integration-icon"><Icon size={21}/></div><span className="integration-status"><i/> Not connected</span></div>
