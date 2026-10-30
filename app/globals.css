@@ -1106,3 +1106,49 @@ tbody tr:hover{background:#f7fbf8}
 @media(max-width:1200px){.sidebar{width:245px}.main-area{margin-left:245px}.content{padding-left:24px;padding-right:24px}.workspace-contextbar{padding-left:24px;padding-right:24px}}
 @media(max-width:900px){.sidebar{width:264px;background:#14241e}.main-area{margin-left:0}.topbar{padding:0 20px}.content{padding:24px 20px}.workspace-contextbar{padding:12px 20px}}
 @media(max-width:640px){.topbar{padding:0 14px}.workspace-contextbar{padding:10px 15px}.content{padding:21px 14px 22px}.welcome-row h1{font-size:25px}.metric-card-primary{grid-column:span 2}.metric-card{min-height:115px}.panel{padding:16px 14px}.chart-wrap{height:210px}.powerbi-report{padding:15px}.transactions-panel{padding:15px 12px 0}}
+
+
+/* BusinessIQ executive workspace — refined independent BI visual system */
+.biq-dashboard-shell{min-height:100vh;background:#f4f7f5;color:#172c23}
+.biq-dashboard-topbar{background:rgba(255,255,255,.96)!important;border-color:#e4ebe6!important;box-shadow:0 2px 14px rgba(23,44,35,.035);backdrop-filter:blur(14px)}
+.biq-topbar-inner{max-width:1600px!important;min-height:72px;padding-left:clamp(18px,3vw,48px)!important;padding-right:clamp(18px,3vw,48px)!important}
+.biq-brand-mark{width:39px!important;height:39px!important;border-radius:12px!important;background:#176b52!important;box-shadow:0 5px 14px rgba(23,107,82,.17)}
+.biq-dashboard-content{max-width:1600px!important;padding:34px clamp(18px,3vw,48px) 42px!important;gap:22px!important}
+.biq-page-heading{padding:3px 0 8px}
+.biq-page-heading h1{font-size:clamp(27px,2.4vw,36px)!important;line-height:1.12;letter-spacing:-1.25px!important;color:#18382b}
+.biq-page-heading p{font-size:13px!important;color:#7a8980!important}
+.biq-kpi-card{position:relative;overflow:hidden;border:1px solid #e4ebe6!important;border-radius:16px!important;background:#fff!important;padding:21px!important;box-shadow:0 3px 12px rgba(28,57,43,.035)!important;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.biq-kpi-card:before{content:"";position:absolute;inset:0 0 auto;height:3px;background:#dcebe2}
+.biq-kpi-card:nth-child(1):before{background:#1b8b68}
+.biq-kpi-card:nth-child(2):before{background:#e6a04a}
+.biq-kpi-card:nth-child(3):before{background:#6b9b82}
+.biq-kpi-card:nth-child(4):before{background:#8a9db5}
+.biq-kpi-card:hover{transform:translateY(-2px);border-color:#cbdcd1!important;box-shadow:0 10px 24px rgba(28,57,43,.07)!important}
+.biq-kpi-card .text-\[25px\]{font-size:clamp(21px,2vw,29px)!important;letter-spacing:-.8px}
+.biq-surface{border:1px solid #e3ebe5!important;border-radius:17px!important;background:#fff!important;box-shadow:0 3px 14px rgba(28,57,43,.035)!important;padding:22px!important}
+.biq-surface h2{font-size:16px;letter-spacing:-.35px;color:#1b382b}
+.biq-surface p{line-height:1.6}
+.biq-executive-grid{align-items:stretch}
+.biq-executive-grid>.biq-surface:first-child{border-top:3px solid #1b8b68!important}
+.biq-executive-grid>.biq-surface:last-child{border-top:3px solid #8c7ac0!important}
+.biq-chart-grid{align-items:stretch}
+.biq-chart-grid>.biq-surface{min-height:320px}
+.biq-activity-grid{align-items:stretch}
+.biq-activity-grid>.biq-surface{min-width:0}
+.biq-section-label{font-size:10px!important;letter-spacing:.16em!important;font-weight:800!important}
+.biq-control{border:1px solid #dce6df!important;border-radius:10px!important;background:#fff!important;color:#40564a!important;min-height:40px}
+.biq-action{border-radius:10px!important;background:#176b52!important;box-shadow:0 4px 10px rgba(23,107,82,.13)}
+.biq-action:hover{background:#10563f!important}
+.biq-dashboard-content table thead th{font-size:10px;letter-spacing:.08em;color:#84938a}
+.biq-dashboard-content table tbody td{font-size:12px;color:#58695f}
+.biq-dashboard-content table tbody tr:hover{background:#f8fbf9}
+.biq-empty-panel{border:1px dashed #d9e5dd!important;background:#f8fbf9!important}
+.biq-dashboard-footer{color:#91a097!important;border-color:#e4ebe6!important}
+@media(max-width:760px){
+ .biq-topbar-inner{min-height:64px;padding-left:13px!important;padding-right:13px!important}
+ .biq-dashboard-content{padding:23px 13px 32px!important;gap:16px!important}
+ .biq-page-heading h1{font-size:25px!important}
+ .biq-kpi-card{padding:16px!important;border-radius:14px!important}
+ .biq-surface{padding:16px!important;border-radius:14px!important}
+ .biq-chart-grid>.biq-surface{min-height:0}
+}
