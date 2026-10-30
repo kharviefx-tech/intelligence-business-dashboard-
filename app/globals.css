@@ -571,3 +571,42 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
  .topbar{padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
  .content{padding-bottom:max(16px,env(safe-area-inset-bottom))}
 }
+
+
+/* Vibely Finance Dashboard-inspired BusinessIQ information hierarchy */
+.finance-kpis .metric-card-primary{background:linear-gradient(145deg,#fff 0%,#f5faf7 100%);border-color:#d8e9df}
+.finance-kpis .metric-card-primary .metric-value{font-size:clamp(21px,1.8vw,28px)}
+.dashboard-grid-lower{margin-top:0}
+.finance-summary-panel{display:flex;flex-direction:column;min-height:100%}
+.pnl-total{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 0 14px;border-bottom:1px solid #edf1ee}
+.pnl-total>span,.pnl-row,.pnl-foot{font-size:10px;color:#75847b}
+.pnl-total>strong{font-family:Manrope,sans-serif;font-size:clamp(18px,1.6vw,24px);letter-spacing:-.7px;font-variant-numeric:tabular-nums}
+.pnl-positive{color:#147a5b}.pnl-negative{color:#b4533c}
+.pnl-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
+.pnl-row>span{display:flex;align-items:center;gap:7px}
+.pnl-row>strong,.pnl-foot>strong{color:#24372c;font-size:10px;font-variant-numeric:tabular-nums}
+.pnl-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.income-dot{background:#19866a}.expense-dot{background:#e6a24a}
+.pnl-track,.category-track{height:6px;background:#edf2ee;border-radius:20px;overflow:hidden;margin-top:8px}
+.pnl-track>span,.category-track>span{height:100%;display:block;border-radius:20px;transition:width .2s ease}
+.pnl-track-income{background:#19866a}.pnl-track-expense{background:#e6a24a}
+.pnl-foot{display:flex;justify-content:space-between;align-items:center;padding-top:15px;margin-top:14px;border-top:1px solid #edf1ee}
+.pnl-disclaimer,.category-foot{font-size:8px;line-height:1.55;color:#89968e;margin:13px 0 0}
+.category-list{display:grid;gap:14px;margin-top:17px}
+.category-item-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:10px;color:#52645a}
+.category-item-heading span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.category-item-heading strong{font-size:10px;color:#25372c;font-variant-numeric:tabular-nums;white-space:nowrap}
+.category-track>span{background:#19866a}
+.category-empty{display:grid;place-items:center;min-height:145px;padding:20px;text-align:center;color:#87948c;font-size:10px;line-height:1.65}
+.section-anchor{scroll-margin-top:78px}
+@media(max-width:850px){
+ .dashboard-grid-lower{grid-template-columns:1fr}
+ .finance-summary-panel{min-height:0}
+}
+@media(max-width:580px){
+ .finance-kpis .metric-card-primary .metric-value{font-size:clamp(16px,4.9vw,20px)}
+ .pnl-total{padding:13px 0 11px}
+ .pnl-total>strong{font-size:19px}
+ .category-list{gap:12px;margin-top:13px}
+ .category-item-heading,.category-item-heading strong{font-size:9px}
+}
