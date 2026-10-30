@@ -255,3 +255,93 @@
 .subscription-plan-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:15px 0 22px}.subscription-plan-card{position:relative;display:flex;flex-direction:column;background:#fff;border:1px solid #e5ece7;border-radius:12px;padding:20px;min-height:290px}.subscription-plan-featured{border:1.5px solid #19866a;box-shadow:0 8px 25px #19866a12}.subscription-plan-card h3{font-family:Manrope,sans-serif;font-size:18px;margin:5px 0 8px}.subscription-plan-card>p{font-size:11px;line-height:1.6;color:#7b8980;min-height:38px;margin:0}.subscription-plan-card ul{list-style:none;padding:0;margin:19px 0;display:grid;gap:12px;flex:1}.subscription-plan-card li{display:flex;align-items:flex-start;gap:8px;color:#53645a;font-size:10px;line-height:1.5}.subscription-plan-card li svg{color:#19866a;flex-shrink:0}.subscription-popular{display:flex;align-items:center;gap:5px;color:#19866a;font-size:8px;letter-spacing:.7px;font-weight:800;margin-bottom:5px}.subscription-action{width:100%;justify-content:center;min-height:38px}.subscription-plan-card .subtle-btn{background:#fff}
 @media(max-width:1050px){.subscription-plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.subscription-plan-grid{grid-template-columns:1fr}.subscription-plan-card{min-height:0}.tool-content{padding:28px 15px 40px}.tool-content>h1{font-size:26px}.tool-stat-grid{grid-template-columns:1fr}}
+
+
+/* BusinessIQ benchmark refresh — Stripe financial clarity + Linear navigation restraint */
+:root{
+  --ink:#17231d;--muted:#718078;--line:#e7ece9;--green:#147a5b;--green-dark:#0f6248;--soft:#f4f7f5;--white:#fff;
+}
+body{background:#f5f7f6;color:#17231d;font-size:13px}
+.sidebar{width:252px;background:#111c17;border-right:1px solid #24332b;padding:23px 15px 0;color:#f3f7f4}
+.brand{padding:0 8px 28px}
+.brand-mark{background:#1a8a65;border-radius:10px;box-shadow:0 5px 14px #07150f55}
+.brand strong{color:#f7faf8;letter-spacing:-.55px}
+.brand span{color:#84968b}
+.workspace-label,.nav-label{color:#84968b}
+.workspace-switch{background:#1a2921;border-color:#2b3b32;color:#f3f7f4;border-radius:9px}
+.workspace-avatar{background:#294638;color:#bce9d2}
+.workspace-text strong{color:#f2f7f4}
+.workspace-text small{color:#9aaca1}
+.nav-item{color:#aab9b0;border-radius:8px;padding:10px 11px;font-size:12px;transition:background .15s,color .15s}
+.nav-item.active{background:#203b2e;color:#a8e4c6;font-weight:700;box-shadow:inset 2px 0 #43b985}
+.nav-item:hover{background:#1c2d24;color:#fff}
+.sidebar-bottom{border-top-color:#2a3a31}
+.secure-icon{background:#203b2e;color:#8bd6b0}
+.sidebar-bottom>strong{color:#e9f2ec}
+.sidebar-bottom p{color:#9aaca1}
+.sidebar-signout{color:#aab9b0}
+.profile{border-top-color:#2a3a31}
+.profile strong{color:#f0f5f1}
+.profile small{color:#9aaca1}
+.profile-avatar{background:#294638;color:#c4ecd6}
+.main-area{margin-left:252px;background:#f5f7f6}
+.topbar{height:66px;background:#fff;border-bottom-color:#e6ebe8;padding:0 34px;box-shadow:0 1px 0 #15291c04}
+.crumb{color:#849188}
+.crumb strong{color:#26382e}
+.searchbox{background:#f7f9f8;border-color:#e6ece8;border-radius:9px}
+.searchbox:focus-within{border-color:#9bcdb5;box-shadow:0 0 0 3px #19866a12}
+.content{max-width:1480px;padding:30px 34px 24px}
+.welcome-row{margin-bottom:22px}
+.welcome-row h1{font-size:28px;letter-spacing:-1.15px;color:#17231d}
+.subheading{font-size:12px;color:#77857d}
+.eyebrow{color:#75847b;letter-spacing:1.05px}
+.status-dot,.live-pulse{background:#1a9b6b}
+.period-select{border-color:#e3eae5;border-radius:9px}
+.period-select select{font-size:11px}
+.primary-btn{background:#147a5b;border-radius:8px;box-shadow:0 2px 5px #0f624812}
+.primary-btn:hover{background:#0f6248}
+.subtle-btn{border-color:#e4eae6;border-radius:8px}
+.data-source-strip{background:#fff;border:1px solid #e7ece9;border-radius:10px;box-shadow:0 1px 2px #14251b05}
+.data-source-strip strong{color:#34463b}
+.data-source-strip small{color:#849188}
+.data-label,.live-chart-badge{background:#edf7f1;color:#247b58;border:1px solid #dceee3;border-radius:5px}
+.metrics-grid{gap:13px;margin-bottom:16px}
+.metric-card,.panel{border:1px solid #e6ece8;border-radius:12px;box-shadow:0 1px 2px #14251b06}
+.metric-card{padding:18px 18px 16px;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+.metric-card:hover,.panel:hover{border-color:#dce6df;box-shadow:0 5px 18px #14251b08}
+.metric-top{color:#718078;font-size:11px}
+.metric-icon{border-radius:9px}
+.metric-value{font-size:clamp(19px,1.7vw,25px);letter-spacing:-.9px;color:#17231d;margin:18px 0 12px;font-variant-numeric:tabular-nums}
+.metric-foot{font-variant-numeric:tabular-nums}
+.dashboard-grid{gap:15px;margin-bottom:16px}
+.panel{padding:20px}
+.panel-heading h2{font-size:14px;letter-spacing:-.3px;color:#1d2b23}
+.panel-heading p{color:#829087}
+.chart-wrap{height:225px}
+.chart-caption{color:#89968e}
+.health-score{padding:20px 0}
+.health-list{gap:14px}
+.transactions-panel{padding-bottom:0}
+thead th{color:#87948c;font-size:8px;letter-spacing:.85px}
+tbody td{color:#647269}
+tbody tr:hover td{background:#fbfdfb}
+.transaction-name strong{color:#24372c}
+.status-badge{font-weight:700;letter-spacing:.15px}
+.empowerment{background:#edf6f1;border-color:#dcece2;border-radius:12px}
+.footer{color:#8d9992}
+.loading-panel,.empty-workspace{border:1px solid #e6ece8;border-radius:13px;box-shadow:0 1px 2px #14251b05}
+.data-alert{border-radius:9px}
+.icon-btn:focus-visible,.nav-item:focus-visible,.primary-btn:focus-visible,.subtle-btn:focus-visible{outline:3px solid #63b98f55;outline-offset:2px}
+@media(max-width:1180px){
+  .sidebar{width:228px}.main-area{margin-left:228px}.content{padding:26px 23px}
+}
+@media(max-width:850px){
+  .sidebar{width:260px;background:#111c17}.main-area{margin-left:0}.topbar{padding:0 18px}.content{padding:24px 18px}
+}
+@media(max-width:580px){
+  .topbar{padding:0 12px}.content{padding:21px 12px}.welcome-row h1{font-size:23px}
+  .metric-card{padding:13px 11px}.metric-value{font-size:18px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
