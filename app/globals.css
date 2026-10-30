@@ -1320,3 +1320,72 @@ main.min-h-screen:not(.app-shell) .bg-white{background:#fff}
   .app-shell .powerbi-activity-visual{grid-column:auto}
   .app-shell .activity-breakdown{grid-template-columns:minmax(0,1fr)}
 }
+
+
+/* BusinessIQ executive analytics layout — inspired by enterprise BI workspaces. */
+.app-shell{background:#f3f5f7;color:#17212b}
+.app-shell .sidebar{background:#171a1f;border-right:1px solid #282d33;color:#f3f5f7;padding-top:22px}
+.app-shell .brand strong{color:#fff}
+.app-shell .brand span,.app-shell .workspace-label,.app-shell .nav-label{color:#89939e}
+.app-shell .workspace-switch{background:#22272e;border-color:#343b44;color:#f5f7f9}
+.app-shell .workspace-text small{color:#a1abb6}
+.app-shell .workspace-avatar{background:#d8f2e5;color:#126a48}
+.app-shell .nav-item{color:#c1c8d0;border-radius:7px;margin:2px 0}
+.app-shell .nav-item:hover{background:#252b32;color:#fff}
+.app-shell .nav-item.active{background:#2b3239;color:#fff;border-left:3px solid #9bcf35;padding-left:9px}
+.app-shell .sidebar-bottom{border-color:#343b44;color:#e5e9ed}
+.app-shell .sidebar-bottom p,.app-shell .sidebar-bottom small{color:#9ca6b0}
+.app-shell .sidebar-signout{color:#c1c8d0}
+.app-shell .profile{border-color:#343b44}
+.app-shell .main-area{background:#f4f6f8}
+.app-shell .topbar{background:#171a1f;border-color:#282d33;color:#f5f7f9}
+.app-shell .crumb{color:#aab3bd}
+.app-shell .crumb strong{color:#fff}
+.app-shell .topbar .icon-btn{color:#d4dbe2}
+.app-shell .searchbox{background:#fff;border-color:#dce1e6}
+.app-shell .content{max-width:1700px;padding:26px 26px 34px}
+.app-shell .welcome-row{align-items:center;margin-bottom:17px}
+.app-shell .welcome-row h1{font-size:25px;color:#17212b}
+.app-shell .welcome-row h1 span{display:none}
+.app-shell .eyebrow{color:#687582}
+.app-shell .workspace-contextbar{background:#fff;border:1px solid #e3e8ed;border-radius:10px;padding:11px 15px;margin-bottom:17px}
+.app-shell .finance-kpis{grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:15px}
+.app-shell .finance-kpis .metric-card{border-radius:9px;border-color:#e3e8ed;box-shadow:0 1px 3px rgba(20,35,50,.035);padding:15px 16px;min-height:133px}
+.app-shell .finance-kpis .metric-top{font-size:11px;color:#647180}
+.app-shell .finance-kpis .metric-value{font-size:clamp(18px,1.65vw,25px);margin:13px 0 8px;color:#18222d}
+.app-shell .finance-kpis .metric-foot{font-size:9px}
+.app-shell .analysis-report{margin:0 0 16px}
+.app-shell .powerbi-report-heading{padding:0 2px 9px;margin:0 0 10px;border:0;background:transparent}
+.app-shell .powerbi-report-heading h2{font-size:17px;color:#1a2530}
+.app-shell .powerbi-report-heading p{font-size:10px}
+.app-shell .powerbi-visual-grid{grid-template-columns:minmax(0,1.45fr) minmax(260px,1fr) minmax(250px,1fr);gap:12px}
+.app-shell .powerbi-visual{border-radius:9px;border-color:#e3e8ed;box-shadow:0 1px 3px rgba(20,35,50,.035);padding:16px;min-height:285px}
+.app-shell .powerbi-visual .panel-heading h2{font-size:13px;color:#26323e}
+.app-shell .powerbi-visual .panel-heading p{font-size:9px}
+.app-shell .powerbi-bar-chart{height:190px}
+.app-shell .powerbi-donut-wrap{height:166px}
+.app-shell .powerbi-activity-visual{grid-column:auto;min-height:285px}
+.app-shell .powerbi-report-foot{font-size:9px;color:#84909c;padding:9px 2px}
+.app-shell .dashboard-grid{gap:12px;margin-bottom:13px}
+.app-shell .panel{border-radius:9px;border-color:#e3e8ed;box-shadow:0 1px 3px rgba(20,35,50,.035);padding:17px}
+.app-shell .panel-heading h2{font-size:13px}
+.app-shell .transactions-panel{margin-top:14px}
+.app-shell .transactions-panel table th{background:#f7f9fb;color:#6d7986}
+@media(max-width:1250px){
+ .app-shell .finance-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .app-shell .powerbi-visual-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .app-shell .powerbi-activity-visual{grid-column:span 2}
+}
+@media(max-width:760px){
+ .app-shell .content{padding:18px 13px 28px}
+ .app-shell .finance-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .app-shell .finance-kpis .metric-card{min-height:118px;padding:12px}
+ .app-shell .powerbi-visual-grid{grid-template-columns:1fr}
+ .app-shell .powerbi-activity-visual{grid-column:auto}
+ .app-shell .welcome-row{flex-direction:column;align-items:stretch}
+ .app-shell .header-controls{flex-wrap:wrap}
+ .app-shell .powerbi-visual{min-height:250px}
+}
+@media(max-width:390px){
+ .app-shell .finance-kpis{grid-template-columns:1fr}
+}
