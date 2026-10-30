@@ -781,7 +781,7 @@ tbody tr:hover{background:#f5f9fd}
 .auth-brand strong{font-size:15px;letter-spacing:-.3px}
 .auth-brand small{font-size:7px;letter-spacing:1.1px;color:#797775;font-weight:800}
 .auth-command-tabs{display:flex;align-self:stretch;align-items:stretch;gap:26px}
-.auth-command-tabs span{display:flex;align-items:center;position:relative;color:#605e5c;font-size:11px}
+.auth-command-tabs a{display:flex;align-items:center;position:relative;color:#605e5c;font-size:11px}
 .auth-command-tabs .selected{color:#252423;font-weight:700}
 .auth-command-tabs .selected:after{content:"";height:3px;position:absolute;bottom:0;left:0;right:0;background:#118dff}
 .auth-commandbar .auth-secure{margin-left:auto;display:flex;align-items:center;gap:7px;color:#605e5c;font-size:10px}
@@ -843,3 +843,5 @@ tbody tr:hover{background:#f5f9fd}
 .pbi-command-tabs a:focus-visible,.pbi-page-tabs a:focus-visible{outline:2px solid #118dff;outline-offset:2px}
 .pbi-page-tabs a:hover{background:#f5f9fd;color:#252423}
 @media(max-width:580px){.pbi-command-tabs a{font-size:9px}}
+
+.auth-command-tabs a{text-decoration:none;cursor:pointer}.auth-command-tabs a:focus-visible{outline:2px solid #118dff;outline-offset:3px}
