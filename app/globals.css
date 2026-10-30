@@ -610,3 +610,36 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
  .category-list{gap:12px;margin-top:13px}
  .category-item-heading,.category-item-heading strong{font-size:9px}
 }
+
+
+/* Power BI-inspired interactive analytics report */
+.powerbi-report{margin:0 0 15px;scroll-margin-top:76px}
+.powerbi-report-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin:21px 1px 13px}
+.powerbi-eyebrow{font-size:8px;font-weight:800;letter-spacing:1.15px;color:#19866a}
+.powerbi-report-heading h2{font-family:Manrope,sans-serif;font-size:18px;letter-spacing:-.5px;color:#1d2b23;margin:5px 0}
+.powerbi-report-heading p{font-size:10px;color:#819087;margin:0;line-height:1.55}
+.powerbi-source-badge{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;background:#f0f7f2;border:1px solid #dfede3;border-radius:7px;color:#47745a;font-size:9px;white-space:nowrap}
+.powerbi-source-badge i{width:6px;height:6px;border-radius:50%;background:#21956a;box-shadow:0 0 0 3px #21956a1a}
+.powerbi-visual-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(270px,1fr);gap:12px}
+.powerbi-visual{min-width:0;padding:17px}
+.powerbi-visual-tag{font-size:7px;letter-spacing:.8px;font-weight:800;color:#75867b;background:#f2f5f3;border:1px solid #e7ece8;border-radius:5px;padding:5px 7px}
+.powerbi-bar-chart{height:220px;margin:10px -5px 0}
+.powerbi-legend{display:flex;align-items:center;gap:17px;flex-wrap:wrap;padding-top:9px;color:#78867d;font-size:9px}
+.powerbi-legend span{display:flex;align-items:center;gap:6px}
+.powerbi-legend i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.pbi-income{background:#16866a}.pbi-expense{background:#e7a44d}.pbi-net{background:#7296d4}
+.powerbi-donut-wrap{height:190px;position:relative;margin:5px auto 0;max-width:290px}
+.powerbi-donut-total{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;pointer-events:none}
+.powerbi-donut-total strong{font-family:Manrope,sans-serif;font-size:15px;letter-spacing:-.4px;color:#25372c}
+.powerbi-donut-total span{font-size:8px;color:#89968e;margin-top:3px}
+.powerbi-category-legend{display:grid;gap:9px;margin-top:7px}
+.powerbi-category-legend>div,.powerbi-category-legend>div>span{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.powerbi-category-legend>div>span{justify-content:flex-start;min-width:0;color:#68776e;font-size:9px}
+.powerbi-category-legend>div>span i{width:8px;height:8px;flex-shrink:0;border-radius:2px}
+.powerbi-category-legend>div>span{overflow:hidden}
+.powerbi-category-legend>div>span:not(i){text-overflow:ellipsis}
+.powerbi-category-legend strong{font-size:9px;color:#34483a;font-variant-numeric:tabular-nums}
+.powerbi-empty{min-height:175px;display:grid;place-items:center;text-align:center;padding:20px;color:#87948c;font-size:10px;line-height:1.6}
+.powerbi-report-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:9px 2px 0;color:#8a968f;font-size:8px;line-height:1.5}
+@media(max-width:850px){.powerbi-visual-grid{grid-template-columns:1fr}.powerbi-category-visual{min-height:0}.powerbi-donut-wrap{height:205px}}
+@media(max-width:580px){.powerbi-report-heading{align-items:flex-start;flex-direction:column;margin-top:17px}.powerbi-report-heading h2{font-size:16px}.powerbi-source-badge{align-self:flex-start}.powerbi-visual{padding:12px}.powerbi-bar-chart{height:195px;margin-left:-10px;margin-right:-10px}.powerbi-donut-wrap{height:185px}.powerbi-report-foot{font-size:7px;gap:5px}}
