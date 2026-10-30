@@ -34,22 +34,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(target);
   }
 
-  if (request.nextUrl.pathname.startsWith("/admin") || request.nextUrl.pathname.startsWith("/monetization")) {
-    const { data: profile, error } = await supabase
-      .from("bi_profiles")
-      .select("platform_role")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (error || !profile || !["admin", "super_admin"].includes(profile.platform_role)) {
-      const target = request.nextUrl.clone();
-      target.pathname = "/";
-      target.search = "";
-      target.searchParams.set("notice", "admin-access-required");
-      return NextResponse.redirect(target);
-    }
-  }
-
   return response;
 }
 

@@ -26,15 +26,10 @@ export default function OnboardingPage() {
         }
 
         // Returning users should resume an existing workspace instead of creating another one.
-        const { data: membership, error: membershipError } = await supabase
-          .from("bi_organization_members")
-          .select("organization_id")
-          .eq("user_id", user.id)
-          .limit(1)
-          .maybeSingle();
-
-        if (membershipError) throw membershipError;
-        if (membership?.organization_id) {
+        const response = await fetch("/api/workspaces", { cache: "no-store" });
+        const workspaceData = await response.json();
+        if (!response.ok) throw new Error(workspaceData.error || "Unable to check your workspace.");
+        if ((workspaceData.workspaces ?? []).length > 0) {
           router.replace("/");
           router.refresh();
           return;
@@ -61,12 +56,13 @@ export default function OnboardingPage() {
     }
     setBusy(true);
     try {
-      const supabase = createClient();
-      const { error: rpcError } = await supabase.rpc("bi_create_workspace", {
-        p_name: cleaned,
-        p_currency: currency,
+      const response = await fetch("/api/workspaces", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: cleaned, currency }),
       });
-      if (rpcError) throw rpcError;
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Unable to create workspace.");
       router.replace("/");
       router.refresh();
     } catch (e) {
