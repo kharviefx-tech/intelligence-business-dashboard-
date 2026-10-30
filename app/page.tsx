@@ -45,20 +45,19 @@ export default function Home() {
     if (quiet) setRefreshing(true); else setLoading(true);
     setError("");
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) {
+      const dashboardResponse = await fetch("/api/dashboard" + (organizationId ? "?organization_id=" + encodeURIComponent(organizationId) : ""), { cache: "no-store" });
+      const dashboardData = await dashboardResponse.json();
+      if (dashboardResponse.status === 401) {
         router.replace("/login?next=/");
         return;
       }
-      setUserEmail(user.email ?? "");
-      const workspaceResponse = await fetch("/api/workspaces", { cache: "no-store" });
-      const workspaceData = await workspaceResponse.json();
-      if (!workspaceResponse.ok) throw new Error(workspaceData.error || "Unable to load your workspace.");
-      const profileInfo = workspaceData.profile;
-      setUserName(profileInfo?.full_name ?? user.user_metadata?.display_name ?? user.user_metadata?.full_name ?? "");
-      setUserAvatar(profileInfo?.avatar_url ?? user.user_metadata?.avatar_url ?? "");
+      if (!dashboardResponse.ok) throw new Error(dashboardData.error || "Unable to load your workspace.");
+      const profileInfo = dashboardData.profile;
+      setUserEmail(dashboardData.email ?? "");
+      setUserName(profileInfo?.full_name ?? "");
+      setUserAvatar(profileInfo?.avatar_url ?? "");
       setPlatformRole(profileInfo?.platform_role ?? "user");
-      const safeOrgs = (workspaceData.workspaces ?? []) as Organization[];
+      const safeOrgs = (dashboardData.workspaces ?? []) as Organization[];
       setOrganizations(safeOrgs);
       if (!safeOrgs.length) {
         setTransactions([]);
@@ -69,10 +68,7 @@ export default function Home() {
       const preferredId = profileInfo?.preferred_organization_id;
       const currentId = safeOrgs.some((o: Organization) => o.id === organizationId) ? organizationId : safeOrgs.some((o: Organization) => o.id === preferredId) ? preferredId : safeOrgs[0].id;
       setOrganizationId(currentId);
-      const txResponse = await fetch("/api/transactions?organization_id=" + encodeURIComponent(currentId), { cache: "no-store" });
-      const txData = await txResponse.json();
-      if (!txResponse.ok) throw new Error(txData.error || "Unable to load transactions.");
-      setTransactions((txData.transactions ?? []) as Transaction[]);
+      setTransactions((dashboardData.transactions ?? []) as Transaction[]);
       setNotice("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "We could not load your workspace data.");
