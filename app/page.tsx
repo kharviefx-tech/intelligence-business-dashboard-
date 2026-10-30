@@ -2,7 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Activity, ArrowDownRight, ArrowUpRight, Bell, ChevronDown, CircleHelp, Download, FileSpreadsheet, FileText, LayoutDashboard, LoaderCircle, LogOut, Menu, Network, Plus, Search, Settings, ShieldCheck, ShoppingCart, Store, Users, Wallet, X, RefreshCw, AlertCircle } from "lucide-react";
+import { Activity, ArrowDownRight, ArrowUpRight, Bell, ChevronDown, CircleHelp, Download, FileSpreadsheet, FileText, LayoutDashboard, LoaderCircle, LogOut, Menu, Network, Plus, Search, Settings, ShieldCheck, ShoppingCart, Store, Users, Wallet, X, RefreshCw, AlertCircle, Globe2 } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useRouter } from "next/navigation";
 import { createClient } from "../utils/supabase/client";
@@ -220,7 +220,7 @@ export default function Home() {
         <a className={`nav-item${activeNav==="overview"?" active":""}`} aria-current={activeNav==="overview"?"location":undefined} href="#overview" onClick={()=>selectSection("overview")}><LayoutDashboard size={18}/>{t("overview")}</a>
         <a className={`nav-item${activeNav==="analytics"?" active":""}`} aria-current={activeNav==="analytics"?"location":undefined} href="#analytics" onClick={()=>selectSection("analytics")}><Activity size={18}/>Analytics report</a>
         <a className={`nav-item${activeNav==="performance"?" active":""}`} aria-current={activeNav==="performance"?"location":undefined} href="#performance" onClick={()=>selectSection("performance")}><Activity size={18}/>{t("performance")}</a>
-        <Link className="nav-item" href="/reports" onClick={()=>selectPage("reports")}><FileText size={18}/>{t("reports")}</Link>
+        <Link className="nav-item" href="/geography" onClick={()=>selectPage("geography")}><Globe2 size={18}/>Geographical analytics</Link>\n        <Link className="nav-item" href="/reports" onClick={()=>selectPage("reports")}><FileText size={18}/>{t("reports")}</Link>
       </nav>
       <div className="nav-label">FINANCIAL &amp; DATA MANAGEMENT</div>
       <nav className="nav-list" aria-label="Financial and data management">
