@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 export async function GET(request: Request) {
   const clientId = process.env.MICROSOFT_CLIENT_ID;
   const tenant = process.env.MICROSOFT_TENANT_ID || "common";
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://intelligence-business-dashboard-thinksociety.vercel.app";
   if (!clientId || !appUrl) return NextResponse.redirect(new URL("/integrations?microsoft=setup_required", request.url));
 
   const state = randomBytes(24).toString("hex");
