@@ -1212,3 +1212,24 @@ main.min-h-screen:not(.app-shell) .bg-white{background:#fff}
  .help-topic{padding:14px!important}
 }
 @media(max-width:430px){.tool-stat-grid{grid-template-columns:1fr!important}}
+
+
+/* Navigation labels are interactive controls, not selectable page content. */
+.app-shell .nav-list,
+.app-shell .nav-label,
+.app-shell .nav-item,
+.app-shell .admin-nav-tag{
+  -webkit-user-select:none;
+  user-select:none;
+}
+.app-shell .nav-item{
+  cursor:pointer;
+  -webkit-touch-callout:none;
+}
+.app-shell .nav-item:focus-visible{
+  outline:2px solid #18845f;
+  outline-offset:2px;
+}
+.app-shell .nav-item.active{
+  color:#176b52;
+}
