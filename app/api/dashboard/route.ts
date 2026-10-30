@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
       ?? workspaceRows.find((row) => row.id === profileInfo?.preferred_organization_id)
       ?? workspaceRows[0];
     let transactions: unknown[] = [];
+    let transactionCount = 0;
 
     if (selected) {
       const [result, countResult] = await Promise.all([
@@ -44,14 +45,14 @@ export async function GET(request: NextRequest) {
         db.query("select count(*)::int as total from bi_transactions where organization_id=$1", [selected.id]),
       ]);
       transactions = result.rows;
-      const transactionCount = Number(countResult.rows[0]?.total ?? transactions.length);
+      transactionCount = Number(countResult.rows[0]?.total ?? transactions.length);
     }
 
     return NextResponse.json({
       profile: profileInfo,
       workspaces: workspaceRows,
       transactions,
-      transaction_count: selected ? Number((await db.query("select count(*)::int as total from bi_transactions where organization_id=$1", [selected.id])).rows[0]?.total ?? transactions.length) : 0,
+      transaction_count: transactionCount,
       email: user.email ?? "",
     });
   } catch (error) {
