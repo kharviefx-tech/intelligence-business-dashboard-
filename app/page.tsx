@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Activity, ArrowDownRight, ArrowUpRight, Bell, ChevronDown, CircleHelp, Download, FileText, LayoutDashboard, LoaderCircle, LogOut, Menu, Plus, Search, Settings, ShieldCheck, ShoppingCart, Users, Wallet, X, RefreshCw, AlertCircle } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -41,24 +41,24 @@ export default function Home() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(initialForm);
 
-  const loadData = useCallback(async (quiet = false) => {
+  const loadData = useCallback(async (quiet = false, targetOrganizationId?: string) => {
     if (quiet) setRefreshing(true); else setLoading(true);
     setError("");
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) {
+      const requestedOrganizationId = targetOrganizationId ?? organizationId;
+      const dashboardResponse = await fetch("/api/dashboard" + (requestedOrganizationId ? "?organization_id=" + encodeURIComponent(requestedOrganizationId) : ""), { cache: "no-store" });
+      const dashboardData = await dashboardResponse.json();
+      if (dashboardResponse.status === 401) {
         router.replace("/login?next=/");
         return;
       }
-      setUserEmail(user.email ?? "");
-      const workspaceResponse = await fetch("/api/workspaces", { cache: "no-store" });
-      const workspaceData = await workspaceResponse.json();
-      if (!workspaceResponse.ok) throw new Error(workspaceData.error || "Unable to load your workspace.");
-      const profileInfo = workspaceData.profile;
-      setUserName(profileInfo?.full_name ?? user.user_metadata?.display_name ?? user.user_metadata?.full_name ?? "");
-      setUserAvatar(profileInfo?.avatar_url ?? user.user_metadata?.avatar_url ?? "");
+      if (!dashboardResponse.ok) throw new Error(dashboardData.error || "Unable to load your workspace.");
+      const profileInfo = dashboardData.profile;
+      setUserEmail(dashboardData.email ?? "");
+      setUserName(profileInfo?.full_name ?? "");
+      setUserAvatar(profileInfo?.avatar_url ?? "");
       setPlatformRole(profileInfo?.platform_role ?? "user");
-      const safeOrgs = (workspaceData.workspaces ?? []) as Organization[];
+      const safeOrgs = (dashboardData.workspaces ?? []) as Organization[];
       setOrganizations(safeOrgs);
       if (!safeOrgs.length) {
         setTransactions([]);
@@ -67,12 +67,9 @@ export default function Home() {
         return;
       }
       const preferredId = profileInfo?.preferred_organization_id;
-      const currentId = safeOrgs.some((o: Organization) => o.id === organizationId) ? organizationId : safeOrgs.some((o: Organization) => o.id === preferredId) ? preferredId : safeOrgs[0].id;
+      const currentId = safeOrgs.some((o: Organization) => o.id === requestedOrganizationId) ? requestedOrganizationId : safeOrgs.some((o: Organization) => o.id === preferredId) ? preferredId : safeOrgs[0].id;
       setOrganizationId(currentId);
-      const txResponse = await fetch("/api/transactions?organization_id=" + encodeURIComponent(currentId), { cache: "no-store" });
-      const txData = await txResponse.json();
-      if (!txResponse.ok) throw new Error(txData.error || "Unable to load transactions.");
-      setTransactions((txData.transactions ?? []) as Transaction[]);
+      setTransactions((dashboardData.transactions ?? []) as Transaction[]);
       setNotice("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "We could not load your workspace data.");
@@ -82,7 +79,12 @@ export default function Home() {
     }
   }, [organizationId, router]);
 
-  useEffect(() => { void loadData(); }, [loadData]);
+  const hasBootstrapped = useRef(false);
+  useEffect(() => {
+    if (hasBootstrapped.current) return;
+    hasBootstrapped.current = true;
+    void loadData();
+  }, [loadData]);
 
   const organization = organizations.find(o => o.id === organizationId);
   const currency = organization?.currency && allowedCurrencies.includes(organization.currency) ? organization.currency : "NGN";
@@ -156,7 +158,7 @@ export default function Home() {
     <aside className={mobileNav ? "sidebar sidebar-open" : "sidebar"}>
       <div className="brand"><div className="brand-mark">B</div><div><strong>BusinessIQ</strong><span>BUSINESS INTELLIGENCE</span></div><button className="icon-btn close-nav" onClick={() => setMobileNav(false)} aria-label="Close menu"><X size={18}/></button></div>
       <div className="workspace-label">WORKSPACE</div>
-      <label className="workspace-switch"><span className="workspace-avatar">{organization?.name?.slice(0,2).toUpperCase() || "BI"}</span><span className="workspace-text"><strong>{organization?.name || "No workspace yet"}</strong><small>{organization ? organization.plan + " plan" : "Set up to begin"}</small></span>{organizations.length > 1 && <select aria-label="Select workspace" value={organizationId} onChange={e => setOrganizationId(e.target.value)}>{organizations.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}</select>}</label>
+      <label className="workspace-switch"><span className="workspace-avatar">{organization?.name?.slice(0,2).toUpperCase() || "BI"}</span><span className="workspace-text"><strong>{organization?.name || "No workspace yet"}</strong><small>{organization ? organization.plan + " plan" : "Set up to begin"}</small></span>{organizations.length > 1 && <select aria-label="Select workspace" value={organizationId} onChange={e => { const nextId = e.target.value; setOrganizationId(nextId); void loadData(true, nextId); }}>{organizations.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}</select>}</label>
       <div className="nav-label">ANALYTICS</div><nav className="nav-list"><a className="nav-item active" href="#overview"><LayoutDashboard size={18}/>Overview</a><a className="nav-item" href="#transactions"><Wallet size={18}/>Transactions</a><a className="nav-item" href="#performance"><Activity size={18}/>Performance</a><a className="nav-item" href="#reports"><FileText size={18}/>Reports &amp; exports</a></nav>
       <div className="nav-label">MY ACCOUNT</div><nav className="nav-list"><Link className="nav-item" href="/subscription"><Wallet size={18}/>Plans &amp; billing</Link><Link className="nav-item" href="/profile"><Users size={18}/>My profile</Link><Link className="nav-item" href="/settings"><Settings size={18}/>Account settings</Link><Link className="nav-item" href="/help"><CircleHelp size={18}/>Help centre</Link></nav>
       {["admin","super_admin"].includes(platformRole) && <><div className="nav-label admin-nav-label"><ShieldCheck size={12}/> PRIVATE ADMIN</div><nav className="nav-list admin-nav-list"><Link className="nav-item admin-nav-item" href="/admin"><ShieldCheck size={18}/>Admin centre<span className="admin-nav-tag">ADMIN</span></Link><Link className="nav-item admin-nav-item" href="/monetization"><ShoppingCart size={18}/>Monetization<span className="admin-nav-tag">ADMIN</span></Link></nav></>}
