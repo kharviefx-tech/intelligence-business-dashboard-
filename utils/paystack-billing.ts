@@ -83,6 +83,10 @@ export async function confirmAndActivatePayment(reference: string) {
       await client.query("commit");
       return { status: "success", activated: true, alreadyActivated: true, plan: attempt.plan_code };
     }
+    if (attempt.status !== "initialized") {
+      await client.query("commit");
+      return { status: attempt.status, activated: false };
+    }
 
     const paidAmount = Number(payment.amount);
     if (
