@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import BusinessIQAssistant from "./components/businessiq-assistant";
 
 export const metadata: Metadata = {
   title: "BusinessIQ — Business Intelligence Workspace",
@@ -8,5 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  return <html lang="en"><body>{children}<BusinessIQAssistant organizationId="" /></body></html>;
 }
