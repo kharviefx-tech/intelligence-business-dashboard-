@@ -26,20 +26,22 @@ export async function GET(req:NextRequest){
 export async function POST(req:NextRequest){
  const user=await getAuthenticatedUser();if(!user)return NextResponse.json({error:"Authentication required."},{status:401});
  try{const body=await req.json();const org=String(body?.organization_id||"");const id=String(body?.module_id||"");const module=modules.find(m=>m.id===id&&m.kind==="native");if(!org||!module)return NextResponse.json({error:"This application is not currently available to install."},{status:400});
- const db=getNeonPool();const member=await db.query("select role from bi_organization_members where organization_id=$1 and user_id=$2",[org,user.id]);if(!member.rowCount)return NextResponse.json({error:"Workspace access denied."},{status:403});
+ const db=getNeonPool();const member=await db.query("select role from bi_organization_members where organization_id=$1 and user_id=$2",[org,user.id]);if(!member.rowCount||!["owner","manager"].includes(member.rows[0].role))return NextResponse.json({error:"Only workspace owners and managers can install applications."},{status:403});
  const saved=await db.query(`insert into bi_data_sources(organization_id,provider,display_name,connection_status,scopes,config,created_by,updated_at)
  values($1,'businessiq_module',$2,'connected',ARRAY['module:use'],$3::jsonb,$4,now())
  on conflict(organization_id,provider,display_name) do update set connection_status='connected',config=excluded.config,updated_at=now()
  returning id,display_name,connection_status,config`,[org,module.name,JSON.stringify({module_id:module.id,kind:"native",href:module.href}),user.id]);
+ await db.query("insert into bi_audit_logs(organization_id,actor_id,action,entity,detail) values($1,$2,'marketplace.module_installed','businessiq_module',$3::jsonb)",[org,user.id,JSON.stringify({module_id:module.id,module_name:module.name})]);
  return NextResponse.json({success:true,installation:saved.rows[0],message:"Added to this workspace."});
  }catch(e){console.error("Marketplace install failed",e);return NextResponse.json({error:"Unable to add this application."},{status:500});}
 }
 export async function DELETE(req:NextRequest){
  const user=await getAuthenticatedUser();if(!user)return NextResponse.json({error:"Authentication required."},{status:401});
  const org=req.nextUrl.searchParams.get("organization_id"),id=req.nextUrl.searchParams.get("module_id");if(!org||!id)return NextResponse.json({error:"Workspace and application are required."},{status:400});
- try{const db=getNeonPool();const member=await db.query("select role from bi_organization_members where organization_id=$1 and user_id=$2",[org,user.id]);if(!member.rowCount)return NextResponse.json({error:"Workspace access denied."},{status:403});
+ try{const db=getNeonPool();const member=await db.query("select role from bi_organization_members where organization_id=$1 and user_id=$2",[org,user.id]);if(!member.rowCount||!["owner","manager"].includes(member.rows[0].role))return NextResponse.json({error:"Only workspace owners and managers can remove applications."},{status:403});
  const result=await db.query("update bi_data_sources set connection_status='revoked',updated_at=now() where organization_id=$1 and provider='businessiq_module' and config->>'module_id'=$2 returning id",[org,id]);
  if(!result.rowCount)return NextResponse.json({error:"Application is not installed."},{status:404});
+ await db.query("insert into bi_audit_logs(organization_id,actor_id,action,entity,detail) values($1,$2,'marketplace.module_removed','businessiq_module',$3::jsonb)",[org,user.id,JSON.stringify({module_id:id})]);
  return NextResponse.json({success:true});
  }catch(e){console.error("Marketplace removal failed",e);return NextResponse.json({error:"Unable to remove this application."},{status:500});}
 }
