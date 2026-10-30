@@ -857,3 +857,53 @@ tbody tr:hover{background:#f5f9fd}
 
 .ms-connect-panel{display:flex;align-items:center;justify-content:space-between;gap:18px;background:#fff;border:1px solid #dce9e1;border-radius:12px;padding:16px 18px;margin:0 0 14px}.ms-connect-copy{display:flex;align-items:center;gap:12px}.ms-connect-shield{width:40px;height:40px;border-radius:10px;background:#eaf5f0;color:#19866a;display:grid;place-items:center;flex-shrink:0}.ms-connect-copy strong{font-size:12px;color:#234d3b}.ms-connect-copy p{font-size:10px;color:#839087;margin:4px 0 0;line-height:1.6}.ms-connect-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:8px;background:#188263;color:#fff;font-size:10px;font-weight:800;white-space:nowrap;border:0;cursor:pointer}.ms-connect-button:hover{background:#116e52}.ms-connect-button.connected{background:#f5f7f5;color:#607168;border:1px solid #e5ebe7}.ms-connect-button:disabled{opacity:.6;cursor:wait}.ms-connect-loading{font-size:10px;color:#89958e;display:flex;gap:7px;align-items:center}
 @media(max-width:600px){.ms-connect-panel{align-items:flex-start;flex-direction:column}.ms-connect-button{width:100%}}
+
+
+/* BusinessIQ plans — polished pricing experience */
+.subscription-content{max-width:1320px}
+.subscription-hero{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:30px;align-items:center;padding:28px 30px;margin:8px 0 22px;background:linear-gradient(120deg,#fff 0%,#f2f8f4 100%);border:1px solid #e1ebe4;border-radius:18px;box-shadow:0 10px 32px rgba(20,55,37,.04)}
+.subscription-hero h1{font:800 clamp(29px,3.5vw,42px)/1.12 Manrope,sans-serif;letter-spacing:-1.7px;margin:14px 0 10px;color:#17251d}
+.subscription-hero .tool-intro{max-width:650px;font-size:13px;line-height:1.7;margin:0 0 17px}
+.subscription-hero-points{display:flex;flex-wrap:wrap;gap:9px 17px}
+.subscription-hero-points span{display:inline-flex;align-items:center;gap:6px;color:#526b5d;font-size:10px;font-weight:700}
+.subscription-hero-points svg{color:#19866a}
+.subscription-hero-aside{padding:20px;border-radius:13px;background:#172b21;color:#fff;box-shadow:0 8px 24px #14251b18}
+.subscription-hero-aside>span,.subscription-section-kicker{font-size:8px;letter-spacing:1.25px;font-weight:800;color:#78b99a}
+.subscription-hero-aside strong{display:block;font:800 17px/1.4 Manrope,sans-serif;margin:11px 0}
+.subscription-hero-aside small{display:block;color:#b8c9bf;font-size:10px;line-height:1.6}
+.subscription-heading-row{align-items:center;margin:30px 0 18px}
+.subscription-heading-row .tool-section-title{font:800 22px Manrope,sans-serif;letter-spacing:-.6px;margin:5px 0 6px}
+.subscription-heading-row>div:first-child>p{font-size:11px;line-height:1.6}
+.subscription-section-kicker{color:#19866a}
+.subscription-cycle{padding:4px;border-radius:11px;background:#eef3ef}
+.subscription-cycle button{padding:10px 13px;font-size:10px}
+.subscription-plan-grid{gap:16px;margin:0 0 25px}
+.subscription-plan-card{min-height:420px;padding:23px 20px 20px;border-radius:15px;box-shadow:0 4px 18px rgba(23,45,32,.045);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.subscription-plan-card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(23,45,32,.09)}
+.subscription-plan-card h3{font-size:21px;letter-spacing:-.7px;margin:7px 0 9px}
+.subscription-plan-card>p{font-size:11px;line-height:1.65;min-height:57px}
+.subscription-plan-audience{font-size:8px;letter-spacing:1px;margin:9px 0 7px}
+.subscription-price{min-height:91px;padding:16px 0 13px}
+.subscription-price strong{font-size:29px;letter-spacing:-1.2px}
+.subscription-price>span{font-size:10px}
+.subscription-plan-card ul{gap:12px;margin:18px 0 22px}
+.subscription-plan-card li{font-size:10px;line-height:1.55}
+.subscription-plan-featured{border:1.5px solid #19866a;box-shadow:0 12px 30px rgba(25,134,106,.12)}
+.subscription-plan-featured:before{content:"";position:absolute;inset:0 0 auto;height:4px;border-radius:15px 15px 0 0;background:#19866a}
+.subscription-plan-enterprise{background:linear-gradient(155deg,#17271f,#203d2e);border-color:#284b39}
+.subscription-plan-enterprise .subscription-plan-card li{color:#d3e1d8}
+.subscription-plan-enterprise ul li svg{color:#82d2a8}
+.subscription-plan-enterprise .subscription-action{background:#f2faf5;color:#174b36;box-shadow:none}
+.subscription-plan-enterprise .subscription-action:hover{background:#dff2e7}
+.subscription-plan-card .subscription-action{min-height:43px;font-size:10px;border-radius:9px}
+.subscription-popular{font-size:8px;letter-spacing:.8px}
+.subscription-enterprise-note{border-radius:13px;padding:19px 21px;background:#f0f6f2;border-color:#dfeae2}
+.subscription-assurance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0 14px}
+.subscription-assurance>div{display:flex;align-items:flex-start;gap:11px;padding:15px;background:#fff;border:1px solid #e5ece7;border-radius:11px}
+.subscription-assurance svg{flex-shrink:0;color:#19866a}
+.subscription-assurance strong,.subscription-assurance small{display:block}
+.subscription-assurance strong{font-size:10px;color:#30473a}
+.subscription-assurance small{font-size:9px;line-height:1.6;color:#819087;margin-top:5px}
+.subscription-content>.tool-footer-note{font-size:10px;line-height:1.7;padding:14px 16px}
+@media(max-width:1050px){.subscription-plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.subscription-hero{grid-template-columns:minmax(0,1fr) 250px}}
+@media(max-width:700px){.subscription-hero{grid-template-columns:1fr;padding:22px 18px;gap:18px}.subscription-hero-aside{max-width:none}.subscription-heading-row{align-items:flex-start;flex-direction:column}.subscription-cycle{width:100%}.subscription-cycle button{flex:1}.subscription-assurance{grid-template-columns:1fr}.subscription-plan-grid{grid-template-columns:1fr}.subscription-plan-card{min-height:0}.subscription-plan-card>p{min-height:0}.subscription-hero h1{font-size:30px}.subscription-hero-points{gap:9px 13px}}
