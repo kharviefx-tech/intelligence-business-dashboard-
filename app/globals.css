@@ -565,3 +565,30 @@ td,th{border-bottom-color:#edf1ee}
 .ai-workspace-content .ai-question-form{margin-top:14px}
 .ai-workspace-content .ai-footnote{margin-top:10px;color:#85928a;font-size:10px;line-height:1.55}
 @media(max-width:700px){.ai-workspace-section{padding:15px;margin:20px 0;border-radius:13px}.ai-workspace-heading{flex-direction:column;gap:10px}.ai-workspace-heading h2{font-size:19px}.ai-workspace-content .ai-prompt-chips button{font-size:10px;padding:7px 10px}}
+
+
+/* Keep AI as a supporting tool, not the dashboard's visual centrepiece */
+.ai-workspace-section{margin:26px 0 18px;max-width:1040px}
+.ai-workspace-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 12px;padding:0 2px}
+.ai-workspace-heading .eyebrow{font-size:8px;letter-spacing:1.15px;color:#849188}
+.ai-workspace-heading h2{font-family:Manrope,sans-serif;font-size:16px;letter-spacing:-.35px;margin:5px 0 3px;color:#26382e}
+.ai-workspace-heading p{font-size:10px;color:#8a968e;margin:0;line-height:1.5}
+.ai-workspace-heading .ai-live-badge{font-size:8px;padding:5px 8px;background:#f4faf6;border-color:#e0eee5;color:#4d8169}
+.ai-workspace-content{max-width:860px}
+.ai-analyst-panel{padding:16px 18px;border:1px solid #e7ede9;background:#fff;box-shadow:0 2px 8px rgba(23,53,37,.018);border-radius:12px}
+.ai-analyst-panel:before{display:none}
+.ai-analyst-panel .panel-heading h2{font-size:12px}
+.ai-analyst-panel .panel-heading p{font-size:9px}
+.ai-analyst-panel .ai-live-badge{font-size:7px;padding:4px 7px}
+.ai-analyst-intro{padding:11px 12px;margin:12px 0;background:#f7faf8;border:1px solid #edf2ee;border-radius:9px}
+.ai-brain-icon{width:32px;height:32px;border-radius:9px;background:#eaf4ee}
+.ai-analyst-intro strong{font-size:11px}
+.ai-analyst-intro p{font-size:10px}
+.ai-prompt-chips{gap:6px;margin-bottom:10px}
+.ai-prompt-chips button{padding:6px 9px;font-size:9px;background:#fbfdfb}
+.ai-question-form input{min-height:40px;padding:10px 12px;font-size:11px}
+.ai-question-form button{min-height:40px;padding:0 13px;font-size:10px}
+.ai-answer{padding:12px;margin-top:11px}
+.ai-answer-copy{font-size:11px;line-height:1.7}
+.ai-footnote{font-size:9px;margin-top:8px}
+@media(max-width:760px){.ai-workspace-section{margin:22px 0 14px}.ai-workspace-heading{align-items:flex-start}.ai-workspace-content{max-width:none}.ai-analyst-panel{padding:13px}.ai-workspace-heading h2{font-size:15px}.ai-workspace-heading p{max-width:270px}}
