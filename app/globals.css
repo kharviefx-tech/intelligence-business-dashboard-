@@ -710,3 +710,63 @@ tbody tr:hover{background:#f5f9fd}
 .content>.transactions-panel{order:6}
 .content>.section-anchor{order:6}
 .content>.footer{order:7}
+
+
+/* Full report-workspace treatment: Power BI-inspired command ribbon, canvas and page navigator */
+.pbi-commandbar{position:sticky;top:58px;z-index:18;display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:43px;padding:0 28px;background:#fff;border-bottom:1px solid #d8d8d8;box-shadow:0 1px 2px #00000008}
+.pbi-command-tabs,.pbi-command-tools{display:flex;align-items:center;gap:0;min-width:0}
+.pbi-command-tabs{align-self:stretch;gap:23px}
+.pbi-command-tabs span{display:flex;align-items:center;position:relative;color:#605e5c;font-size:10px;font-weight:600;white-space:nowrap}
+.pbi-command-tabs .pbi-command-active{color:#252423}
+.pbi-command-tabs .pbi-command-active:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:#118dff}
+.pbi-command-tools{gap:13px;color:#797775;font-size:9px;white-space:nowrap}
+.pbi-command-product{display:flex;align-items:center;gap:7px;font-weight:800;letter-spacing:.55px;color:#605e5c}
+.pbi-command-product i{width:8px;height:8px;background:#118dff;border-radius:2px}
+.pbi-command-divider{height:17px;border-left:1px solid #e1dfdd}
+.pbi-command-live{display:flex;align-items:center;gap:6px;color:#107c41}
+.pbi-command-live i{width:6px;height:6px;border-radius:50%;background:#13a10e}
+.content{max-width:1720px;padding-top:22px}
+.welcome-row{padding:0 0 15px;border-bottom:1px solid #e1dfdd}
+.metrics-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.metric-card{position:relative;overflow:hidden;border-top:3px solid #118dff}
+.metric-card:not(.metric-card-primary){border-top-color:#c8c6c4}
+.metric-card-primary{border-top-color:#118dff!important}
+.metric-top{font-size:10px;font-weight:600}
+.metric-value{font-variant-numeric:tabular-nums}
+.powerbi-report{padding:17px;background:#fff;border:1px solid #d8d8d8;box-shadow:0 1px 2px #00000008}
+.powerbi-report-heading{margin:0 0 14px;padding:0 0 13px}
+.powerbi-visual-grid{grid-template-columns:minmax(0,1.75fr) minmax(290px,.9fr)}
+.powerbi-visual{border:1px solid #e1dfdd;background:#fff}
+.powerbi-bar-chart{height:300px}
+.powerbi-donut-wrap{height:235px}
+.dashboard-grid{grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr)}
+.dashboard-grid-lower{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.pbi-page-tabs{display:flex;align-items:stretch;gap:0;min-height:39px;margin-top:14px;padding:0 10px;background:#fff;border:1px solid #d8d8d8;border-bottom:0}
+.pbi-page-tab,.pbi-page-tab-active{display:flex;align-items:center;gap:7px;padding:0 15px;border-right:1px solid #edebe9;color:#605e5c;font-size:9px;white-space:nowrap}
+.pbi-page-tab-active{color:#252423;background:#f3f2f1;border-bottom:3px solid #118dff;font-weight:700}
+.pbi-page-tabs-spacer{flex:1}
+.pbi-page-count{align-self:center;padding:0 8px;color:#8a8886;font-size:8px}
+.transactions-panel{border-top-left-radius:0;border-top-right-radius:0}
+@media(max-width:850px){
+ .pbi-commandbar{top:56px;padding:0 14px;min-height:40px}
+ .pbi-command-tabs{gap:17px}
+ .pbi-command-tools>span:nth-child(2),.pbi-command-tools>span:nth-child(3){display:none}
+ .powerbi-visual-grid,.dashboard-grid,.dashboard-grid-lower{grid-template-columns:1fr}
+ .powerbi-bar-chart{height:250px}
+}
+@media(max-width:580px){
+ .pbi-commandbar{top:54px;padding:0 10px;min-height:37px;gap:8px}
+ .pbi-command-tabs{gap:13px}
+ .pbi-command-tabs span{font-size:9px}
+ .pbi-command-tools{gap:7px;font-size:8px}
+ .pbi-command-product{font-size:7px}
+ .pbi-command-tools .pbi-command-divider{display:none}
+ .content{padding-top:15px}
+ .welcome-row{border-bottom:1px solid #e1dfdd;padding-bottom:12px}
+ .metrics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .powerbi-report{padding:11px}
+ .powerbi-bar-chart{height:215px}
+ .pbi-page-tabs{overflow-x:auto;min-height:36px;padding:0 4px}
+ .pbi-page-tab,.pbi-page-tab-active{padding:0 9px;font-size:8px}
+ .pbi-page-count{display:none}
+}
