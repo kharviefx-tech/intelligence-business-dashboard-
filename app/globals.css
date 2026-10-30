@@ -345,3 +345,42 @@ tbody tr:hover td{background:#fbfdfb}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
 }
+
+
+/* BusinessIQ subscription chooser */
+.subscription-content{max-width:1280px}
+.subscription-heading-row{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:30px 0 15px}
+.subscription-heading-row .tool-section-title{margin:0 0 5px}
+.subscription-heading-row>div:first-child>p{margin:0;color:#849188;font-size:11px}
+.subscription-cycle{display:inline-flex;align-items:center;gap:3px;padding:4px;background:#edf2ef;border:1px solid #e1e9e4;border-radius:10px}
+.subscription-cycle button{border:0;background:transparent;color:#64746a;padding:8px 12px;border-radius:7px;font-size:10px;font-weight:700;cursor:pointer}
+.subscription-cycle button.active{background:#fff;color:#176b50;box-shadow:0 1px 4px #14251b12}
+.subscription-cycle button span{margin-left:5px;padding:3px 5px;border-radius:4px;background:#e8f5ed;color:#18744f;font-size:8px}
+.subscription-plan-grid{grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;gap:13px}
+.subscription-plan-card{padding:21px 18px 18px;min-height:430px;border-radius:14px;box-shadow:0 2px 7px #14251b05}
+.subscription-plan-audience{color:#829087;text-transform:uppercase;font-size:8px;font-weight:800;letter-spacing:.8px;margin:5px 0 8px}
+.subscription-plan-card h3{font-size:20px;letter-spacing:-.6px}
+.subscription-plan-card>p{min-height:68px;font-size:10px;color:#718078}
+.subscription-price{display:flex;flex-direction:column;gap:4px;min-height:76px;padding:14px 0 12px;border-top:1px solid #edf1ee;border-bottom:1px solid #edf1ee}
+.subscription-price strong{font-family:Manrope,sans-serif;font-size:25px;line-height:1.15;letter-spacing:-1px;color:#18281f}
+.subscription-price>span{font-size:9px;color:#77857d}
+.subscription-price small{font-size:9px;color:#19866a;font-weight:700}
+.subscription-plan-card ul{margin:16px 0 19px;gap:11px}
+.subscription-plan-card li{font-size:9px;line-height:1.55}
+.subscription-plan-featured{border:1.5px solid #19866a;box-shadow:0 10px 28px #19866a14;transform:translateY(-3px)}
+.subscription-plan-enterprise{background:linear-gradient(160deg,#17251e 0%,#203b2e 100%);border-color:#203b2e;color:#f4faf6;box-shadow:0 12px 28px #14251b18}
+.subscription-plan-enterprise h3,.subscription-plan-enterprise .subscription-price strong{color:#fff}
+.subscription-plan-enterprise>p,.subscription-plan-enterprise .subscription-plan-audience,.subscription-plan-enterprise .subscription-price>span{color:#b8c9bf}
+.subscription-plan-enterprise .subscription-price{border-color:#3b5447}
+.subscription-plan-enterprise li{color:#e1ece5}
+.subscription-plan-enterprise li svg{color:#86d5ad}
+.subscription-plan-enterprise .subscription-enterprise-label{display:flex;align-items:center;gap:6px;color:#a8e4c6;font-size:8px;font-weight:800;letter-spacing:.7px}
+.subscription-plan-enterprise .subscription-action{background:#a8e4c6;color:#123b2a;box-shadow:none}
+.subscription-plan-enterprise .subscription-action:hover{background:#c2f0d6}
+.subscription-enterprise-foot{display:block;margin-top:10px;color:#b8c9bf;font-size:8px;line-height:1.5}
+.subscription-enterprise-note{display:flex;align-items:flex-start;gap:13px;padding:17px 18px;margin:18px 0;background:#eef5f0;border:1px solid #dcebe1;border-radius:12px}
+.subscription-enterprise-icon{display:grid;place-items:center;flex:0 0 36px;height:36px;border-radius:9px;background:#dcefe3;color:#197650}
+.subscription-enterprise-note strong{font-size:11px;color:#294637}
+.subscription-enterprise-note p{margin:5px 0 0;color:#66776d;font-size:10px;line-height:1.7}
+@media(max-width:1100px){.subscription-plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.subscription-heading-row{align-items:flex-start;flex-direction:column}.subscription-cycle{width:100%}.subscription-cycle button{flex:1}.subscription-plan-grid{grid-template-columns:1fr}.subscription-plan-card{min-height:0}.subscription-plan-featured{transform:none}.subscription-plan-card>p{min-height:0}.subscription-price{min-height:70px}}
