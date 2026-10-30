@@ -90,9 +90,9 @@ export default function Home() {
   const currency = organization?.currency && allowedCurrencies.includes(organization.currency) ? organization.currency : "NGN";
   const since = useMemo(() => {
     const d = new Date();
-    if (period === "30") d.setDate(d.getDate() - 30);
-    else if (period === "90") d.setDate(d.getDate() - 90);
-    else d.setMonth(d.getMonth() - 6);
+    if (period === "30") d.setDate(d.getDate() - 29);
+    else if (period === "90") d.setDate(d.getDate() - 89);
+    else d.setDate(d.getDate() - 179);
     d.setHours(0, 0, 0, 0);
     return d;
   }, [period]);
@@ -113,9 +113,9 @@ export default function Home() {
       start.setHours(0, 0, 0, 0);
       return Array.from({ length: 5 }, (_, index) => {
         const bucketStart = new Date(start);
-        bucketStart.setDate(start.getDate() + index * 7);
+        bucketStart.setDate(start.getDate() + index * 6);
         const bucketEnd = new Date(bucketStart);
-        bucketEnd.setDate(bucketEnd.getDate() + 7);
+        bucketEnd.setDate(bucketEnd.getDate() + 6);
         const rows = periodTransactions.filter(t => {
           const date = new Date(t.transaction_date + "T00:00:00");
           return date >= bucketStart && date < bucketEnd && t.status === "recorded";
