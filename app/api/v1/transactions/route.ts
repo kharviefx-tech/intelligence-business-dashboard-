@@ -7,15 +7,21 @@ const RATE_LIMIT_PER_MINUTE = 120;
 
 export async function GET(req: NextRequest) {
   const authorization = req.headers.get("authorization") || "";
-  const match = authorization.match(/^Bearer\\s+(bi_live_[A-Za-z0-9_-]{30,})$/);
+  const match = authorization.match(/^Bearer\s+(bi_live_[A-Za-z0-9_-]{30,})$/);
   if (!match) {
-    return NextResponse.json({ error: "A valid BusinessIQ API bearer key is required." }, { status: 401 });
+    return NextResponse.json({ error: "A valid BusinessIQ API bearer key is required." }, { status: 401, headers: { "Cache-Control": "no-store" } });
   }
 
+  const rawLimit = req.nextUrl.searchParams.get("limit");
+  const parsedLimit = rawLimit === null ? 100 : Number(rawLimit);
+  if (!Number.isInteger(parsedLimit) || parsedLimit < 1) {
+    return NextResponse.json({ error: "The limit parameter must be a positive whole number." }, { status: 400, headers: { "Cache-Control": "no-store" } });
+  }
+  const requested = Math.min(parsedLimit, 500);
   const hash = createHash("sha256").update(match[1]).digest("hex");
-  const db = getNeonPool();
 
   try {
+    const db = getNeonPool();
     const key = await db.query(
       `select id, organization_id, scopes
        from bi_api_credentials
@@ -25,15 +31,16 @@ export async function GET(req: NextRequest) {
       [hash],
     );
     if (!key.rowCount) {
-      return NextResponse.json({ error: "API key is invalid, expired or revoked." }, { status: 401 });
+      return NextResponse.json({ error: "API key is invalid, expired or revoked." }, { status: 401, headers: { "Cache-Control": "no-store" } });
     }
 
     const credential = key.rows[0];
-    if (!credential.scopes?.includes("transactions:read")) {
-      return NextResponse.json({ error: "This API key does not have permission to read transactions." }, { status: 403 });
+    const scopes: string[] = Array.isArray(credential.scopes) ? credential.scopes : [];
+    if (!scopes.includes("transactions:read")) {
+      return NextResponse.json({ error: "This API key does not have permission to read transactions." }, { status: 403, headers: { "Cache-Control": "no-store" } });
     }
 
-    // A database-backed fixed-window limit works across serverless instances.
+    // A database-backed fixed-window limit applies consistently across serverless instances.
     const usage = await db.query(
       `insert into bi_api_rate_limits (credential_id, window_started_at, request_count, updated_at)
        values ($1::text, date_trunc('minute', now()), 1, now())
@@ -55,13 +62,6 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const rawLimit = req.nextUrl.searchParams.get("limit");
-    const parsedLimit = rawLimit === null ? 100 : Number(rawLimit);
-    if (!Number.isInteger(parsedLimit) || parsedLimit < 1) {
-      return NextResponse.json({ error: "The limit parameter must be a positive whole number." }, { status: 400 });
-    }
-    const requested = Math.min(parsedLimit, 500);
-
     const result = await db.query(
       `select id, transaction_date, description, kind, amount, currency, category, status, created_at
        from bi_transactions
@@ -78,6 +78,6 @@ export async function GET(req: NextRequest) {
     );
   } catch (error) {
     console.error("BusinessIQ public API read failed", error);
-    return NextResponse.json({ error: "BusinessIQ API request failed." }, { status: 500 });
+    return NextResponse.json({ error: "BusinessIQ API request failed." }, { status: 500, headers: { "Cache-Control": "no-store" } });
   }
 }
