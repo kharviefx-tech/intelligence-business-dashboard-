@@ -6,6 +6,7 @@ import { Activity, ArrowDownRight, ArrowUpRight, Bell, ChevronDown, CircleHelp, 
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useRouter } from "next/navigation";
 import { createClient } from "../utils/supabase/client";
+import BusinessIQAssistant from "./components/businessiq-assistant";
 
 type Organization = { id: string; name: string; currency: string; plan: string };
 type Transaction = {
@@ -185,7 +186,7 @@ export default function Home() {
 
   async function signOut() { await supabase.auth.signOut(); router.replace("/login"); router.refresh(); }
 
-  return <main className="app-shell">
+  return <main className="app-shell"><BusinessIQAssistant organizationId={organizationId} period={period} />
     <aside className={mobileNav ? "sidebar sidebar-open" : "sidebar"}>
       <div className="brand"><div className="brand-mark">B</div><div><strong>BusinessIQ</strong><span>BUSINESS INTELLIGENCE</span></div><button className="icon-btn close-nav" onClick={() => setMobileNav(false)} aria-label="Close menu"><X size={18}/></button></div>
       <div className="workspace-label">WORKSPACE</div>
