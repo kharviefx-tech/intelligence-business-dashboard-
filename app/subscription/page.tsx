@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Check, CreditCard, ShieldCheck, Sparkles, Building2, Crown, LoaderCircle, ArrowUpRight, RefreshCw } from "lucide-react";
 
@@ -46,6 +46,7 @@ export default function SubscriptionPage() {
   const [checkoutPlan, setCheckoutPlan] = useState("");
   const [pendingReference, setPendingReference] = useState("");
   const [checkingPayment, setCheckingPayment] = useState(false);
+  const autoCheckoutStarted = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -63,7 +64,8 @@ export default function SubscriptionPage() {
         if (active) {
           const rows = data.workspaces ?? [];
           setWorkspaces(rows);
-          setSelectedWorkspaceId(rows[0]?.id ?? "");
+          const requestedWorkspaceId = new URLSearchParams(window.location.search).get("organizationId");
+          setSelectedWorkspaceId(rows.some((workspace: Workspace) => workspace.id === requestedWorkspaceId) ? requestedWorkspaceId! : rows[0]?.id ?? "");
         }
       })
       .catch(e => {
@@ -125,7 +127,13 @@ export default function SubscriptionPage() {
       });
       const data = await response.json();
       if (response.status === 401) {
-        window.location.assign("/login?next=%2Fsubscription");
+        const loginParams = new URLSearchParams({
+          next: "/subscription",
+          checkoutPlan: planCode,
+          organizationId: selectedWorkspaceId,
+          billingCycle,
+        });
+        window.location.assign("/login?" + loginParams.toString());
         return;
       }
       if (!response.ok || !data.authorizationUrl) throw new Error(data.error || "Could not start secure checkout.");
@@ -172,6 +180,20 @@ export default function SubscriptionPage() {
       setCheckingPayment(false);
     }
   }
+
+  useEffect(() => {
+    if (loading || autoCheckoutStarted.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const planCode = params.get("checkoutPlan") || "";
+    const organizationId = params.get("organizationId") || "";
+    const cycle = params.get("billingCycle") || "";
+    if (!["professional", "business"].includes(planCode) || !["monthly", "yearly"].includes(cycle) || !organizationId) return;
+    if (!workspaces.some(workspace => workspace.id === organizationId)) return;
+    autoCheckoutStarted.current = true;
+    setSelectedWorkspaceId(organizationId);
+    setBillingCycle(cycle as BillingCycle);
+    void startCheckout(planCode);
+  }, [loading, workspaces]);
 
   return <main className="tool-page subscription-page">
     <header className="tool-topbar">
