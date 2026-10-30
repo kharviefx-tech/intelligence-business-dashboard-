@@ -67,22 +67,12 @@ export default function ProfilePage() {
       const supabase = createClient();
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) { router.replace("/login"); return; }
-      const [{ data: p, error: pError }, { data: memberships, error: membershipError }] = await Promise.all([
-        supabase.from("bi_profiles")
-          .select("id,full_name,platform_role,monthly_transaction_limit,avatar_url,phone,job_title,bio,company_name,company_website,timezone,preferred_organization_id")
-          .eq("id", user.id).maybeSingle(),
-        supabase.from("bi_organization_members")
-          .select("organization_id,role,organization:bi_organizations(id,name,currency,plan)")
-          .eq("user_id", user.id),
-      ]);
+      const response = await fetch("/api/workspaces", { cache: "no-store" });
+      const workspaceData = await response.json();
+      if (!response.ok) throw new Error(workspaceData.error || "Could not load profile details.");
       if (!active) return;
-      if (pError) setError(pError.message);
-      if (membershipError) setError(membershipError.message);
-      const current = { ...blankProfile(user.id), ...(p ?? {}) } as Profile;
-      const orgRows = (memberships ?? []).flatMap((m: any) => {
-        const org = Array.isArray(m.organization) ? m.organization[0] : m.organization;
-        return org ? [{ id: org.id, name: org.name, currency: org.currency, plan: org.plan, role: m.role }] : [];
-      }) as Organization[];
+      const current = { ...blankProfile(user.id), ...(workspaceData.profile ?? {}) } as Profile;
+      const orgRows = (workspaceData.workspaces ?? []) as Organization[];
       setProfile(current);
       setName(current.full_name ?? user.user_metadata?.full_name ?? "");
       setEmail(user.email ?? "");
@@ -154,8 +144,13 @@ export default function ProfilePage() {
         company_name: companyName.trim() || null, company_website: normalizedWebsite || null,
         timezone, preferred_organization_id: preferredOrg || null,
       };
-      const { error: updateError } = await supabase.from("bi_profiles").update(payload).eq("id", user.id);
-      if (updateError) throw updateError;
+      const response = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not save your profile.");
       const { error: metadataError } = await supabase.auth.updateUser({ data: { full_name: cleaned, avatar_url: nextAvatar || null } });
       if (metadataError) throw metadataError;
       setAvatarUrl(nextAvatar); setImagePreview(""); setSelectedImage(null);
