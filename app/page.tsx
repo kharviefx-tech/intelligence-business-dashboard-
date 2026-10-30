@@ -51,13 +51,14 @@ export default function Home() {
         return;
       }
       setUserEmail(user.email ?? "");
-      const { data: profileInfo } = await supabase.from("bi_profiles").select("full_name,avatar_url,preferred_organization_id,platform_role").eq("id", user.id).maybeSingle();
-      setUserName(profileInfo?.full_name ?? user.user_metadata?.full_name ?? "");
+      const workspaceResponse = await fetch("/api/workspaces", { cache: "no-store" });
+      const workspaceData = await workspaceResponse.json();
+      if (!workspaceResponse.ok) throw new Error(workspaceData.error || "Unable to load your workspace.");
+      const profileInfo = workspaceData.profile;
+      setUserName(profileInfo?.full_name ?? user.user_metadata?.display_name ?? user.user_metadata?.full_name ?? "");
       setUserAvatar(profileInfo?.avatar_url ?? user.user_metadata?.avatar_url ?? "");
       setPlatformRole(profileInfo?.platform_role ?? "user");
-      const { data: orgs, error: orgError } = await supabase.from("bi_organizations").select("id,name,currency,plan").order("created_at", { ascending: true });
-      if (orgError) throw orgError;
-      const safeOrgs = (orgs ?? []) as Organization[];
+      const safeOrgs = (workspaceData.workspaces ?? []) as Organization[];
       setOrganizations(safeOrgs);
       if (!safeOrgs.length) {
         setTransactions([]);
@@ -66,13 +67,12 @@ export default function Home() {
         return;
       }
       const preferredId = profileInfo?.preferred_organization_id;
-      const currentId = safeOrgs.some(o => o.id === organizationId) ? organizationId : safeOrgs.some(o => o.id === preferredId) ? preferredId : safeOrgs[0].id;
+      const currentId = safeOrgs.some((o: Organization) => o.id === organizationId) ? organizationId : safeOrgs.some((o: Organization) => o.id === preferredId) ? preferredId : safeOrgs[0].id;
       setOrganizationId(currentId);
-      const { data: rows, error: txError } = await supabase.from("bi_transactions")
-        .select("id,organization_id,transaction_date,description,kind,amount,currency,category,status")
-        .eq("organization_id", currentId).order("transaction_date", { ascending: false }).limit(1000);
-      if (txError) throw txError;
-      setTransactions((rows ?? []) as Transaction[]);
+      const txResponse = await fetch("/api/transactions?organization_id=" + encodeURIComponent(currentId), { cache: "no-store" });
+      const txData = await txResponse.json();
+      if (!txResponse.ok) throw new Error(txData.error || "Unable to load transactions.");
+      setTransactions((txData.transactions ?? []) as Transaction[]);
       setNotice("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "We could not load your workspace data.");
@@ -124,14 +124,17 @@ export default function Home() {
     if (!Number.isFinite(amount) || amount <= 0) { setError("Enter an amount greater than zero."); return; }
     setSaving(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Your session has expired. Please sign in again.");
-      const { error: insertError } = await supabase.from("bi_transactions").insert({
-        organization_id: organizationId, created_by: user.id, description: form.description.trim(),
-        kind: form.kind, amount, currency, category: form.category.trim() || "Uncategorized",
-        transaction_date: form.transaction_date, status: form.status,
+      const response = await fetch("/api/transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          organization_id: organizationId, description: form.description.trim(), kind: form.kind,
+          amount, currency, category: form.category.trim() || "Uncategorized",
+          transaction_date: form.transaction_date, status: form.status,
+        }),
       });
-      if (insertError) throw insertError;
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not save this transaction.");
       setForm(initialForm); setShowAdd(false);
       await loadData(true);
       setNotice("Transaction saved. Your analysis has been recalculated from workspace records.");
