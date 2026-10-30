@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
     const result = await confirmAndActivatePayment(reference);
     destination.searchParams.set("payment", result.activated ? "success" : result.status === "verification_mismatch" ? "review" : "pending");
     if (result.plan) destination.searchParams.set("plan", result.plan);
+    if (!result.activated && result.status !== "verification_mismatch") destination.searchParams.set("reference", reference);
   } catch (error) {
     console.error("BusinessIQ Paystack callback verification failed", error);
     destination.searchParams.set("payment", "pending");
