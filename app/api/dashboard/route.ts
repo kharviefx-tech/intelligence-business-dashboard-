@@ -35,18 +35,23 @@ export async function GET(request: NextRequest) {
     let transactions: unknown[] = [];
 
     if (selected) {
-      const result = await db.query(
-        `select id,organization_id,transaction_date,description,kind,amount,currency,category,status
-         from bi_transactions where organization_id=$1 order by transaction_date desc,created_at desc limit 1000`,
-        [selected.id],
-      );
+      const [result, countResult] = await Promise.all([
+        db.query(
+          `select id,organization_id,transaction_date,description,kind,amount,currency,category,status
+           from bi_transactions where organization_id=$1 order by transaction_date desc,created_at desc limit 1000`,
+          [selected.id],
+        ),
+        db.query("select count(*)::int as total from bi_transactions where organization_id=$1", [selected.id]),
+      ]);
       transactions = result.rows;
+      const transactionCount = Number(countResult.rows[0]?.total ?? transactions.length);
     }
 
     return NextResponse.json({
       profile: profileInfo,
       workspaces: workspaceRows,
       transactions,
+      transaction_count: selected ? Number((await db.query("select count(*)::int as total from bi_transactions where organization_id=$1", [selected.id])).rows[0]?.total ?? transactions.length) : 0,
       email: user.email ?? "",
     });
   } catch (error) {
