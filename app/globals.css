@@ -716,7 +716,7 @@ tbody tr:hover{background:#f5f9fd}
 .pbi-commandbar{position:sticky;top:58px;z-index:18;display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:43px;padding:0 28px;background:#fff;border-bottom:1px solid #d8d8d8;box-shadow:0 1px 2px #00000008}
 .pbi-command-tabs,.pbi-command-tools{display:flex;align-items:center;gap:0;min-width:0}
 .pbi-command-tabs{align-self:stretch;gap:23px}
-.pbi-command-tabs span{display:flex;align-items:center;position:relative;color:#605e5c;font-size:10px;font-weight:600;white-space:nowrap}
+.pbi-command-tabs a{display:flex;align-items:center;position:relative;color:#605e5c;font-size:10px;font-weight:600;white-space:nowrap}
 .pbi-command-tabs .pbi-command-active{color:#252423}
 .pbi-command-tabs .pbi-command-active:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:#118dff}
 .pbi-command-tools{gap:13px;color:#797775;font-size:9px;white-space:nowrap}
@@ -757,7 +757,7 @@ tbody tr:hover{background:#f5f9fd}
 @media(max-width:580px){
  .pbi-commandbar{top:54px;padding:0 10px;min-height:37px;gap:8px}
  .pbi-command-tabs{gap:13px}
- .pbi-command-tabs span{font-size:9px}
+ .pbi-command-tabs a{font-size:9px}
  .pbi-command-tools{gap:7px;font-size:8px}
  .pbi-command-product{font-size:7px}
  .pbi-command-tools .pbi-command-divider{display:none}
@@ -837,3 +837,9 @@ tbody tr:hover{background:#f5f9fd}
 .pbi-auth-page .auth-legal{margin:17px 0 0;color:#8a8886;font-size:8px;line-height:1.7;text-align:center}
 @media(max-width:900px){.auth-workspace{grid-template-columns:1fr;max-width:650px;min-height:auto;margin:28px auto}.auth-sidepanel{padding:30px 35px}.auth-sidepanel h1{font-size:34px;max-width:520px}.auth-preview-card{margin-top:22px}.auth-form-stage{padding:36px}.auth-side-foot{margin-top:18px}.pbi-auth-page{padding-bottom:25px}}
 @media(max-width:600px){.auth-commandbar{height:56px;flex-basis:56px;padding:0 15px;gap:10px}.auth-brand{min-width:0}.auth-brand-mark{width:30px;height:30px}.auth-command-tabs{display:none}.auth-commandbar .auth-secure{font-size:8px}.auth-workspace{width:calc(100% - 20px);margin:10px auto;box-shadow:none}.auth-sidepanel{padding:25px 20px}.auth-sidepanel h1{font-size:29px;margin-top:15px}.auth-sidepanel>p{font-size:11px}.auth-preview-card{padding:13px;margin-top:18px}.auth-preview-kpis b{font-size:17px}.auth-preview-chart{padding:10px}.auth-bars{height:65px}.auth-preview-foot{gap:10px}.auth-preview-foot span:last-child{display:none}.auth-side-foot{font-size:8px}.auth-form-stage{padding:30px 20px}.auth-form-heading h2{font-size:26px}.auth-trust-row{font-size:7px}}
+
+/* Interactive report navigation links */
+.pbi-command-tabs a,.pbi-page-tabs a{ text-decoration:none; cursor:pointer; }
+.pbi-command-tabs a:focus-visible,.pbi-page-tabs a:focus-visible{outline:2px solid #118dff;outline-offset:2px}
+.pbi-page-tabs a:hover{background:#f5f9fd;color:#252423}
+@media(max-width:580px){.pbi-command-tabs a{font-size:9px}}
