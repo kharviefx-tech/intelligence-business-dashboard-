@@ -1389,3 +1389,62 @@ main.min-h-screen:not(.app-shell) .bg-white{background:#fff}
 @media(max-width:390px){
  .app-shell .finance-kpis{grid-template-columns:1fr}
 }
+
+/* Final Power BI reference layout pass */
+.app-shell .sidebar{width:222px;padding:21px 12px 14px;background:#202124;color:#f6f7f8;border-right:1px solid #303236}
+.app-shell .main-area{margin-left:222px;background:#f7f8fa}
+.app-shell .brand{padding:0 8px 24px}
+.app-shell .brand-mark{border-radius:5px;background:#79a92e;color:#fff}
+.app-shell .brand strong{font-size:16px}
+.app-shell .brand span{font-size:7px;color:#aeb4bb}
+.app-shell .workspace-switch{margin-bottom:20px;border-radius:6px;background:#2b2d31;border-color:#41444a;color:#f5f6f7;padding:8px}
+.app-shell .workspace-text strong{color:#fff}
+.app-shell .workspace-text small{color:#b1b7bf}
+.app-shell .nav-label{padding:12px 9px 6px;color:#9ba2aa;font-size:9px}
+.app-shell .nav-item{min-height:37px;padding:9px 10px;border-radius:5px;font-size:11px;color:#d4d8dd;gap:10px}
+.app-shell .nav-item.active{background:#111315;border-left:3px solid #a4c639;padding-left:7px;color:#fff}
+.app-shell .nav-item:hover{background:#33363b;color:#fff}
+.app-shell .sidebar-bottom{margin-top:auto;padding-top:13px;border-color:#41444a}
+.app-shell .sidebar-bottom strong{color:#fff}
+.app-shell .sidebar-bottom p,.app-shell .sidebar-bottom small{color:#aeb5bd}
+.app-shell .sidebar-signout{color:#d4d8dd}
+.app-shell .profile{border-color:#41444a}
+.app-shell .topbar{height:54px;background:#111315;border-color:#2a2d31;padding:0 25px}
+.app-shell .crumb{color:#b8bec5;font-size:11px}
+.app-shell .crumb strong{color:#fff}
+.app-shell .topbar .icon-btn{color:#d8dde2}
+.app-shell .topbar .searchbox{height:34px;border:0;border-radius:3px;background:#fff}
+.app-shell .workspace-contextbar{margin:13px 24px 0;padding:8px 13px;border-radius:5px;box-shadow:none}
+.app-shell .content{padding:19px 24px 24px;max-width:1800px}
+.app-shell .welcome-row{margin-bottom:14px;align-items:center}
+.app-shell .welcome-row h1{font-size:22px;margin:5px 0 3px;letter-spacing:-.5px}
+.app-shell .subheading{font-size:10px}
+.app-shell .eyebrow{font-size:8px}
+.app-shell .header-controls{gap:7px}
+.app-shell .period-select,.app-shell .subtle-btn,.app-shell .primary-btn{border-radius:5px;font-size:10px}
+.app-shell .finance-kpis{grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.app-shell .finance-kpis .metric-card{min-height:122px;padding:14px 14px 11px;border-radius:7px;background:#fff;box-shadow:0 1px 2px rgba(18,30,42,.04)}
+.app-shell .finance-kpis .metric-top{font-size:10px;color:#4f5964}
+.app-shell .finance-kpis .metric-value{font-size:clamp(18px,1.7vw,24px);margin:12px 0 8px}
+.app-shell .finance-kpis .metric-icon{width:27px;height:27px;border-radius:6px}
+.app-shell .finance-kpis .metric-foot{font-size:8px}
+.app-shell .analysis-report{margin:0 0 13px}
+.app-shell .powerbi-report-heading{display:flex;justify-content:space-between;align-items:center;padding:0 0 8px;margin:0 0 7px;border:0;background:transparent}
+.app-shell .powerbi-report-heading h2{font-size:16px}
+.app-shell .powerbi-report-heading p{font-size:9px;margin-top:3px}
+.app-shell .powerbi-visual-grid{grid-template-columns:minmax(0,1.45fr) minmax(0,1fr) minmax(0,.95fr);gap:10px}
+.app-shell .powerbi-visual{min-height:250px;padding:14px;border-radius:7px;box-shadow:0 1px 2px rgba(18,30,42,.04)}
+.app-shell .powerbi-visual .panel-heading h2{font-size:12px}
+.app-shell .powerbi-visual .panel-heading p{font-size:8px}
+.app-shell .powerbi-bar-chart{height:175px}
+.app-shell .powerbi-donut-wrap{height:150px}
+.app-shell .powerbi-activity-visual{grid-column:auto}
+.app-shell .dashboard-grid{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:10px}
+.app-shell .panel{border-radius:7px;box-shadow:0 1px 2px rgba(18,30,42,.04)}
+.app-shell .biq-report-tabs{position:sticky;bottom:0;z-index:15;display:flex;align-items:stretch;gap:0;overflow-x:auto;margin:18px -24px -24px;padding:0 18px;background:#fff;border-top:1px solid #e0e4e8;box-shadow:0 -3px 12px rgba(20,30,40,.035);scrollbar-width:thin}
+.app-shell .biq-report-tabs a{display:flex;align-items:center;justify-content:center;white-space:nowrap;min-height:43px;padding:0 22px;border-bottom:3px solid transparent;color:#5f6975;font-size:10px;font-weight:650;text-decoration:none;-webkit-user-select:none;user-select:none}
+.app-shell .biq-report-tabs a:hover{background:#f7f9fa;color:#202b36}
+.app-shell .biq-report-tabs a.is-active,.app-shell .biq-report-tabs a:focus-visible{border-bottom-color:#9dbb35;color:#1d2833;background:#fbfcfd}
+@media(max-width:1250px){.app-shell .sidebar{width:205px}.app-shell .main-area{margin-left:205px}.app-shell .finance-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.app-shell .powerbi-visual-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.app-shell .powerbi-activity-visual{grid-column:auto}}
+@media(max-width:850px){.app-shell .sidebar{width:222px}.app-shell .main-area{margin-left:0}.app-shell .topbar{height:56px;padding:0 13px}.app-shell .content{padding:16px 13px 20px}.app-shell .workspace-contextbar{margin:10px 13px 0}.app-shell .finance-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.app-shell .powerbi-visual-grid,.app-shell .dashboard-grid{grid-template-columns:1fr}.app-shell .biq-report-tabs{margin-left:-13px;margin-right:-13px;margin-bottom:-20px;padding:0 7px}.app-shell .biq-report-tabs a{padding:0 14px}}
+@media(max-width:390px){.app-shell .finance-kpis{grid-template-columns:1fr}}
