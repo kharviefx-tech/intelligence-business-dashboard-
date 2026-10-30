@@ -614,3 +614,28 @@ td,th{border-bottom-color:#edf1ee}
 .pricing-faq a,.tool-content a{color:#167653}
 @media(max-width:1050px){.customer-pricing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.customer-pricing-grid{grid-template-columns:1fr;gap:12px}.customer-plan{padding:19px}.customer-plan>p{min-height:0}.customer-plan-price{font-size:23px}.pricing-faq{padding:16px}}
+
+
+/* Unified BusinessIQ sign-in and account creation */
+.auth-page{background:linear-gradient(145deg,#f4f8f5 0%,#eef5f0 52%,#f7faf8 100%);color:#19372b}
+.auth-card{border:1px solid #dce9e1;box-shadow:0 24px 70px rgba(20,75,49,.10);border-radius:22px}
+.auth-logo{background:#176b52;color:#fff;box-shadow:0 7px 18px rgba(23,107,82,.18);display:grid;place-items:center}
+.auth-logo span{display:block;line-height:1}
+.auth-card .tool-eyebrow{color:#176b52;letter-spacing:1.2px;font-weight:800}
+.auth-card h1{color:#17392b;font-family:Manrope,'DM Sans',sans-serif;font-weight:800;letter-spacing:-1.2px}
+.auth-intro{color:#687b70}
+.auth-field{color:#2d493b;font-weight:700}
+.auth-field>input,.password-control{border:1px solid #d4e2d9;background:#fff;border-radius:11px;transition:border-color .18s,box-shadow .18s}
+.auth-field>input{width:100%;display:block}
+.password-control:focus-within,.auth-field>input:focus{border-color:#19866a;box-shadow:0 0 0 3px rgba(25,134,106,.12)}
+.password-control input{background:transparent}
+.auth-submit{background:#176b52;border-radius:11px;min-height:48px;font-weight:800;box-shadow:0 7px 16px rgba(23,107,82,.15);transition:background .18s,transform .18s}
+.auth-submit:hover:not(:disabled){background:#125b45;transform:translateY(-1px)}
+.auth-switch{color:#63766b}
+.auth-switch button,.auth-switch a{color:#176b52}
+.auth-password-hint{margin:-5px 0 12px;color:#718278;font-size:11px;line-height:1.5}
+.auth-info{background:#f0f7f2;border-color:#d8e9dd;color:#365b46}
+.auth-error{background:#fff4f1;border-color:#f3d7cf;color:#963e31}
+.auth-success{background:#eff8f1;border-color:#d1e8d6;color:#236443}
+.auth-legal{color:#7b8b82}
+@media(max-width:560px){.auth-card{margin-top:28px;padding:25px 20px}.auth-page{background:#f1f6f2}}
