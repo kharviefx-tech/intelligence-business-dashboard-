@@ -1,4 +1,4 @@
-name: Validate application
+name: Validate BusinessIQ
 
 on:
   push:
@@ -6,9 +6,17 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: businessiq-validation-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
+  validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -16,8 +24,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
       - name: Install dependencies
         run: npm install
+      - name: Type-check application
+        run: npm run typecheck
       - name: Build Next.js application
         run: npm run build
         env:
