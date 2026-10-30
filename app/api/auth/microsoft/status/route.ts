@@ -1,5 +1,6 @@
 import { createDecipheriv, createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/utils/authenticated-user";
 
 export const runtime = "nodejs";
 
@@ -8,16 +9,22 @@ function open(value: string, secret: string) {
   const iv = data.subarray(0, 12), tag = data.subarray(12, 28), body = data.subarray(28);
   const decipher = createDecipheriv("aes-256-gcm", createHash("sha256").update(secret).digest(), iv);
   decipher.setAuthTag(tag);
-  return JSON.parse(Buffer.concat([decipher.update(body), decipher.final()]).toString("utf8")) as { expires_at: number; scope: string };
+  return JSON.parse(Buffer.concat([decipher.update(body), decipher.final()]).toString("utf8")) as { businessiq_user_id: string; expires_at: number; scope: string };
 }
 
 export async function GET(request: NextRequest) {
+  const user = await getAuthenticatedUser();
   const secret = process.env.MICROSOFT_CLIENT_SECRET;
   const value = request.cookies.get("bi_ms_session")?.value;
-  if (!secret || !value) return NextResponse.json({ connected: false });
+  if (!user || !secret || !value) return NextResponse.json({ connected: false });
   try {
     const session = open(value, secret);
-    return NextResponse.json({ connected: true, expiresAt: session.expires_at, scopes: session.scope.split(" ").filter(Boolean) });
+    const belongsToCurrentUser = session.businessiq_user_id === user.id;
+    return NextResponse.json({
+      connected: belongsToCurrentUser,
+      expiresAt: belongsToCurrentUser ? session.expires_at : null,
+      scopes: belongsToCurrentUser ? session.scope.split(" ").filter(Boolean) : []
+    });
   } catch {
     return NextResponse.json({ connected: false });
   }
