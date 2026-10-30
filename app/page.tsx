@@ -200,7 +200,7 @@ export default function Home() {
     <section className="main-area">
       <header className="topbar"><button className="icon-btn menu-toggle" onClick={() => setMobileNav(true)} aria-label="Open menu"><Menu size={21}/></button><div className="crumb">Workspace <span>/</span> <strong>Overview</strong></div><div className="top-actions"><div className="searchbox"><Search size={16}/><input aria-label="Search transactions" placeholder="Search records..." value={query} onChange={e => setQuery(e.target.value)}/></div><button className="icon-btn" aria-label="Refresh analysis" onClick={() => void loadData(true)} disabled={refreshing}>{refreshing ? <LoaderCircle className="spin" size={18}/> : <RefreshCw size={18}/>}</button><Link className="top-avatar top-avatar-link" href="/profile" aria-label="Open your profile">{userAvatar ? <img src={userAvatar} alt="" /> : (userName || userEmail.split("@")[0] || "BI").split(/\\s+/).slice(0,2).map(v=>v[0]).join("").toUpperCase()}</Link></div></header>
       <div className="pbi-commandbar" aria-label="Report workspace toolbar">
-        <div className="pbi-command-tabs"><span className="pbi-command-active">Home</span><span>Insert</span><span>Model</span><span>View</span><span>Help</span></div>
+        <nav className="pbi-command-tabs" aria-label="Workspace commands"><a className="pbi-command-active" href="#overview">Home</a><a href="#transactions">Insert</a><a href="/settings">Model</a><a href="#analytics">View</a><a href="/help">Help</a></nav>
         <div className="pbi-command-tools"><span className="pbi-command-product"><i/> REPORT VIEW</span><span className="pbi-command-divider"/><span>Data source: Workspace ledger</span><span className="pbi-command-live"><i/> Up to date</span></div>
       </div>
       <div className="content" id="overview">
@@ -258,13 +258,7 @@ export default function Home() {
             <div id="transactions" className="section-anchor"/><article className="panel transactions-panel" id="reports"><div className="panel-heading"><div><h2>Transaction ledger</h2><p>Search and export the records available to your workspace</p></div><button className="subtle-btn" onClick={exportCsv}><Download size={14}/> Export CSV</button></div><div className="table-scroll"><table><thead><tr><th>TRANSACTION</th><th>CATEGORY</th><th>DATE</th><th>STATUS</th><th className="align-right">AMOUNT</th></tr></thead><tbody>{filtered.slice(0,100).map(t=><tr key={t.id}><td><div className="transaction-name"><span className={t.kind==="income"?"transaction-icon income":"transaction-icon expense"}>{t.kind==="income"?<ArrowDownRight size={16}/>:<ArrowUpRight size={16}/>}</span><strong>{t.description}</strong></div></td><td>{t.category||"Uncategorized"}</td><td>{new Date(t.transaction_date+"T00:00:00").toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"})}</td><td><span className={"status-badge "+(t.status==="recorded"?"recorded":"pending")}>{t.status}</span></td><td className={"align-right amount "+(t.kind==="income"?"amount-in":"")}>{t.kind==="income"?"+":"−"}{money(Number(t.amount),t.currency)}</td></tr>)}</tbody></table>{filtered.length===0&&<div className="empty-state">{query?"No transactions match your search.":"No transactions yet. Add your first record to begin analysis."}</div>}</div><div className="table-footer">Showing {Math.min(filtered.length,100)} of {filtered.length} matching records <span>Workspace-scoped data</span></div></article>
           </>}
         </>}
-        <div className="pbi-page-tabs" aria-label="Report pages">
-          <div className="pbi-page-tab-active"><LayoutDashboard size={14}/> Executive overview</div>
-          <div className="pbi-page-tab"><Activity size={14}/> Performance</div>
-          <div className="pbi-page-tab"><Wallet size={14}/> Financial detail</div>
-          <span className="pbi-page-tabs-spacer"/>
-          <span className="pbi-page-count">1 of 3 report pages</span>
-        </div>
+        <nav className="pbi-page-tabs" aria-label="Report pages"><a className="pbi-page-tab-active" href="#overview"><LayoutDashboard size={14}/> Executive overview</a><a className="pbi-page-tab" href="#performance"><Activity size={14}/> Performance</a><a className="pbi-page-tab" href="#transactions"><Wallet size={14}/> Financial detail</a><span className="pbi-page-tabs-spacer"/><span className="pbi-page-count">Choose a report page</span></nav>
         <footer className="footer"><span>BusinessIQ · Business intelligence workspace</span><span>Metrics are calculated from authorised workspace records</span>{["admin","super_admin"].includes(platformRole) && <Link href="/admin">Admin centre</Link>}<Link href="/help">Help &amp; support</Link></footer>
       </div>
     </section>
