@@ -13,10 +13,11 @@ export async function POST(request: NextRequest) {
   let body: { organizationId?: string; planCode?: string; billingInterval?: string };
   try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid checkout request." }, { status: 400 }); }
 
-  const planCode = body.planCode as PaidPlanCode;
+  const requestedPlan = typeof body.planCode === "string" ? body.planCode : "";
+  const planCode = requestedPlan as PaidPlanCode;
   const interval = body.billingInterval as "monthly" | "yearly";
   const organizationId = typeof body.organizationId === "string" ? body.organizationId : "";
-  if (!organizationId || !(planCode in BUSINESSIQ_PRICES) || !["monthly", "yearly"].includes(interval)) {
+  if (!organizationId || !Object.prototype.hasOwnProperty.call(BUSINESSIQ_PRICES, requestedPlan) || !["monthly", "yearly"].includes(interval)) {
     return NextResponse.json({ error: "Choose a valid workspace, plan and billing period." }, { status: 400 });
   }
 
