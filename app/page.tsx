@@ -107,13 +107,33 @@ export default function Home() {
     return { income, expenses, profit: income - expenses, pending, count: periodTransactions.length, margin: income > 0 ? ((income - expenses) / income) * 100 : 0 };
   }, [periodTransactions]);
   const trend = useMemo(() => {
+    if (period === "30") {
+      const start = new Date();
+      start.setDate(start.getDate() - 29);
+      start.setHours(0, 0, 0, 0);
+      return Array.from({ length: 5 }, (_, index) => {
+        const bucketStart = new Date(start);
+        bucketStart.setDate(start.getDate() + index * 7);
+        const bucketEnd = new Date(bucketStart);
+        bucketEnd.setDate(bucketEnd.getDate() + 7);
+        const rows = periodTransactions.filter(t => {
+          const date = new Date(t.transaction_date + "T00:00:00");
+          return date >= bucketStart && date < bucketEnd && t.status === "recorded";
+        });
+        return {
+          month: bucketStart.toLocaleDateString("en-NG", { day: "numeric", month: "short" }),
+          revenue: rows.filter(t => t.kind === "income").reduce((sum,t) => sum + Number(t.amount), 0),
+          expenses: rows.filter(t => t.kind === "expense").reduce((sum,t) => sum + Number(t.amount), 0),
+        };
+      });
+    }
+    const count = period === "90" ? 3 : 6;
     const now = new Date();
-    const count = period === "30" ? 6 : period === "90" ? 3 : 6;
     return Array.from({ length: count }, (_, index) => {
       const d = new Date(now.getFullYear(), now.getMonth() - (count - 1 - index), 1);
       const key = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
       const monthRows = periodTransactions.filter(t => t.transaction_date.startsWith(key) && t.status === "recorded");
-      return { month: monthName(d), revenue: monthRows.filter(t => t.kind === "income").reduce((s,t) => s + Number(t.amount), 0), expenses: monthRows.filter(t => t.kind === "expense").reduce((s,t) => s + Number(t.amount), 0) };
+      return { month: monthName(d), revenue: monthRows.filter(t => t.kind === "income").reduce((sum,t) => sum + Number(t.amount), 0), expenses: monthRows.filter(t => t.kind === "expense").reduce((sum,t) => sum + Number(t.amount), 0) };
     });
   }, [periodTransactions, period]);
   const filtered = useMemo(() => transactions.filter(t => (t.description + " " + t.category + " " + t.status).toLowerCase().includes(query.toLowerCase())), [transactions]);
@@ -191,7 +211,7 @@ export default function Home() {
               <article className="metric-card"><div className="metric-top"><span>Total expenses</span><span className="metric-icon orange"><ShoppingCart size={18}/></span></div><strong className="metric-value">{money(totals.expenses,currency)}</strong><div className="metric-foot muted"><span>{periodTransactions.filter(t=>t.kind==="expense"&&t.status==="recorded").length} recorded entries</span></div></article>
               <article className="metric-card"><div className="metric-top"><span>Pending amount</span><span className="metric-icon purple"><FileText size={18}/></span></div><strong className="metric-value">{money(totals.pending,currency)}</strong><div className="metric-foot muted"><span>{periodTransactions.filter(t=>t.status==="pending").length} items awaiting review</span></div></article>
             </div>
-            <div className="dashboard-grid"><article className="panel chart-panel" id="performance"><div className="panel-heading"><div><h2>Income &amp; expenses trend</h2><p>Monthly totals calculated from recorded transactions</p></div><span className="live-chart-badge">FROM YOUR DATA</span></div><div className="chart-legend"><span><i className="legend-revenue"/>Income</span><span><i className="legend-expenses"/>Expenses</span></div><div className="chart-wrap">{trend.some(t=>t.revenue||t.expenses) ? <ResponsiveContainer width="100%" height="100%"><AreaChart data={trend} margin={{top:12,right:5,left:-18,bottom:0}}><defs><linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#19866a" stopOpacity={.18}/><stop offset="100%" stopColor="#19866a" stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e9eeeb"/><XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill:"#829089",fontSize:12}}/><YAxis axisLine={false} tickLine={false} tick={{fill:"#829089",fontSize:11}} tickFormatter={v=>v>=1000000?(currency==="NGN"?"₦":"")+ (v/1000000).toFixed(1)+"m":(currency==="NGN"?"₦":"")+(v/1000).toFixed(0)+"k"}/><Tooltip formatter={(v)=>money(Number(v),currency)} contentStyle={{borderRadius:12,border:"1px solid #e5ebe7",fontSize:12}}/><Area type="monotone" dataKey="revenue" name="Income" stroke="#19866a" strokeWidth={2.5} fill="url(#revenueFill)"/><Area type="monotone" dataKey="expenses" name="Expenses" stroke="#e6a24a" strokeWidth={2.5} fill="transparent"/></AreaChart></ResponsiveContainer> : <div className="chart-empty">No recorded income or expenses in this period. Add transactions to build your trend.</div>}</div><div className="chart-caption">Cancelled entries are excluded. Pending entries are shown separately and do not affect net operating result.</div></article>
+            <div className="dashboard-grid"><article className="panel chart-panel" id="performance"><div className="panel-heading"><div><h2>Income &amp; expenses trend</h2><p>{period === "30" ? "Weekly totals across the last 30 days" : "Monthly totals calculated from recorded transactions"}</p></div><span className="live-chart-badge">FROM YOUR DATA</span></div><div className="chart-legend"><span><i className="legend-revenue"/>Income</span><span><i className="legend-expenses"/>Expenses</span></div><div className="chart-wrap">{trend.some(t=>t.revenue||t.expenses) ? <ResponsiveContainer width="100%" height="100%"><AreaChart data={trend} margin={{top:12,right:5,left:-18,bottom:0}}><defs><linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#19866a" stopOpacity={.18}/><stop offset="100%" stopColor="#19866a" stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e9eeeb"/><XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill:"#829089",fontSize:12}}/><YAxis axisLine={false} tickLine={false} tick={{fill:"#829089",fontSize:11}} tickFormatter={v=>v>=1000000?(currency==="NGN"?"₦":"")+ (v/1000000).toFixed(1)+"m":(currency==="NGN"?"₦":"")+(v/1000).toFixed(0)+"k"}/><Tooltip formatter={(v)=>money(Number(v),currency)} contentStyle={{borderRadius:12,border:"1px solid #e5ebe7",fontSize:12}}/><Area type="monotone" dataKey="revenue" name="Income" stroke="#19866a" strokeWidth={2.5} fill="url(#revenueFill)"/><Area type="monotone" dataKey="expenses" name="Expenses" stroke="#e6a24a" strokeWidth={2.5} fill="transparent"/></AreaChart></ResponsiveContainer> : <div className="chart-empty">No recorded income or expenses in this period. Add transactions to build your trend.</div>}</div><div className="chart-caption">Cancelled entries are excluded. Pending entries are shown separately and do not affect net operating result.</div></article>
               <article className="panel finance-summary-panel"><div className="panel-heading"><div><h2>Profit &amp; loss summary</h2><p>Recorded activity for the selected period</p></div><span className="live-chart-badge">LIVE LEDGER</span></div>
                 <div className="pnl-total"><span>Net result</span><strong className={totals.profit>=0?"pnl-positive":"pnl-negative"}>{money(totals.profit,currency)}</strong></div>
                 <div className="pnl-row"><span><i className="pnl-dot income-dot"/>Income</span><strong>{money(totals.income,currency)}</strong></div>
