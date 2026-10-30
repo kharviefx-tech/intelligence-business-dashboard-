@@ -1,5 +1,7 @@
 "use client";
 
+import "./import.css";
+
 import { ChangeEvent, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, FileSpreadsheet, LoaderCircle, ShieldCheck, UploadCloud, XCircle } from "lucide-react";
