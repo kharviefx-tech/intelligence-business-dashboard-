@@ -698,3 +698,15 @@ tbody tr:hover{background:#f5f9fd}
 .footer{color:#797775}
 @media(max-width:850px){.content{padding:20px 14px}.powerbi-visual-grid{grid-template-columns:1fr}.powerbi-bar-chart{height:230px}}
 @media(max-width:580px){.content{padding:17px 10px}.welcome-row h1{font-size:21px}.powerbi-report{padding:12px}.powerbi-report-heading{display:block}.powerbi-source-badge{display:inline-flex;margin-top:10px}.powerbi-bar-chart{height:210px}.chart-wrap{height:220px}}
+
+/* Report reading order: title and slicers, KPI cards, report visuals, detail panels, ledger */
+.content{display:flex;flex-direction:column}
+.content>.welcome-row{order:0}
+.content>.data-alert{order:1}
+.content>.metrics-grid{order:2}
+.content>.powerbi-report{order:3}
+.content>.dashboard-grid:not(.dashboard-grid-lower){order:4}
+.content>.dashboard-grid-lower{order:5}
+.content>.transactions-panel{order:6}
+.content>.section-anchor{order:6}
+.content>.footer{order:7}
