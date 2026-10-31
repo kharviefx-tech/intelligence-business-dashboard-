@@ -53,3 +53,25 @@ body { background:#f4f7f6; color:#142d2a; }
 }
 /* Respect reduced-motion preferences and retain clear keyboard focus. */
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition:none!important; animation:none!important; } }
+
+/* Cross-application standards: consistent surfaces, spacing, controls and responsive behaviour */
+:root{--bi-brand:#087f66;--bi-brand-strong:#075d4d;--bi-ink:#142d2a;--bi-muted:#667b76;--bi-border:#dfe9e5;--bi-canvas:#f4f7f6;--bi-surface:#fff;--bi-radius:12px;--bi-shadow:0 1px 3px rgba(20,45,42,.045)}
+html{background:var(--bi-canvas)}body{background:var(--bi-canvas);color:var(--bi-ink);font-family:"DM Sans",Arial,sans-serif}
+:where(button,a,input,select,textarea):focus-visible{outline:2px solid #16866b;outline-offset:3px}
+:where(input,select,textarea){border-color:var(--bi-border)}
+:where(input,select,textarea):not([type=checkbox]):not([type=radio]){border-radius:8px}
+:where(button){transition:background-color .16s ease,border-color .16s ease,color .16s ease,box-shadow .16s ease}
+:where(table){border-collapse:separate;border-spacing:0}
+:where(th){font-size:10px;letter-spacing:.055em;text-transform:uppercase;color:#71827b;font-weight:700}
+:where(td){border-top:1px solid #edf1ee}
+.integrations-topbar,.tool-topbar,.auth-commandbar,.admin-commandbar{background:rgba(255,255,255,.97);border-bottom:1px solid var(--bi-border);box-shadow:none}
+.integrations-content,.tool-content,.admin-content,.platform-content,.company-content,.decision-content,.geography-content,.reports-content,.settings-content,.profile-content,.team-content,.help-content,.support-content,.subscription-content,.monetization-content,.developers-content,.marketplace-content,.security-content,.import-content,.api-docs-content{max-width:1500px}
+:where(.integration-card,.integration-identity,.integration-notice,.tool-card,.admin-card,.platform-card,.company-card,.decision-card,.geography-card,.report-card,.settings-card,.profile-card,.team-card,.help-card,.support-card,.subscription-card,.monetization-card,.developer-card,.marketplace-card,.security-card,.import-card){border:1px solid var(--bi-border);border-radius:var(--bi-radius);box-shadow:var(--bi-shadow);background:#fff}
+:where(.integration-card,.tool-card,.admin-card,.platform-card,.company-card,.decision-card,.geography-card,.report-card,.settings-card,.profile-card,.team-card,.help-card,.support-card,.subscription-card,.monetization-card,.developer-card,.marketplace-card,.security-card,.import-card):hover{border-color:#c7ddd3}
+:where(.integrations-content h1,.tool-content h1,.admin-content h1,.platform-content h1,.company-content h1,.decision-content h1,.geography-content h1,.reports-content h1,.settings-content h1,.profile-content h1,.team-content h1,.help-content h1,.support-content h1,.subscription-content h1,.monetization-content h1,.developers-content h1,.marketplace-content h1,.security-content h1,.import-content h1){color:var(--bi-ink);letter-spacing:-.035em;font-weight:800}
+:where(.integrations-content h2,.tool-content h2,.admin-content h2,.platform-content h2,.company-content h2,.decision-content h2,.geography-content h2,.reports-content h2,.settings-content h2,.profile-content h2,.team-content h2,.help-content h2,.support-content h2,.subscription-content h2,.monetization-content h2,.developers-content h2,.marketplace-content h2,.security-content h2,.import-content h2){color:#203a34;letter-spacing:-.02em}
+.integrations-content button{border-radius:8px}
+:where(.integrations-content input,.integrations-content select,.tool-content input,.tool-content select,.admin-content input,.admin-content select,.settings-content input,.settings-content select,.profile-content input,.profile-content select,.team-content input,.team-content select){min-height:40px;border:1px solid var(--bi-border);border-radius:8px;background:#fff;color:var(--bi-ink)}
+.integrations-content{padding-bottom:36px}.integrations-hero{align-items:center}.integration-card{padding:20px;min-width:0}.integration-open{color:var(--bi-brand-strong)}
+@media(max-width:900px){.integrations-content,.tool-content,.admin-content,.platform-content,.company-content,.decision-content,.geography-content,.reports-content,.settings-content,.profile-content,.team-content,.help-content,.support-content,.subscription-content,.monetization-content,.developers-content,.marketplace-content,.security-content,.import-content,.api-docs-content{padding-left:18px;padding-right:18px}}
+@media(max-width:640px){.integrations-hero{display:block}.integration-identity{align-items:flex-start;flex-wrap:wrap}.integration-card{padding:16px}:where(.integrations-content h1,.tool-content h1,.admin-content h1,.platform-content h1,.company-content h1,.decision-content h1,.geography-content h1,.reports-content h1,.settings-content h1,.profile-content h1,.team-content h1,.help-content h1,.support-content h1,.subscription-content h1,.monetization-content h1,.developers-content h1,.marketplace-content h1,.security-content h1,.import-content h1){font-size:clamp(25px,7vw,34px)}}
