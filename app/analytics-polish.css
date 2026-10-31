@@ -1,63 +1,265 @@
-/* BusinessIQ analytics layout refinement */
-.app-shell{--biq-border:#e1e6ec;--biq-muted:#687583;background:#f5f7f9;color:#202b36}
-.app-shell .content{max-width:1680px;margin:0 auto;padding:24px 28px 0}
-.app-shell .welcome-row{align-items:flex-end;gap:18px;padding-bottom:17px;margin-bottom:18px;border-bottom:1px solid var(--biq-border)}
-.app-shell .welcome-row h1{font-size:clamp(21px,2vw,27px);line-height:1.2;letter-spacing:-.65px;color:#1e2935}
-.app-shell .welcome-row .subheading{font-size:12px;line-height:1.55;color:var(--biq-muted)}
-.app-shell .finance-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin:0 0 22px;align-items:stretch}
-.app-shell .finance-kpis .metric-card{display:flex;flex-direction:column;justify-content:space-between;min-width:0;min-height:140px;padding:17px 18px 15px;background:#fff;border:1px solid var(--biq-border);border-radius:10px;box-shadow:0 2px 8px #18273709}
-.app-shell .finance-kpis .metric-top{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;font-weight:650;line-height:1.35;color:#596675}
-.app-shell .finance-kpis .metric-value{display:block;min-width:0;overflow-wrap:anywhere;font-size:clamp(19px,1.7vw,27px);font-weight:750;line-height:1.2;letter-spacing:-.65px;color:#1d2935;margin:14px 0 9px}
-.app-shell .finance-kpis .metric-foot{display:flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:10px;line-height:1.4;color:#788492}
-.app-shell .analysis-report{margin:0 0 22px}
-.app-shell .powerbi-report-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;padding:0 1px 11px;margin:0 0 12px;border:0;background:transparent}
-.app-shell .powerbi-report-heading h2{font-size:16px;line-height:1.3;font-weight:750;color:#25313e}
-.app-shell .powerbi-report-heading p{font-size:10px;line-height:1.5;color:#7a8794;margin:4px 0 0}
-.app-shell .powerbi-visual-grid,.app-shell .powerbi-visual-grid-lower{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(260px,1fr) minmax(250px,.95fr);gap:14px;align-items:stretch;margin:0 0 14px}
-.app-shell .powerbi-visual{display:flex;flex-direction:column;min-width:0;min-height:300px;padding:18px;background:#fff;border:1px solid var(--biq-border);border-radius:10px;box-shadow:0 2px 8px #18273709}
-.app-shell .powerbi-visual .panel-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin:0 0 14px}
-.app-shell .powerbi-visual .panel-heading h2{font-size:12px;line-height:1.4;font-weight:750;color:#2b3744}
-.app-shell .powerbi-visual .panel-heading p{font-size:9px;line-height:1.45;color:#85909c;margin:4px 0 0}
-.app-shell .powerbi-bar-chart{width:100%;height:205px;min-width:0}
-.app-shell .powerbi-donut-wrap{width:100%;max-width:230px;height:175px;margin:0 auto 8px}
-.app-shell .powerbi-activity-visual{grid-column:auto}
-.app-shell .dashboard-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px;align-items:stretch;margin:0 0 16px}
-.app-shell .panel{min-width:0;padding:18px;background:#fff;border:1px solid var(--biq-border);border-radius:10px;box-shadow:0 2px 8px #18273709}
-.app-shell .panel-heading h2{font-size:13px;line-height:1.4;font-weight:750;color:#293643}
-.app-shell .panel-heading p{font-size:10px;line-height:1.5;color:#7c8996}
-.app-shell .transactions-panel{margin-top:16px;overflow:hidden}
-.app-shell .transactions-panel table{width:100%;border-collapse:separate;border-spacing:0}
-.app-shell .transactions-panel table th{padding:11px 12px;background:#f6f8fa;color:#697684;font-size:9px;font-weight:750;text-align:left;white-space:nowrap}
-.app-shell .transactions-panel table td{padding:12px;border-bottom:1px solid #edf0f3;color:#3e4b58;font-size:10px;vertical-align:middle}
-.app-shell .metric-card,.app-shell .powerbi-visual,.app-shell .panel{transition:border-color .16s ease,box-shadow .16s ease}
-.app-shell .metric-card:hover,.app-shell .powerbi-visual:hover,.app-shell .panel:hover{border-color:#d4dce5;box-shadow:0 5px 16px #1827370e}
-@media(max-width:1280px){.app-shell .content{padding-left:22px;padding-right:22px}.app-shell .finance-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.app-shell .powerbi-visual-grid,.app-shell .powerbi-visual-grid-lower{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:850px){.app-shell .content{padding:17px 14px 0}.app-shell .welcome-row{align-items:flex-start;flex-direction:column;gap:12px}.app-shell .header-controls{justify-content:flex-start;width:100%;flex-wrap:wrap}.app-shell .finance-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:16px}.app-shell .finance-kpis .metric-card{min-height:125px;padding:14px}.app-shell .finance-kpis .metric-value{font-size:clamp(18px,5vw,23px)}.app-shell .powerbi-visual-grid,.app-shell .powerbi-visual-grid-lower,.app-shell .dashboard-grid{grid-template-columns:minmax(0,1fr);gap:11px}.app-shell .powerbi-visual{min-height:260px;padding:15px}.app-shell .transactions-panel{overflow-x:auto}.app-shell .transactions-panel table{min-width:620px}.app-shell .powerbi-report-foot{flex-direction:column}.app-shell .biq-report-tabs{margin-left:-14px;margin-right:-14px}}
-@media(max-width:420px){.app-shell .finance-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.app-shell .finance-kpis .metric-card{min-height:118px;padding:11px}.app-shell .finance-kpis .metric-top{font-size:9px}.app-shell .finance-kpis .metric-value{font-size:18px}.app-shell .finance-kpis .metric-foot{font-size:8px}.app-shell .powerbi-visual{padding:13px;min-height:245px}.app-shell .panel{padding:14px}}
-
-
-/* BusinessIQ unified executive dashboard hierarchy */
-.app-shell .content{max-width:1540px;padding-top:26px;padding-bottom:28px}
-.app-shell .welcome-row{margin-bottom:22px;padding-bottom:20px}
-.app-shell .welcome-row h1{font-size:clamp(25px,2.2vw,32px);font-weight:760;letter-spacing:-1px}
-.app-shell .welcome-row .subheading{max-width:680px;font-size:13px}
-.app-shell .finance-kpis{grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:22px}
-.app-shell .finance-kpis .metric-card{min-height:132px;border-radius:12px;padding:17px 18px}
-.app-shell .dashboard-grid{grid-template-columns:minmax(0,1.8fr) minmax(300px,.9fr);gap:16px;margin:0 0 16px}
-.app-shell .dashboard-grid-lower{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}
-.app-shell .chart-panel,.app-shell .finance-summary-panel,.app-shell .category-panel,.app-shell .health-panel,.app-shell .transactions-panel{border-radius:12px;padding:20px}
-.app-shell .chart-panel{min-height:390px}
-.app-shell .chart-wrap{height:270px}
-.app-shell .finance-summary-panel{min-height:390px}
-.app-shell .panel-heading{margin-bottom:18px}
-.app-shell .panel-heading h2{font-size:14px}
-.app-shell .panel-heading p{font-size:11px}
-.app-shell .live-chart-badge{font-size:9px;letter-spacing:.04em}
-.app-shell .transactions-panel{margin-top:18px}
-.app-shell .transactions-panel .panel-heading{align-items:center}
-.app-shell .transactions-panel table th{font-size:10px;padding:13px 14px}
-.app-shell .transactions-panel table td{font-size:12px;padding:14px}
-.app-shell .biq-report-tabs{margin-top:22px;border-top:1px solid #e4e9ee;padding-top:14px}
-@media(max-width:1200px){.app-shell .finance-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.app-shell .dashboard-grid{grid-template-columns:minmax(0,1.4fr) minmax(270px,1fr)}}
-@media(max-width:900px){.app-shell .dashboard-grid,.app-shell .dashboard-grid-lower{grid-template-columns:minmax(0,1fr)}.app-shell .chart-panel,.app-shell .finance-summary-panel{min-height:unset}.app-shell .chart-wrap{height:240px}}
-@media(max-width:600px){.app-shell .finance-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.app-shell .finance-kpis .metric-card{min-height:116px;padding:13px}.app-shell .chart-panel,.app-shell .finance-summary-panel,.app-shell .category-panel,.app-shell .health-panel,.app-shell .transactions-panel{padding:15px}.app-shell .chart-wrap{height:215px}.app-shell .welcome-row{margin-bottom:16px}.app-shell .biq-report-tabs{overflow-x:auto;white-space:nowrap}}
+/* BusinessIQ — original Decision Intelligence interface
+   Purpose-built visual system; preserves existing component hooks and interactions. */
+.app-shell {
+  --biq-ink: #172b36;
+  --biq-muted: #687c83;
+  --biq-line: #dce7e5;
+  --biq-surface: #ffffff;
+  --biq-canvas: #f2f7f5;
+  --biq-accent: #087e73;
+  --biq-accent-dark: #075d57;
+  --biq-highlight: #dff4ec;
+  background: var(--biq-canvas);
+  color: var(--biq-ink);
+  min-height: 100vh;
+}
+.app-shell .content {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 28px 30px 36px;
+}
+.app-shell .welcome-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 0 22px;
+  margin: 0 0 22px;
+  border-bottom: 1px solid var(--biq-line);
+}
+.app-shell .welcome-row h1 {
+  color: var(--biq-ink);
+  font-size: clamp(25px, 2.5vw, 35px);
+  font-weight: 760;
+  letter-spacing: -1.2px;
+  line-height: 1.12;
+}
+.app-shell .welcome-row .subheading {
+  max-width: 720px;
+  color: var(--biq-muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+.app-shell .finance-kpis {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 28px;
+}
+.app-shell .finance-kpis .metric-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  min-height: 150px;
+  padding: 18px 18px 16px;
+  overflow: hidden;
+  background: var(--biq-surface);
+  border: 1px solid var(--biq-line);
+  border-radius: 15px;
+  box-shadow: 0 3px 12px rgba(19, 55, 51, .035);
+}
+.app-shell .finance-kpis .metric-card:first-child {
+  background: var(--biq-accent-dark);
+  border-color: var(--biq-accent-dark);
+  color: #fff;
+}
+.app-shell .finance-kpis .metric-card:first-child .metric-top,
+.app-shell .finance-kpis .metric-card:first-child .metric-value,
+.app-shell .finance-kpis .metric-card:first-child .metric-foot {
+  color: #fff;
+}
+.app-shell .finance-kpis .metric-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--biq-muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.app-shell .finance-kpis .metric-value {
+  display: block;
+  margin: 16px 0 10px;
+  color: var(--biq-ink);
+  font-size: clamp(20px, 1.8vw, 29px);
+  font-weight: 780;
+  line-height: 1.15;
+  letter-spacing: -.8px;
+  overflow-wrap: anywhere;
+}
+.app-shell .finance-kpis .metric-foot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  color: var(--biq-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+.app-shell .analysis-report { margin: 0 0 28px; }
+.app-shell .powerbi-report-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 0 0 13px;
+  margin: 0 0 14px;
+  border-bottom: 1px solid var(--biq-line);
+  background: transparent;
+}
+.app-shell .powerbi-report-heading h2 {
+  color: var(--biq-ink);
+  font-size: 17px;
+  font-weight: 780;
+  letter-spacing: -.35px;
+  line-height: 1.35;
+}
+.app-shell .powerbi-report-heading p {
+  margin: 5px 0 0;
+  color: var(--biq-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+.app-shell .powerbi-visual-grid,
+.app-shell .powerbi-visual-grid-lower {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, .9fr) minmax(240px, .8fr);
+  gap: 14px;
+  align-items: stretch;
+  margin: 0 0 14px;
+}
+.app-shell .powerbi-visual {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 300px;
+  padding: 20px;
+  background: var(--biq-surface);
+  border: 1px solid var(--biq-line);
+  border-radius: 15px;
+  box-shadow: 0 3px 12px rgba(19, 55, 51, .035);
+}
+.app-shell .powerbi-visual:first-child { border-top: 3px solid var(--biq-accent); }
+.app-shell .powerbi-visual .panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 16px;
+}
+.app-shell .powerbi-visual .panel-heading h2 {
+  color: var(--biq-ink);
+  font-size: 13px;
+  font-weight: 780;
+  line-height: 1.45;
+}
+.app-shell .powerbi-visual .panel-heading p {
+  margin: 4px 0 0;
+  color: var(--biq-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.app-shell .powerbi-bar-chart { width: 100%; height: 210px; min-width: 0; }
+.app-shell .powerbi-donut-wrap { width: 100%; max-width: 230px; height: 180px; margin: 0 auto 8px; }
+.app-shell .powerbi-activity-visual { grid-column: auto; }
+.app-shell .dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: stretch;
+  margin: 0 0 18px;
+}
+.app-shell .panel {
+  min-width: 0;
+  padding: 20px;
+  background: var(--biq-surface);
+  border: 1px solid var(--biq-line);
+  border-radius: 15px;
+  box-shadow: 0 3px 12px rgba(19, 55, 51, .035);
+}
+.app-shell .panel-heading h2 {
+  color: var(--biq-ink);
+  font-size: 14px;
+  font-weight: 780;
+  line-height: 1.45;
+}
+.app-shell .panel-heading p {
+  color: var(--biq-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+.app-shell .transactions-panel { margin-top: 18px; overflow: hidden; }
+.app-shell .transactions-panel table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.app-shell .transactions-panel table th {
+  padding: 12px;
+  background: #edf5f2;
+  color: #536c6c;
+  font-size: 10px;
+  font-weight: 750;
+  text-align: left;
+  white-space: nowrap;
+}
+.app-shell .transactions-panel table td {
+  padding: 13px 12px;
+  border-bottom: 1px solid #edf2f0;
+  color: #354d51;
+  font-size: 11px;
+  vertical-align: middle;
+}
+.app-shell .metric-card,
+.app-shell .powerbi-visual,
+.app-shell .panel {
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+.app-shell .metric-card:hover,
+.app-shell .powerbi-visual:hover,
+.app-shell .panel:hover {
+  border-color: #b9d8ce;
+  box-shadow: 0 8px 24px rgba(19, 55, 51, .075);
+}
+.app-shell .finance-kpis .metric-card:first-child:hover {
+  border-color: var(--biq-accent);
+  box-shadow: 0 8px 24px rgba(7, 93, 87, .18);
+}
+.app-shell button:focus-visible,
+.app-shell a:focus-visible,
+.app-shell input:focus-visible,
+.app-shell select:focus-visible {
+  outline: 3px solid rgba(8, 126, 115, .28);
+  outline-offset: 2px;
+}
+@media (max-width: 1280px) {
+  .app-shell .content { padding-left: 22px; padding-right: 22px; }
+  .app-shell .finance-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .app-shell .powerbi-visual-grid,
+  .app-shell .powerbi-visual-grid-lower { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 850px) {
+  .app-shell .content { padding: 18px 14px 28px; }
+  .app-shell .welcome-row { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .app-shell .header-controls { justify-content: flex-start; width: 100%; flex-wrap: wrap; }
+  .app-shell .finance-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
+  .app-shell .finance-kpis .metric-card { min-height: 128px; padding: 14px; border-radius: 12px; }
+  .app-shell .finance-kpis .metric-value { font-size: clamp(18px, 5vw, 24px); }
+  .app-shell .powerbi-visual-grid,
+  .app-shell .powerbi-visual-grid-lower,
+  .app-shell .dashboard-grid { grid-template-columns: minmax(0, 1fr); gap: 11px; }
+  .app-shell .powerbi-visual { min-height: 260px; padding: 16px; border-radius: 12px; }
+  .app-shell .panel { padding: 16px; border-radius: 12px; }
+  .app-shell .transactions-panel { overflow-x: auto; }
+  .app-shell .transactions-panel table { min-width: 620px; }
+  .app-shell .powerbi-report-foot { flex-direction: column; }
+  .app-shell .biq-report-tabs { margin-left: -14px; margin-right: -14px; }
+}
+@media (max-width: 420px) {
+  .app-shell .finance-kpis { gap: 8px; }
+  .app-shell .finance-kpis .metric-card { min-height: 118px; padding: 11px; }
+  .app-shell .finance-kpis .metric-top { font-size: 9px; }
+  .app-shell .finance-kpis .metric-value { font-size: 18px; }
+  .app-shell .finance-kpis .metric-foot { font-size: 8px; }
+  .app-shell .powerbi-visual { padding: 13px; min-height: 245px; }
+  .app-shell .panel { padding: 14px; }
+}
