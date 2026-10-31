@@ -254,9 +254,12 @@ export default function Home() {
         <Link className={`nav-item${activeNav==="integrations"?" active":""}`} href="/integrations" onClick={()=>selectPage("integrations")}><Activity size={18}/>Integrations</Link>
         <Link className={`nav-item${activeNav==="marketplace"?" active":""}`} href="/marketplace" onClick={()=>selectPage("marketplace")}><Store size={18}/>App marketplace</Link>
       </nav>
-      <div className="nav-label">DEVELOPER ECOSYSTEM</div>
-      <nav className="nav-list" aria-label="Developer ecosystem">
-        <Link className={`nav-item${activeNav==="developers"?" active":""}`} href="/developers" onClick={()=>selectPage("developers")}><ShieldCheck size={18}/>Developer API</Link>
+      <div className="nav-label">PLATFORM &amp; GOVERNANCE</div>
+      <nav className="nav-list" aria-label="Platform and governance">
+        <Link className={"nav-item"+(activeNav==="company"?" active":"")} href="/company" onClick={()=>selectPage("company")}><Store size={18}/>Company workspace</Link>
+        <Link className={"nav-item"+(activeNav==="security"?" active":"")} href="/security" onClick={()=>selectPage("security")}><ShieldCheck size={18}/>Security &amp; governance</Link>
+        <Link className={"nav-item"+(activeNav==="developers"?" active":"")} href="/developers" onClick={()=>selectPage("developers")}><Network size={18}/>Developer ecosystem</Link>
+        <Link className={"nav-item"+(activeNav==="api-docs"?" active":"")} href="/api-docs" onClick={()=>selectPage("api-docs")}><FileText size={18}/>API documentation</Link>
       </nav>
       <div className="nav-label">ACCOUNT &amp; BILLING</div>
       <nav className="nav-list" aria-label="Account and billing">
