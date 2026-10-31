@@ -1,0 +1,105 @@
+/* BusinessIQ Professional Interface — final cascade layer.
+   Loaded after legacy/theme styles so the same system is applied consistently. */
+:root{
+  --biq-brand:#183b63;--biq-brand-strong:#102d4d;--biq-ink:#17263f;
+  --biq-muted:#718096;--biq-border:#e3eaf2;--biq-canvas:#f5f7fb;
+  --biq-surface:#fff;--biq-radius:12px;--biq-shadow:0 2px 8px rgba(23,38,63,.045);
+  --green:var(--biq-brand);--green-dark:var(--biq-brand-strong);
+  --ink:var(--biq-ink);--muted:var(--biq-muted);--line:var(--biq-border);--soft:var(--biq-canvas);
+}
+html,body{background:var(--biq-canvas);color:var(--biq-ink)}
+body{font-family:"DM Sans",Arial,sans-serif}
+h1,h2,h3,h4{color:var(--biq-ink);letter-spacing:-.025em}
+button,input,select,textarea{font:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #9bb9d7;outline-offset:2px}
+:where(.app-shell,.tool-page,.help-page,.profile-page,.integrations-shell,.biq-dashboard-shell) {color:var(--biq-ink)}
+/* Primary dashboard frame */
+.app-shell{background:var(--biq-canvas)}
+.app-shell .sidebar{background:#fff;border-right:1px solid var(--biq-border);box-shadow:2px 0 12px rgba(23,38,63,.025)}
+.app-shell .brand-mark,.app-shell .tool-brand-mark,.app-shell .auth-brand-mark{background:var(--biq-brand)!important;border-radius:10px}
+.app-shell .workspace-switch{border:1px solid var(--biq-border);background:#fbfcfe;border-radius:10px}
+.app-shell .nav-label,.app-shell .workspace-label{color:#8794a6;letter-spacing:.11em}
+.app-shell .nav-item{min-height:40px;border-radius:8px;color:#607087;font-weight:600}
+.app-shell .nav-item.active{background:#eaf0f7;color:var(--biq-brand);box-shadow:inset 3px 0 var(--biq-brand)}
+.app-shell .nav-item:hover{background:#f2f5f9}
+.app-shell .main-area{background:var(--biq-canvas)}
+.app-shell .topbar{background:rgba(255,255,255,.97);border-bottom:1px solid var(--biq-border);box-shadow:0 2px 8px rgba(23,38,63,.025)}
+.app-shell .content{max-width:1600px;padding:30px clamp(18px,2.5vw,38px) 38px}
+.app-shell .welcome-row{border-bottom:1px solid var(--biq-border);padding-bottom:20px}
+.app-shell .welcome-row h1{font-weight:800;color:var(--biq-ink)}
+.app-shell .eyebrow{color:#617b9b}
+.app-shell .metric-card,.app-shell .panel,.app-shell .powerbi-visual{background:#fff;border:1px solid var(--biq-border);border-radius:12px;box-shadow:var(--biq-shadow)}
+.app-shell .metric-card:hover,.app-shell .panel:hover,.app-shell .powerbi-visual:hover{border-color:#c6d4e4;box-shadow:0 7px 20px rgba(23,38,63,.065);transform:translateY(-1px)}
+.app-shell .finance-kpis .metric-card:first-child{background:var(--biq-brand);border-color:var(--biq-brand)}
+.app-shell .primary-btn,.app-shell .auth-submit{background:var(--biq-brand)!important;border-radius:8px;box-shadow:none}
+.app-shell .primary-btn:hover,.app-shell .auth-submit:hover{background:var(--biq-brand-strong)!important}
+.app-shell .subtle-btn,.app-shell .period-select{border-radius:8px;border-color:var(--biq-border)}
+/* Standalone product areas share one topbar, content width and card language */
+:where(.tool-topbar,.help-topbar,.profile-topbar,.integrations-topbar,.biq-dashboard-topbar){
+  background:#fff!important;border-bottom:1px solid var(--biq-border)!important;
+  box-shadow:0 2px 8px rgba(23,38,63,.025)!important;
+}
+:where(.tool-content,.help-content,.profile-content,.integrations-content,.biq-dashboard-content){
+  width:min(100% - 48px,1480px);margin-inline:auto;padding-top:32px;padding-bottom:48px;
+}
+.tool-page{min-height:100vh;background:var(--biq-canvas)}
+.tool-topbar{min-height:66px;padding-inline:clamp(18px,4vw,52px)}
+.tool-topbar a,.help-topbar a,.profile-topbar a,.integrations-topbar a{color:#536780}
+.tool-card,.help-card,.profile-section-card,.profile-hero-card,.integration-card,.integration-identity,
+:where(.subscription-card,.monetization-card,.admin-card,.security-card,.report-card,.company-card,.decision-card,.geography-card,.developer-card,.marketplace-card,.support-card,.settings-card,.team-card,.import-card){
+  background:#fff;border:1px solid var(--biq-border);border-radius:var(--biq-radius);box-shadow:var(--biq-shadow);
+}
+:where(.tool-card,.help-card,.profile-section-card,.profile-hero-card,.integration-card):hover{border-color:#c7d5e5}
+:where(.tool-content,.help-page,.profile-page,.integrations-content,.biq-dashboard-content) h1{font-size:clamp(27px,3vw,36px);font-weight:800;line-height:1.15}
+:where(.tool-content,.help-page,.profile-page,.integrations-content,.biq-dashboard-content) h2{font-weight:750}
+:where(.tool-content,.help-page,.profile-page,.integrations-content,.biq-dashboard-content) p{line-height:1.65}
+:where(.tool-content,.help-page,.profile-page,.integrations-content) button,
+:where(.tool-content,.help-page,.profile-page,.integrations-content) a[class*="btn"]{border-radius:8px}
+:where(.tool-content,.help-page,.profile-page,.integrations-content) input,
+:where(.tool-content,.help-page,.profile-page,.integrations-content) select,
+:where(.tool-content,.help-page,.profile-page,.integrations-content) textarea{
+  min-height:40px;border:1px solid var(--biq-border);border-radius:8px;background:#fff;color:var(--biq-ink);padding:9px 11px;
+}
+:where(.tool-content,.help-page,.profile-page,.integrations-content) input:focus,
+:where(.tool-content,.help-page,.profile-page,.integrations-content) select:focus,
+:where(.tool-content,.help-page,.profile-page,.integrations-content) textarea:focus{border-color:#8da9c8;box-shadow:0 0 0 3px rgba(24,59,99,.08);outline:0}
+:where(.tool-content,.help-page,.profile-page,.integrations-content) button[class*="primary"],
+:where(.tool-content,.help-page,.profile-page,.integrations-content) .auth-submit{background:var(--biq-brand);color:#fff;border-color:var(--biq-brand)}
+/* Authentication: calm, consistent entry experience */
+.auth-page,.pbi-auth-page{min-height:100vh;background:var(--biq-canvas)}
+.auth-commandbar{background:#fff;border-bottom:1px solid var(--biq-border)}
+.auth-form-wrap,.auth-card{border:1px solid var(--biq-border);border-radius:16px;box-shadow:0 12px 40px rgba(23,38,63,.07);background:#fff}
+.auth-submit{background:var(--biq-brand)!important;border-radius:9px;min-height:46px}
+.auth-submit:hover{background:var(--biq-brand-strong)!important}
+.auth-field input,.auth-field select{border:1px solid var(--biq-border);border-radius:8px;min-height:44px}
+.auth-trust-row,.auth-legal{color:var(--biq-muted)}
+/* Platform overview */
+.biq-dashboard-shell{background:var(--biq-canvas)}
+.biq-dashboard-topbar{position:sticky;top:0;z-index:20}
+.biq-dashboard-content{max-width:1480px}
+.biq-page-heading{margin-bottom:24px}
+.biq-kpi-card{background:#fff;border:1px solid var(--biq-border);border-radius:12px;box-shadow:var(--biq-shadow);padding:18px}
+.biq-executive-grid,.biq-chart-grid,.biq-activity-grid{gap:18px}
+.biq-dashboard-content section{min-width:0}
+/* Geography page currently uses inline layout styles; normalize its surface and controls. */
+main[style*="fontFamily"]{background:var(--biq-canvas)!important;color:var(--biq-ink)!important;font-family:"DM Sans",Arial,sans-serif!important}
+main[style*="fontFamily"] header{background:#fff!important;border-color:var(--biq-border)!important}
+main[style*="fontFamily"] section{max-width:1480px!important}
+main[style*="fontFamily"] h1{font-weight:800!important;color:var(--biq-ink)!important}
+main[style*="fontFamily"] button,main[style*="fontFamily"] input,main[style*="fontFamily"] select{border-radius:8px!important;font-family:inherit!important}
+main[style*="fontFamily"] button{box-shadow:none!important}
+/* Consistent responsive rhythm */
+@media(max-width:900px){
+ :where(.tool-content,.help-content,.profile-content,.integrations-content,.biq-dashboard-content){width:100%;padding:24px 18px 38px}
+ .app-shell .content{padding:22px 18px 32px}
+}
+@media(max-width:640px){
+ :where(.tool-topbar,.help-topbar,.profile-topbar,.integrations-topbar){padding-inline:16px}
+ :where(.tool-content,.help-content,.profile-content,.integrations-content,.biq-dashboard-content){padding:20px 15px 32px}
+ .app-shell .welcome-row{align-items:flex-start;flex-direction:column}
+ .app-shell .header-controls{width:100%;flex-wrap:wrap}
+ .app-shell .metrics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .app-shell .dashboard-grid{grid-template-columns:minmax(0,1fr)}
+ .app-shell .metric-value{font-size:clamp(16px,5vw,22px)}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
