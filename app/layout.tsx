@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./businessiq-theme.css";
+import "./original-interface.css";
 import { I18nProvider } from "./components/i18n-provider";
 
 export const metadata: Metadata = {
