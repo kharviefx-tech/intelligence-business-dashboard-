@@ -1,0 +1,55 @@
+/* BusinessIQ original interface system — unified visual language */
+:root {
+  --ink:#142d2a; --muted:#667b76; --line:#dfe9e5; --soft:#f3f7f5;
+  --green:#087f66; --green-dark:#075d4d; --white:#fff;
+}
+body { background:#f4f7f6; color:#142d2a; }
+.app-shell { background:#f4f7f6; color:#142d2a; }
+.sidebar { width:252px; background:#fff; border-right:1px solid #e1e9e5; padding:22px 15px 12px; }
+.brand { padding-bottom:25px; }
+.brand-mark,.tool-brand-mark,.auth-brand-mark { background:#087f66!important; border-radius:9px; }
+.brand strong { letter-spacing:-.6px; }
+.workspace-switch { border-radius:9px; background:#fbfdfc; border-color:#e2eae6; }
+.nav-label,.workspace-label { color:#82938c; font-size:9px; letter-spacing:1.15px; }
+.nav-list { gap:3px; }
+.nav-item { min-height:40px; border-radius:7px; color:#5f746d; font-size:12px; }
+.nav-item.active { color:#075d4d; background:#e8f4ef; box-shadow:inset 3px 0 #087f66; }
+.nav-item:hover { background:#f1f6f3; }
+.main-area { margin-left:252px; }
+.topbar { min-height:66px; background:#fff; border-bottom:1px solid #e1e9e5; box-shadow:none; padding:0 30px; }
+.searchbox { background:#f8fbf9; border-radius:7px; }
+.content,.app-shell .content { max-width:1600px; padding:30px 32px 34px; }
+.welcome-row { border-bottom:1px solid #e0e9e5; }
+.welcome-row h1 { color:#142d2a; font-weight:750; }
+.eyebrow { color:#668078; letter-spacing:1px; }
+.metric-card,.panel,.app-shell .panel,.app-shell .powerbi-visual,.app-shell .finance-kpis .metric-card {
+  background:#fff; border:1px solid #e0e9e5; border-radius:10px; box-shadow:0 1px 2px rgba(20,45,42,.025);
+}
+.metric-card:hover,.panel:hover,.app-shell .metric-card:hover,.app-shell .powerbi-visual:hover,.app-shell .panel:hover {
+  transform:translateY(-1px); border-color:#bfd8ce; box-shadow:0 5px 16px rgba(20,55,46,.055);
+}
+.app-shell .finance-kpis .metric-card:first-child { background:#087f66; border-color:#087f66; }
+.app-shell .powerbi-visual:first-child { border-top:2px solid #087f66; }
+.primary-btn,.auth-submit { background:#087f66!important; border-radius:7px; box-shadow:none; }
+.primary-btn:hover,.auth-submit:hover { background:#075d4d!important; }
+.subtle-btn,.period-select { border-radius:7px; }
+.chart-wrap { min-height:210px; }
+.empowerment { background:#edf6f1; border:1px solid #dcece3; border-radius:10px; }
+.footer { border-top:1px solid #e3ebe7; margin-top:20px; }
+.sidebar-bottom { border-top:1px solid #e4ece8; }
+.sidebar-bottom .secure-icon { background:#e8f4ef; color:#087f66; }
+@media(max-width:1180px) { .sidebar { width:232px; } .main-area { margin-left:232px; } }
+@media(max-width:850px) {
+  .sidebar { width:min(290px,86vw); }
+  .main-area { margin-left:0; }
+  .topbar { padding:0 15px; }
+  .content,.app-shell .content { padding:20px 15px 28px; }
+  .welcome-row { gap:14px; }
+}
+@media(max-width:420px) {
+  .app-shell .finance-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .app-shell .finance-kpis .metric-card { min-width:0; }
+  .searchbox { width:min(42vw,170px); }
+}
+/* Respect reduced-motion preferences and retain clear keyboard focus. */
+@media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition:none!important; animation:none!important; } }
